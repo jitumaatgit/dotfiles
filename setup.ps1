@@ -3,7 +3,7 @@
 # 1. Install Scoop (The package manager)
 Write-Host "Installing Scoop..." -ForegroundColor Cyan
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-if (-not (Get-Command scoop -Erroraction SilentlyContinue)) {
+if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
 irm get.scoop.sh | iex
 }
 
