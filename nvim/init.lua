@@ -39,7 +39,7 @@ vim.opt.termguicolors = true       -- True color support
 -- ========================================================================== --
 require("lazy").setup({
     -- The key 'spec' tells lazy to look inside this directory for plugin files.
-    { import = "lazy_plugins" }, 
+    { import = "plugins" }, 
 }, {
     -- Configuration options for lazy.nvim
     install = { colorscheme = { "tokyonight", "default" } },
