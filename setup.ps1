@@ -14,7 +14,11 @@ scoop install 7zip innounp dark
 # 3. Install my Main Tools
 Write-Host "Installing Neovim, Git, GCC, and github CLI and Ripgrep" -ForegroundColor Green
 scoop update
-scoop install git neovim ripgrep gcc gh python nodejs fd lua luarocks
+scoop install git neovim ripgrep gcc gh python nodejs fd lua luarocks wezterm
+
+# 3.1 install fonts
+scoop bucket add nerd-fonts
+scoop install nerd-fonts/Firacode-NF
 
 # 4. Clone my Dotfiles
 $RepoPath  = "$HOME\dotfiles"
