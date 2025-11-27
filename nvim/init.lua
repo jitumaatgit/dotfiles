@@ -4,7 +4,7 @@
 --  It checks if lazy.nvim exists; if not, it clones it.
 -- ========================================================================== --
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
+if not vim.loop.fs_stat(lazypath) then
   vim.api.nvim_echo({ { "⬇️  Bootstrapping Lazy.nvim & Plugins...", "MoreMsg" } }, true, {})
   vim.fn.system({
     "git",
