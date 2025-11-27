@@ -18,54 +18,6 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- ========================================================================== --
---  PLUGIN SETUP
--- ========================================================================== --
-require("lazy").setup({
-  -- 1. THEME (So you know it worked immediately)
-  {
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      vim.cmd([[colorscheme tokyonight]])
-    end,
-  },
-
-  -- 2. TREESITTER (Better Syntax Highlighting)
-  -- Note: Requires 'gcc' which we installed via Scoop in your setup.ps1
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function() 
-      require("nvim-treesitter.configs").setup({
-        -- Add languages you use here
-        ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "javascript" },
-        auto_install = true,
-        highlight = { enable = true },
-      })
-    end
-  },
-
-  -- 3. TELESCOPE (Fuzzy Finder)
-  {
-    "nvim-telescope/telescope.nvim", 
-    tag = '0.1.6',
-    dependencies = { 'nvim-lua/plenary.nvim' }
-  },
-
-  -- 4. WHICH-KEY (Helps you learn keybindings)
-  {
-    "folke/which-key.nvim",
-    event = "VeryLazy",
-    init = function()
-      vim.o.timeout = true
-      vim.o.timeoutlen = 300
-    end,
-    opts = {}
-  }
-})
-
--- ========================================================================== --
 --  BASIC SETTINGS (Sane Defaults)
 -- ========================================================================== --
 vim.g.mapleader = " "              -- Set Space as Leader Key
@@ -82,13 +34,22 @@ vim.opt.smartcase = true           -- ...unless you type a capital
 vim.opt.termguicolors = true       -- True color support
 
 -- ========================================================================== --
---  KEYBINDINGS (Examples)
+--  LAZY.NVIM SETUP
+--  Tells lazy.nvim to load all configuration files from the 'lua/plugins' folder.
 -- ========================================================================== --
--- Find files using Telescope
-local builtin = require('telescope.builtin')
-vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope Find Files' })
-vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope Live Grep' })
-vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope Buffers' })
-
--- Quick Save
-vim.keymap.set('n', '<leader>w', '<cmd>w<cr>', { desc = 'Save File' })
+require("lazy").setup({
+    -- The key 'spec' tells lazy to look inside this directory for plugin files.
+    { import = "lazy_plugins" }, 
+}, {
+    -- Configuration options for lazy.nvim
+    install = { colorscheme = { "tokyonight", "default" } },
+    change_detection = {
+        enabled = true,
+        notify = false,
+    },
+})
+-- ========================================================================== --
+--  LOAD CONFIGURATIONS
+--  Require all files in lua/config.
+-- ========================================================================== --
+require("config.keymaps")
