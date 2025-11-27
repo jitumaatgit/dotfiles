@@ -12,9 +12,9 @@ Write-Host "Installing Helper Tools..." -ForegroundColor Yellow
 scoop install 7zip innounp dark
 
 # 3. Install my Main Tools
-Write-Host "Installing Neovim, Git, and Ripgrep" -ForegroundColor Green
+Write-Host "Installing Neovim, Git, GCC, and github CLI and Ripgrep" -ForegroundColor Green
 scoop update
-scoop install git neovim ripgrep gcc
+scoop install git neovim ripgrep gcc gh
 
 # 4. Clone my Dotfiles
 $RepoPath  = "$HOME\dotfiles"
@@ -25,11 +25,13 @@ if (-not (Test-Path $RepoPath)) {
     # if folder exists, just pull latest changes
     Set-Location $RepoPath
     git pull
+    Set-Location $HOME
 }
 
 # 5. Apply Configurations (the non-admin way)
 
 # --- Neovim: Directory Junction (works w/o admin) ---
+Write-Host "Linking Neovim config..." -ForegroundColor Cyan
 $NvimLocal = "$env:LOCALAPPDATA\nvim"
 if (Test-Path $NvimLocal) { Remove-Item $NvimLocal -Recurse -Force }
 New-Item -ItemType Junction -Path $NvimLocal -Target "$RepoPath\nvim"
@@ -37,6 +39,24 @@ New-Item -ItemType Junction -Path $NvimLocal -Target "$RepoPath\nvim"
 # --- Git Config: Copy File (bypasses Symlink restriction) ---
 # We copy the file because file-symlinks need Admin. 
 Copy-Item "$RepoPath\git\.gitconfig" "$HOME\.gitconfig" -Force
+# 6. Check GitHub Authentication
+Write-Host "Checking Github Authentication..." -ForegroundColor Cyan
+
+# '2>$null' suppresses the error mesage if im not logged in
+gh auth status 2>$null
+# checks the exit code and list next step if im not logged in
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "--------------------------------------------------------" -ForegroundColor Yellow
+    Write-Host "ACTION REQUIRED: You are not logged into GitHub." -ForegroundColor Yellow
+    Write-Host "To push your config changes, please run this command now:"
+    Write-Host ""
+    Write-Host "  gh auth login"
+    Write-Host ""
+    Write-Host "This will open a browser to authenticate you for this session."
+    Write-Host "--------------------------------------------------------"
+} else {
+    Write-Host "You are already logged into GitHub." -ForegroundColor Green
+}
 
 Write-Host "--- Setup Complete! ---" -ForegroundColor Green
 Write-Host "Run 'nvim' to start coding." 
