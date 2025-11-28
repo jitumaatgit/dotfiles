@@ -271,7 +271,7 @@ function Install-MSYS2-Portable {
                     # Can't reliably extract tar.xz without 7z; continue trying other URLs
                 }
             } catch {
-                Write-Warn "Extract attempt failed for $dest: $($_.Exception.Message)"
+                Write-Warn "Extract attempt failed for ${dest}: $($_.Exception.Message)"
             }
         }
     }
