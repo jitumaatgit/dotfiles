@@ -13,8 +13,6 @@ Start-Transcript -Path "$Logs\setup-$timestamp.log"
 # --- Install Scoop (per-user) ---
 Write-Host "[INFO] Installing Scoop..."
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-}
 scoop bucket add main
 scoop bucket add extras
 
