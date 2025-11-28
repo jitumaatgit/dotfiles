@@ -15,6 +15,8 @@ Write-Host "[INFO] Installing Scoop..."
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     iwr -useb get.scoop.sh | iex
 }
+scoop bucket add main
+scoop bucket add extras
 
 # --- Required: Git BEFORE buckets ---
 Write-Host "[INFO] Ensuring git..."
