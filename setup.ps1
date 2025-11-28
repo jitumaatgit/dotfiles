@@ -15,7 +15,7 @@ Set-StrictMode -Version Latest
 # Config - edit these values
 # ---------------------------
 $BaseDir     = Join-Path $HOME "portable-dev"
-$MsysDir     = Join-Path $BaseDir "msys2"
+$MsysDir     = Join-Path $BaseDir "msys2\msys64"
 $DownloadDir = Join-Path $BaseDir "downloads"
 $FontsDir    = Join-Path $BaseDir "fonts"
 $WezDir      = Join-Path $BaseDir "wezterm"
@@ -66,7 +66,7 @@ try {
         & tar -xf $innerTar.FullName -C $MsysDir 2>$null
         Remove-Item $innerTar.FullName -Force -ErrorAction SilentlyContinue
     }
-    Write-Host "✔ MSYS2 extracted to $MsysDir"
+    Write-Host "MSYS2 extracted to $MsysDir"
 } catch {
     Write-Host "tar extraction failed. Attempting to use 7z if available..." -ForegroundColor Yellow
     if (-not (Get-Command 7z -ErrorAction SilentlyContinue)) {
@@ -80,13 +80,13 @@ try {
         & $seven.FullName x $MsysArchive "-o$MsysDir" -y | Out-Null
         $innerTar = Get-ChildItem -Path $MsysDir -Filter "*.tar" -File | Select-Object -First 1
         if ($innerTar) { & $seven.FullName x $innerTar.FullName "-o$MsysDir" -y | Out-Null; Remove-Item $innerTar.FullName -Force -ErrorAction SilentlyContinue }
-        Write-Host "✔ MSYS2 extracted to $MsysDir (via 7z)"
+        Write-Host "MSYS2 extracted to $MsysDir (via 7z)"
     } else {
         Write-Host "Found 7z in PATH; using it to extract..."
         & 7z x $MsysArchive "-o$MsysDir" -y | Out-Null
         $innerTar = Get-ChildItem -Path $MsysDir -Filter "*.tar" -File | Select-Object -First 1
         if ($innerTar) { & 7z x $innerTar.FullName "-o$MsysDir" -y | Out-Null; Remove-Item $innerTar.FullName -Force -ErrorAction SilentlyContinue }
-        Write-Host "✔ MSYS2 extracted to $MsysDir (via 7z)"
+        Write-Host "MSYS2 extracted to $MsysDir (via 7z)"
     }
 }
 
