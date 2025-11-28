@@ -16,12 +16,13 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     irm get.scoop.sh | iex
 }
-scoop bucket add main
-scoop bucket add extras
-
 # --- Required: Git BEFORE buckets ---
 Write-Host "[INFO] Ensuring git..."
 scoop install git
+
+scoop bucket add main
+scoop bucket add extras
+
 
 # --- Needed packages ----
 $Packages = @(
