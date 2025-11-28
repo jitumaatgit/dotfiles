@@ -20,7 +20,6 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
 Write-Host "[INFO] Ensuring git..."
 scoop install git
 
-scoop bucket add main
 scoop bucket add extras
 
 
