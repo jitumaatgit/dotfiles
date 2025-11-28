@@ -50,16 +50,7 @@ Write-Host "[INFO] Extracting WezTerm..."
 Expand-Archive -Path $WezZip -DestinationPath $WezDir -Force
 
 # --- Zen Browser Installer ---
-Write-Host "[INFO] Installing Zen Browser..."
-
-$ZenInstaller = "$Downloads\zen.installer.exe"
-Invoke-WebRequest `
-  -Uri "https://github.com/zen-browser/desktop/releases/latest/download/zen.installer.exe" `
-  -OutFile $ZenInstaller
-
-# Run Zen installer silently if possible
-Start-Process $ZenInstaller -ArgumentList "/S" -Wait
-
+scoop install zen-browser
 Write-Host "[INFO] Zen Browser installed."
 
 Write-Host "===== bootstrap complete ====="
