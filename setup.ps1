@@ -43,7 +43,7 @@ $WezZip = "$Downloads\wezterm-portable.zip"
 Write-Host "[INFO] Downloading WezTerm..."
 
 Invoke-WebRequest `
-  -Uri "https://github.com/wezterm/wezterm/releases/latest/download/WezTerm-windows-archive.zip" `
+  -Uri "https://github.com/wezterm/wezterm/releases/latest/download/WezTerm-windows-x86_64.zip" `
   -OutFile $WezZip
 
 Write-Host "[INFO] Extracting WezTerm..."
