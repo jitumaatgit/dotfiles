@@ -30,7 +30,8 @@ $Packages = @(
     "ripgrep",
     "fd",
     "fzf",
-    "lazygit"
+    "lazygit",
+    "powertoys"
 )
 
 foreach ($pkg in $Packages) {
