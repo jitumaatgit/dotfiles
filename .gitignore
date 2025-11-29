@@ -9,7 +9,7 @@ Videos/
 Music/
 Saved Games/
 OneDrive/
-!AppData/Local/nvim/
+!AppData/Local/nvim/**
 !README.md
 !setup.ps1
 !setup.ps1.bak
