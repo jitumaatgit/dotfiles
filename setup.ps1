@@ -25,12 +25,14 @@ scoop bucket add extras
 
 # --- Needed packages ----
 $Packages = @(
-    "neovim",
+    "zig",
     "nodejs-lts",
     "ripgrep",
     "fd",
     "fzf",
     "lazygit",
+    "tree-sitter",
+    "neovim",
     "powertoys"
 )
 
