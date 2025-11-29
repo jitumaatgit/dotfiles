@@ -1,0 +1,11 @@
+﻿*
+!/.gitignore
+# keep git fast, ignore normal Windows directories
+AppData/
+Downloads/
+Documents/
+Pictures/
+Videos/
+Music/
+Saved Games/
+OneDrive/
