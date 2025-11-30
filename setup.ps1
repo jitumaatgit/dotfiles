@@ -26,6 +26,7 @@ scoop bucket add nerd-fonts
 # --- Needed packages ----
 $Packages = @(
     "zig",
+    "gcc",
     "nodejs-lts",
     "ripgrep",
     "fd",

@@ -6,7 +6,7 @@ config.color_scheme = "OneDark" -- Or 'Tokyo Night'
 config.window_padding = { left = 5, right = 5, top = 5, bottom = 5 }
 config.initial_cols = 120
 config.initial_rows = 40
-config.window_opacity = 0.95
+config.window_background_opacity = 0.95
 config.tab_bar_at_bottom = false
 config.use_fancy_tab_bar = true
 config.audible_bell = "Disabled"
@@ -15,11 +15,10 @@ config.leader = { key = "b", mods = "CTRL", timeout_milliseconds = 1000 }
 -- Main key assignments
 config.keys = {
 	-- Tabs (tmux: Ctrl-b c/n/p/&/w)
-	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab({}) },
+	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab({ domain = "CurrentPaneDomain" }) },
 	{ key = "n", mods = "LEADER", action = wezterm.action.ActivateTabRelative(1) },
 	{ key = "p", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
-	{ key = "&", mods = "LEADER", action = wezterm.action.SpawnTab({}) }, -- Reuse c for new, & to close current?
-	{ key = "x", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
+	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
 	-- Panes (tmux: %/" / h/j/k/l / o)
 	{ key = "|", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	{ key = "-", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
