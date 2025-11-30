@@ -8,11 +8,10 @@ config.default_prog = {
 }
 -- Basics (Kitty/Tmux-like)
 config.font = wezterm.font_with_fallback({
-	"JetBrains Mono Nerd Font",
 	"JetBrains Mono",
 })
 config.font_size = 12.0
-config.color_scheme = "Cattpuccin Mocha" -- change to cattpuccin mocha
+config.color_scheme = "Cattpuccin Mocha"
 config.window_padding = { left = 5, right = 5, top = 5, bottom = 5 }
 config.initial_cols = 120
 config.initial_rows = 40
