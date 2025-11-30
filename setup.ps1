@@ -35,7 +35,8 @@ $Packages = @(
     "tree-sitter",
     "JetBrainsMono-NF"
     "neovim",
-    "opencode"
+    "opencode",
+    "starship"
 )
 
 foreach ($pkg in $Packages) {

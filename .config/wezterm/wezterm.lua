@@ -1,8 +1,8 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 -- Basics (Kitty/Tmux-like)
-config.font = wezterm.font("JetBrains Mono Nerd Font") -- Install if needed
-config.color_scheme = "OneDark" -- Or 'Tokyo Night'
+-- config.font = wezterm.font("JetBrains Mono Nerd Font") -- Fixme (figure out how to get wezterm to find installed nerd font)
+config.color_scheme = "Tokyo Night" -- Or 'Tokyo Night'
 config.window_padding = { left = 5, right = 5, top = 5, bottom = 5 }
 config.initial_cols = 120
 config.initial_rows = 40
@@ -15,7 +15,7 @@ config.leader = { key = "b", mods = "CTRL", timeout_milliseconds = 1000 }
 -- Main key assignments
 config.keys = {
 	-- Tabs (tmux: Ctrl-b c/n/p/&/w)
-	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab({ domain = "CurrentPaneDomain" }) },
+	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
 	{ key = "n", mods = "LEADER", action = wezterm.action.ActivateTabRelative(1) },
 	{ key = "p", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
 	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
@@ -42,8 +42,8 @@ config.key_tables = {
 		{ key = "K", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
 		{ key = "L", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
 		-- Esc or leader again to exit leader mode
-		{ key = "b", mods = "CTRL", action = nil }, -- Exit leader
-		{ key = "Escape", action = nil },
+		{ key = "b", mods = "CTRL", action = "PopKeyTable" }, -- Exit leader
+		{ key = "Escape", action = "PopKeyTable" },
 	},
 }
 return config
