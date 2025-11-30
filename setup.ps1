@@ -21,7 +21,7 @@ Write-Host "[INFO] Ensuring git..."
 scoop install git
 
 scoop bucket add extras
-
+scoop bucket add nerd-fonts
 
 # --- Needed packages ----
 $Packages = @(
@@ -32,7 +32,9 @@ $Packages = @(
     "fzf",
     "lazygit",
     "tree-sitter",
+    "JetBrainsMono-NF"
     "neovim",
+    "opencode",
     "powertoys"
 )
 
