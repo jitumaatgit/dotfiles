@@ -55,6 +55,28 @@ Invoke-WebRequest `
 Write-Host "[INFO] Extracting WezTerm..."
 Expand-Archive -Path $WezZip -DestinationPath $WezDir -Force
 
+
+# --- AutoHotkey Portable (CapsLock -> Esc) ---
+$ahkDir = "$Base\autohotkey-portable"
+$ahkZip = "$Downloads\autohotkey.zip"
+Write-Host "[INFO] Downloading AutoHotkey Portable..."
+Invoke-WebRequest -Uri "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip" -OutFile $ahkZip
+Write-Host "[INFO] Extracting AutoHotkey..."
+Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
+Remove-Item $ahkZip -ErrorAction SilentlyContinue
+$remapAhk = "$ahkDir\remap.ahk"
+@"
+CapsLock::Esc
+"@ | Out-File $remapAhk -Encoding ASCII
+Write-Host "[INFO] Creating startup shortcut for AutoHotkey..."
+$WshShell = New-Object -comObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\autohotkey-remap.lnk")
+$Shortcut.TargetPath = "$ahkDir\AutoHotkey64.exe"
+$Shortcut.Arguments = $remapAhk
+$Shortcut.Save()
+Write-Host "[INFO] Starting AutoHotkey remap (CapsLock -> Esc)..."
+Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
+
 # --- Zen Browser Installer ---
 scoop install zen-browser
 Write-Host "[INFO] Zen Browser installed."
