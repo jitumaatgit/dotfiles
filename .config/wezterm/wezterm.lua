@@ -1,7 +1,7 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 -- Basics (Kitty/Tmux-like)
-config.font = wezterm.font("JetBrains Mono Nerd Font") -- Fixme (figure out how to get wezterm to find installed nerd font)
+config.font = wezterm.font("JetBrains Mono") -- Fixme (figure out how to get wezterm to find installed nerd font)
 config.color_scheme = "Tokyo Night" -- change to cattpuccin mocha
 config.window_padding = { left = 5, right = 5, top = 5, bottom = 5 }
 config.initial_cols = 120
