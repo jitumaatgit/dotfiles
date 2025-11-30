@@ -83,4 +83,8 @@ scoop install zen-browser
 Write-Host "[INFO] Zen Browser installed."
 
 Write-Host "===== bootstrap complete ====="
+Write-Host "run git init"
+Write-Host "git remote add origin https://github.com/jitumaatgit/dotfiles"
+Write-Host "git fetch"
+Write-Host "git checkout -f main"
 Stop-Transcript
