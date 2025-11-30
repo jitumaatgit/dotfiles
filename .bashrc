@@ -57,3 +57,6 @@ alias grep='grep --color=auto'
 
 # Make vim = nvim
 command -v nvim >/dev/null && alias vim='nvim'
+
+# initialize starship in bash
+eval "$(starship init bash)"
