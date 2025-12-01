@@ -25,6 +25,7 @@ scoop bucket add nerd-fonts
 
 # --- Needed packages ----
 $Packages = @(
+    "wezterm",
     "zig",
     "gcc",
     "nodejs-lts",
@@ -45,16 +46,16 @@ foreach ($pkg in $Packages) {
 }
 
 # --- WezTerm Portable ---
-$WezDir = "$Base\wezterm"
-$WezZip = "$Downloads\wezterm-portable.zip"
-Write-Host "[INFO] Downloading WezTerm..."
-
-Invoke-WebRequest `
-  -Uri "https://github.com/wezterm/wezterm/releases/download/nightly/WezTerm-windows-nightly.zip" `
-  -OutFile $WezZip
-
-Write-Host "[INFO] Extracting WezTerm..."
-Expand-Archive -Path $WezZip -DestinationPath $WezDir -Force
+# $WezDir = "$Base\wezterm"
+# $WezZip = "$Downloads\wezterm-portable.zip"
+# Write-Host "[INFO] Downloading WezTerm..."
+#
+# Invoke-WebRequest `
+#   -Uri "https://github.com/wezterm/wezterm/releases/download/nightly/WezTerm-windows-nightly.zip" `
+#   -OutFile $WezZip
+#
+# Write-Host "[INFO] Extracting WezTerm..."
+# Expand-Archive -Path $WezZip -DestinationPath $WezDir -Force
 
 
 # --- AutoHotkey Portable (CapsLock -> Esc) ---
