@@ -53,18 +53,18 @@ config.colors = {
 	},
 }
 config.audible_bell = "Disabled"
--- Leader key: Ctrl-b (tmux style)
-config.leader = { key = "b", mods = "CTRL", timeout_milliseconds = 2000 }
+-- Leader key: C-space
+config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
 -- Main key assignments
 config.keys = {
-	-- Tabs (tmux: Ctrl-b c/n/p/&/w)
+	-- Tabs (tmux vim hybrid)
 	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
 	{ key = "n", mods = "LEADER", action = wezterm.action.ActivateTabRelative(1) },
-	{ key = "p", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
+	{ key = "b", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
 	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
 	-- Panes (tmux: %/" / h/j/k/l / o)
-	{ key = "|", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	{ key = "-", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "s", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ key = "v", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "h", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Left") },
 	{ key = "j", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Down") },
 	{ key = "k", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Up") },
