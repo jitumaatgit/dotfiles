@@ -94,6 +94,23 @@ $taskbarSettings = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Curr
 $taskbarSettings.Settings[8] = 0x03  # This sets auto-hide
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3" -Name "Settings" -Value $taskbarSettings.Settings
 
+# --- Hide Desktop Icons ---
+Write-Host "[INFO] Hiding desktop icons..."
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideIcons" -Value 1 -Type Dword
+
+# --- Set Desktop Wallpaper ---
+$currentWallpaper = "C:\Windows\Web\Wallpaper\ThemeA\img20.jpg"
+Write-Host "[INFO] Setting desktop wallpaper..."
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class Wallpaper {
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+}
+"@
+[Wallpaper]::SystemParametersInfo(0x0014, 0, $currentWallpaper, 0x01)
+
 # Restart Explorer to apply changes
 Write-Host "[INFO] Restarting Explorer to apply changes..."
 Stop-Process -Name explorer -Force
