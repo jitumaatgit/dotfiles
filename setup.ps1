@@ -83,6 +83,22 @@ Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
 scoop install zen-browser
 Write-Host "[INFO] Zen Browser installed."
 
+# --- Windows Dark Mode ---
+Write-Host "[INFO] Enabling Windows Dark Mode..."
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type Dword
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type Dword
+
+# --- Auto-hide Taskbar ---
+Write-Host "[INFO] Setting taskbar to auto-hide..."
+$taskbarSettings = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3" -Name "Settings"
+$taskbarSettings.Settings[8] = 0x03  # This sets auto-hide
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3" -Name "Settings" -Value $taskbarSettings.Settings
+
+# Restart Explorer to apply changes
+Write-Host "[INFO] Restarting Explorer to apply changes..."
+Stop-Process -Name explorer -Force
+Start-Process explorer
+
 Write-Host "===== bootstrap complete ====="
 Write-Host "run git init"
 Write-Host "git remote add origin https://github.com/jitumaatgit/dotfiles"
