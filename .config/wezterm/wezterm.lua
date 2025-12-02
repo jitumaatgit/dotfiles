@@ -15,6 +15,7 @@ config.color_scheme = "Catppuccin Mocha"
 config.window_padding = { left = 5, right = 5, top = 5, bottom = 5 }
 config.initial_cols = 120
 config.initial_rows = 40
+config.window_decorations = "RESIZE"
 config.tab_bar_at_bottom = false
 config.use_fancy_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = true
