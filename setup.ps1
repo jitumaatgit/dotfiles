@@ -26,7 +26,6 @@ scoop bucket add nerd-fonts
 # --- Needed packages ----
 $Packages = @(
     "wezterm",
-    "zig",
     "gcc",
     "nodejs-lts",
     "ripgrep",
@@ -122,4 +121,7 @@ Write-Host "run git init"
 Write-Host "git remote add origin https://github.com/jitumaatgit/dotfiles"
 Write-Host "git fetch"
 Write-Host "git checkout -f main"
+Write-Host "for notes, run mkdir notes"
+Write-Host "cd notes"
+Write-Host "git clone https://github.com/jitumaatgit/notes . "
 Stop-Transcript
