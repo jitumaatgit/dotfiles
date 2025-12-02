@@ -63,8 +63,8 @@ config.keys = {
 	{ key = "b", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
 	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
 	-- Panes (tmux: %/" / h/j/k/l / o)
-	{ key = "s", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	{ key = "v", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "|", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ key = "-", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "h", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Left") },
 	{ key = "j", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Down") },
 	{ key = "k", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Up") },
@@ -85,7 +85,7 @@ config.key_tables = {
 		{ key = "K", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
 		{ key = "L", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
 		-- Esc or leader again to exit leader mode
-		{ key = "b", mods = "CTRL", action = "PopKeyTable" }, -- Exit leader
+		{ key = "Space", mods = "CTRL", action = "PopKeyTable" }, -- Exit leader
 		{ key = "Escape", action = "PopKeyTable" },
 	},
 }
