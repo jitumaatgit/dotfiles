@@ -1,4 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "catppuccin"
+  "theme": "catppuccin",
+  "keybinds": {
+    "messages_page_down": "<leader>j",
+    "messages_page_up": "<leader>k"
+}
 }
