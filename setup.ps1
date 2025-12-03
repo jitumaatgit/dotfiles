@@ -36,25 +36,14 @@ $Packages = @(
     "JetBrainsMono-NF"
     "neovim",
     "opencode",
-    "starship"
+    "starship",
+    "gh"
 )
 
 foreach ($pkg in $Packages) {
     Write-Host "[INFO] Installing scoop package: $pkg"
     scoop install $pkg
 }
-
-# --- WezTerm Portable ---
-# $WezDir = "$Base\wezterm"
-# $WezZip = "$Downloads\wezterm-portable.zip"
-# Write-Host "[INFO] Downloading WezTerm..."
-#
-# Invoke-WebRequest `
-#   -Uri "https://github.com/wezterm/wezterm/releases/download/nightly/WezTerm-windows-nightly.zip" `
-#   -OutFile $WezZip
-#
-# Write-Host "[INFO] Extracting WezTerm..."
-# Expand-Archive -Path $WezZip -DestinationPath $WezDir -Force
 
 
 # --- AutoHotkey Portable (CapsLock -> Esc) ---
@@ -67,6 +56,7 @@ Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
 Remove-Item $ahkZip -ErrorAction SilentlyContinue
 $remapAhk = "$ahkDir\remap.ahk"
 @"
+Esc::CapsLock
 CapsLock::Esc
 ::jj::Send {Esc}
 "@ | Out-File $remapAhk -Encoding ASCII
@@ -117,7 +107,8 @@ Stop-Process -Name explorer -Force
 Start-Process explorer
 
 Write-Host "===== bootstrap complete ====="
-Write-Host "run git init"
+Write-Host "run gh auth login to authenticate"
+Write-Host "then run git init -b main"
 Write-Host "git remote add origin https://github.com/jitumaatgit/dotfiles"
 Write-Host "git fetch"
 Write-Host "git checkout -f main"
