@@ -1,0 +1,9 @@
+[user]
+	name = CALI117u47
+	email = CALI117u47@ad.pcc.edu
+
+[core]
+	autocrlf = false
+
+[init]
+	defaultBranch = main
