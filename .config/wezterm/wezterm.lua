@@ -6,7 +6,7 @@ config.default_prog = {
 	"--login",
 	"-i",
 }
--- Basics (Kitty/Tmux-like)
+-- appearance settings
 config.font = wezterm.font_with_fallback({
 	"JetBrains Mono",
 })
@@ -54,16 +54,16 @@ config.colors = {
 	},
 }
 config.audible_bell = "Disabled"
--- Leader key: C-space
+-- Keybinds
 config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
 -- Main key assignments
 config.keys = {
-	-- Tabs (tmux vim hybrid)
+	-- Tabs
 	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
 	{ key = "n", mods = "LEADER", action = wezterm.action.ActivateTabRelative(1) },
 	{ key = "b", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
 	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
-	-- Panes (tmux: %/" / h/j/k/l / o)
+	-- Panes
 	{ key = "|", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	{ key = "-", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "h", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Left") },
@@ -72,13 +72,28 @@ config.keys = {
 	{ key = "l", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Right") },
 	{ key = "o", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Next") },
 	{ key = "x", mods = "LEADER", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
-	-- Copy mode (tmux: [ / ])
+	-- Copy mode
 	{ key = "[", mods = "LEADER", action = wezterm.action.CopyMode("ClearPattern") },
 	{ key = "]", mods = "LEADER", action = wezterm.action({ CopyTo = "ClipboardAndPrimarySelection" }) },
 	-- Zoom
 	{ key = "z", mods = "LEADER", action = wezterm.action.TogglePaneZoomState },
+	{
+		key = "e",
+		mods = "LEADER",
+		action = wezterm.action.PromptInputLine({
+			description = "Enter new name for tab",
+			action = wezterm.action_callback(function(window, pane, line)
+				-- line will be `nil` if they hit escape without entering anything
+				-- An empty string if they just hit enter
+				-- Or the actual line of the text they wrote
+				if line then
+					window:active_tab():set_title(line)
+				end
+			end),
+		}),
+	},
 }
--- Pane resize (tmux: Ctrl-b then M-h/j/k/l, but here LEADER + HJKL)
+-- Pane resize
 config.key_tables = {
 	leader = {
 		{ key = "H", action = wezterm.action.AdjustPaneSize({ "Left", 5 }) },
@@ -90,4 +105,5 @@ config.key_tables = {
 		{ key = "Escape", action = "PopKeyTable" },
 	},
 }
+
 return config
