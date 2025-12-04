@@ -56,7 +56,7 @@ Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
 Remove-Item $ahkZip -ErrorAction SilentlyContinue
 $remapAhk = "$ahkDir\remap.ahk"
 @"
-Esc::CapsLock
+CapsLock::Esc
 "@ | Out-File $remapAhk -Encoding ASCII
 Write-Host "[INFO] Creating startup shortcut for AutoHotkey..."
 $WshShell = New-Object -comObject WScript.Shell
