@@ -14,3 +14,4 @@ OneDrive/
 !setup.ps1
 !setup.ps1.bak
 !git/**
+!.config/**
