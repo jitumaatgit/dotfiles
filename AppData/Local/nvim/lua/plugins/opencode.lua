@@ -13,11 +13,24 @@ return {
         -- Your configuration, if any — see `lua/opencode/config.lua`, or "goto definition".
         port = 3000,
         provider = {
-          enabled = "wezterm",
-          wezterm = {
-            direction = "right",
-            top_level = false,
-            percent = 50,
+          enabled = "snacks",
+          -- wezterm = {
+          --   direction = "right",
+          --   top_level = false,
+          --   percent = 50,
+          -- },
+          snacks = {
+            auto_close = true,
+            win = {
+              position = "right",
+              enter = false,
+              wo = {
+                winbar = "",
+              },
+              bo = {
+                filetype = "opencode_terminal",
+              },
+            },
           },
         },
       }
