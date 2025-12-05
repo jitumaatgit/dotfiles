@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local act = wezterm.action
 local config = wezterm.config_builder()
 -- make git bash the default shell (via Scoop)
 config.default_prog = {
@@ -60,29 +61,28 @@ config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
 -- Main key assignments
 config.keys = {
 	-- Tabs
-	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
-	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
-	{ key = "Tab", mods = "CTRL", action = wezterm.action.ActivateTabRelative(1) },
-	{ key = "Tab", mods = "CTRL|SHIFT", action = wezterm.action.ActivateTabRelative(-1) },
+	{ key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+	{ key = "&", mods = "LEADER", action = act.CloseCurrentTab({ confirm = true }) },
+	{ key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
+	{ key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
 	-- Panes
-	{ key = "\\", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	{ key = "-", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
-	{ key = "Space", mods = "LEADER", action = wezterm.action({ ActivateKeyTable = { name = "leader" } }) },
-	{ key = "h", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Left") },
-	{ key = "j", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Down") },
-	{ key = "k", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Up") },
-	{ key = "l", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Right") },
-	{ key = "o", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Next") },
-	{ key = "x", mods = "LEADER", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
+	{ key = "\\", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
+	{ key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
+	{ key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
+	{ key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
+	{ key = "o", mods = "LEADER", action = act.ActivatePaneDirection("Next") },
+	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
 	-- Copy mode
-	{ key = "[", mods = "LEADER", action = wezterm.action.CopyMode("ClearPattern") },
-	{ key = "]", mods = "LEADER", action = wezterm.action({ CopyTo = "ClipboardAndPrimarySelection" }) },
+	{ key = "[", mods = "LEADER", action = act.CopyMode("ClearPattern") },
+	{ key = "]", mods = "LEADER", action = act({ CopyTo = "ClipboardAndPrimarySelection" }) },
 	-- Zoom
-	{ key = "z", mods = "LEADER", action = wezterm.action.TogglePaneZoomState },
+	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
 	{
 		key = "e",
 		mods = "LEADER",
-		action = wezterm.action.PromptInputLine({
+		action = act.PromptInputLine({
 			description = "Enter new name for tab",
 			action = wezterm.action_callback(function(window, pane, line)
 				-- line will be `nil` if they hit escape without entering anything
@@ -98,10 +98,10 @@ config.keys = {
 -- Pane resize
 config.key_tables = {
 	leader = {
-		{ key = "H", action = wezterm.action.AdjustPaneSize({ "Left", 5 }) },
-		{ key = "J", action = wezterm.action.AdjustPaneSize({ "Down", 5 }) },
-		{ key = "K", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
-		{ key = "L", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
+		{ key = "H", action = act.AdjustPaneSize({ "Left", 5 }) },
+		{ key = "J", action = act.AdjustPaneSize({ "Down", 5 }) },
+		{ key = "K", action = act.AdjustPaneSize({ "Up", 5 }) },
+		{ key = "L", action = act.AdjustPaneSize({ "Right", 5 }) },
 		-- Esc or leader again to exit leader mode
 		{ key = "Space", mods = "CTRL", action = "PopKeyTable" }, -- Exit leader
 		{ key = "Escape", action = "PopKeyTable" },
