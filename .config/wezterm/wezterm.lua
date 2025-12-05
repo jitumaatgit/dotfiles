@@ -11,6 +11,7 @@ config.font = wezterm.font_with_fallback({
 	"JetBrains Mono",
 })
 config.font_size = 12.0
+config.harfbuzz_features = { "calt=1", "clig=1", "liga=1" }
 config.color_scheme = "Catppuccin Mocha"
 config.window_padding = { left = 5, right = 5, top = 5, bottom = 5 }
 config.initial_cols = 120
@@ -60,12 +61,13 @@ config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
 config.keys = {
 	-- Tabs
 	{ key = "c", mods = "LEADER", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
-	{ key = "n", mods = "LEADER", action = wezterm.action.ActivateTabRelative(1) },
-	{ key = "b", mods = "LEADER", action = wezterm.action.ActivateTabRelative(-1) },
 	{ key = "&", mods = "LEADER", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
+	{ key = "Tab", mods = "CTRL", action = wezterm.action.ActivateTabRelative(1) },
+	{ key = "Tab", mods = "CTRL|SHIFT", action = wezterm.action.ActivateTabRelative(-1) },
 	-- Panes
-	{ key = "|", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ key = "\\", mods = "LEADER", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	{ key = "-", mods = "LEADER", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "Space", mods = "LEADER", action = wezterm.action({ ActivateKeyTable = { name = "leader" } }) },
 	{ key = "h", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Left") },
 	{ key = "j", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Down") },
 	{ key = "k", mods = "LEADER", action = wezterm.action.ActivatePaneDirection("Up") },
