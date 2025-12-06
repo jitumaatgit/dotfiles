@@ -15,9 +15,9 @@ return {
         provider = {
           enabled = "wezterm",
           wezterm = {
-            direction = "right",
+            direction = "bottom",
             top_level = false,
-            percent = 50,
+            percent = 40,
           },
           -- snacks = {
           --   auto_close = true,
