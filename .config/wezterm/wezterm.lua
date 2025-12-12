@@ -66,6 +66,13 @@ config.keys = {
 	{ key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
 	{ key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
 	-- Panes
+	{
+		key = "!",
+		mods = "LEADER | SHIFT",
+		action = wezterm.action_callback(function(win, pane)
+			local tab, window = pane:move_to_new_tab()
+		end),
+	},
 	{ key = "\\", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	{ key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
