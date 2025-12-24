@@ -54,19 +54,85 @@ Invoke-WebRequest -Uri "https://github.com/AutoHotkey/AutoHotkey/releases/downlo
 Write-Host "[INFO] Extracting AutoHotkey..."
 Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
 Remove-Item $ahkZip -ErrorAction SilentlyContinue
-$remapAhk = "$ahkDir\remap.ahk"
-@"
+
+# --- Install WindowsVirtualDesktopHelper ---
+Write-Host "[INFO] Installing WindowsVirtualDesktopHelper..."
+scoop install windows-virtualdesktop-helper
+
+# Configure WindowsVirtualDesktopHelper for Alt+# desktop switching
+$configDir = "$env:APPDATA\WindowsVirtualDesktopHelper"
+New-Item -ItemType Directory -Force -Path $configDir | Out-Null
+$configFile = Join-Path $configDir "WindowsVirtualDesktopHelper.exe.config"
+$configContent = @'
+feature.showDesktopNameInIconTray: false
+feature.useHotKeyToJumpToDesktopNumber: true
+feature.showDesktopSwitchOverlay.animate: true
+feature.showDesktopSwitchOverlay.duration: 500
+feature.showDesktopSwitchOverlay.position: "bottomleft"
+feature.showDesktopSwitchOverlay.translucent: true
+'@
+$configContent | Out-File $configFile -Encoding UTF8
+Write-Host "[INFO] Configured WindowsVirtualDesktopHelper with Alt+# hotkeys"
+
+# --- AutoHotkey remap script (Win+# to Alt+#) ---
+$remapAhk = "$ahkDir\remap-v2.ahk"
+$remapContent = @'
+; AutoHotkey v2 remap script for productivity
 CapsLock::Esc
 RWin::LCtrl
-"@ | Out-File $remapAhk -Encoding ASCII
-Write-Host "[INFO] Creating startup shortcut for AutoHotkey..."
+
+; Remap Win + (1...9) to Alt + (1...9)
+; for WindowsVirtualDesktopHelper to change desktops
+Loop 9 {
+    n := A_Index
+    fDown := KeyDown.Bind(n)
+    fUp   := KeyUp.Bind(n)
+    Hotkey("#" . n, fDown)
+    Hotkey("#" . n . " Up", fUp)
+}
+
+KeyDown(n, *) {
+    Send("{Alt down}")
+    Send("{" n " down}")
+}
+
+KeyUp(n, *) {
+    Send("{Alt up}")
+    Send("{" n " up}")
+}
+'@
+$remapContent | Out-File $remapAhk -Encoding UTF8
+Write-Host "[INFO] Creating startup shortcuts..."
 $WshShell = New-Object -comObject WScript.Shell
+
+# AutoHotkey startup shortcut
 $Shortcut = $WshShell.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\autohotkey-remap.lnk")
 $Shortcut.TargetPath = "$ahkDir\AutoHotkey64.exe"
 $Shortcut.Arguments = $remapAhk
 $Shortcut.Save()
-Write-Host "[INFO] Starting AutoHotkey remap (CapsLock -> Esc)..."
+
+# WindowsVirtualDesktopHelper startup shortcut
+$wvdhDir = "$env:USERPROFILE\scoop\apps\windows-virtualdesktop-helper"
+$wvdhPath = Get-ChildItem $wvdhDir -Directory | Where-Object { $_.Name -match '^\d' } | Select-Object -First 1 -ExpandProperty FullName
+$wvdhExe = $null
+if ($wvdhPath) {
+    $wvdhExe = Join-Path $wvdhPath "WindowsVirtualDesktopHelper.exe"
+    if (Test-Path $wvdhExe) {
+        $Shortcut = $WshShell.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\windows-virtualdesktop-helper.lnk")
+        $Shortcut.TargetPath = $wvdhExe
+        $Shortcut.Save()
+    }
+}
+
+Write-Host "[INFO] Starting AutoHotkey remap (CapsLock->Esc, Win+#->Alt+#)..."
 Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
+
+Write-Host "[INFO] Starting WindowsVirtualDesktopHelper (Alt+# for desktops)..."
+if ($wvdhExe -and (Test-Path $wvdhExe)) {
+    Start-Process $wvdhExe
+} else {
+    Write-Host "[WARN] Could not find WindowsVirtualDesktopHelper.exe"
+}
 
 # --- Zen Browser Installer ---
 scoop install zen-browser
