@@ -135,10 +135,10 @@ config.keys = {
 -- Pane resize
 config.key_tables = {
 	resize_pane = {
-		{ key = "H", action = act.AdjustPaneSize({ "Left", 5 }) },
-		{ key = "J", action = act.AdjustPaneSize({ "Down", 5 }) },
-		{ key = "K", action = act.AdjustPaneSize({ "Up", 5 }) },
-		{ key = "L", action = act.AdjustPaneSize({ "Right", 5 }) },
+		{ key = "h", action = act.AdjustPaneSize({ "Left", 3 }) },
+		{ key = "j", action = act.AdjustPaneSize({ "Down", 3 }) },
+		{ key = "k", action = act.AdjustPaneSize({ "Up", 3 }) },
+		{ key = "l", action = act.AdjustPaneSize({ "Right", 3 }) },
 		-- Esc or leader again to exit leader mode
 		{ key = "Space", mods = "CTRL", action = "PopKeyTable" }, -- Exit leader
 		{ key = "Escape", action = "PopKeyTable" },
