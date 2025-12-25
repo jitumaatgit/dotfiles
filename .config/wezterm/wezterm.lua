@@ -82,7 +82,7 @@ config.keys = {
 	{ key = "o", mods = "LEADER", action = act.ActivatePaneDirection("Next") },
 	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
 	-- Copy mode
-	{ key = "[", mods = "LEADER", action = act.CopyMode("ClearPattern") },
+	{ key = "[", mods = "LEADER", action = act.ActivateCopyMode },
 	{ key = "]", mods = "LEADER", action = act({ CopyTo = "ClipboardAndPrimarySelection" }) },
 	-- Zoom
 	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
