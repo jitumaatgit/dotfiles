@@ -55,6 +55,15 @@ config.colors = {
 		},
 	},
 }
+-- show which key table is active in the status area
+wezterm.on("update-right-status", function(window, pane)
+	local name = window:active_key_table()
+	if name then
+		name = "TABLE: " .. name
+	end
+	window:set_right_status(name or "")
+end)
+
 config.audible_bell = "Disabled"
 -- Keybinds
 config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
@@ -82,10 +91,11 @@ config.keys = {
 	{ key = "o", mods = "LEADER", action = act.ActivatePaneDirection("Next") },
 	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
 	-- Copy mode
-	{ key = "[", mods = "LEADER", action = act.CopyMode("ClearPattern") },
+	{ key = "[", mods = "LEADER", action = act.ActivateCopyMode },
 	{ key = "]", mods = "LEADER", action = act({ CopyTo = "ClipboardAndPrimarySelection" }) },
 	-- Zoom
 	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
+	-- edit tab name
 	{
 		key = "e",
 		mods = "LEADER",
@@ -101,10 +111,30 @@ config.keys = {
 			end),
 		}),
 	},
+	-- CTRL+Space, followed by 'r' will put us in resize-pane
+	-- mode until we cancel that mode.
+	{
+		key = "r",
+		mods = "LEADER",
+		action = act.ActivateKeyTable({
+			name = "resize_pane",
+			one_shot = false,
+		}),
+	},
+	-- CTRL+Space followed by 'a' will put us in activate_pane
+	-- mode until we press some other key or until 1 second passes
+	-- {
+	-- 	key = "a",
+	-- 	mods = "LEADER",
+	-- 	action = act.ActivateKeyTable({
+	-- 		name = "activate_pane",
+	-- 		timeout_milliseconds = 1000,
+	-- 	}),
+	-- },
 }
 -- Pane resize
 config.key_tables = {
-	leader = {
+	resize_pane = {
 		{ key = "H", action = act.AdjustPaneSize({ "Left", 5 }) },
 		{ key = "J", action = act.AdjustPaneSize({ "Down", 5 }) },
 		{ key = "K", action = act.AdjustPaneSize({ "Up", 5 }) },
