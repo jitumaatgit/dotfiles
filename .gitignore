@@ -1,7 +1,6 @@
-*
 !/.gitignore
+!AppData/Local/nvim/**
 # keep git fast, ignore normal Windows directories
-AppData/
 Downloads/
 Documents/
 Pictures/
@@ -9,8 +8,8 @@ Videos/
 Music/
 Saved Games/
 OneDrive/
-!AppData/Local/nvim/**
 !README.md
 !setup.ps1
 !setup.ps1.bak
 !git/**
+*
