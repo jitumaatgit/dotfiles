@@ -9,6 +9,7 @@ config.default_prog = {
 }
 -- appearance settings
 config.font = wezterm.font_with_fallback({
+	"Cascadia Code",
 	"JetBrains Mono",
 })
 config.font_size = 12.0
