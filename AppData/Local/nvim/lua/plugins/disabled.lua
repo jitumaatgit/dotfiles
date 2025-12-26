@@ -1,4 +1,10 @@
 -- disabled plugins will go here
-if true then
-  return {}
-end -- ignore code for now
+
+return {
+  {
+    "folke/snacks.nvim",
+    opts = {
+      explorer = { enabled = false },
+    },
+  },
+}
