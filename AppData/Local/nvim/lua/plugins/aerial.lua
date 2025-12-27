@@ -7,6 +7,6 @@ return {
     "nvim-tree/nvim-web-devicons",
   },
   config = function()
-    require("pluginconfig/aerial")
+    require("plugins.pluginconfig.aerial")
   end,
 }
