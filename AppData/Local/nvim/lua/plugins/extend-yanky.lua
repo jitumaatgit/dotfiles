@@ -3,8 +3,12 @@ return {
   dependencies = {
     { "kkharji/sqlite.lua" },
   },
+  event = "VeryLazy",
   opts = {
     ring = { storage = "sqlite" },
+    preserve_cursor_position = {
+      enabled = true,
+    },
   },
   keys = {
     { "<leader>p", "<cmd>YankyRingHistory<cr>", mode = { "n", "x" }, desc = "Open Yank History" },

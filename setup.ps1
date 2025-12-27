@@ -39,13 +39,54 @@ $Packages = @(
     "opencode",
     "starship",
     "gh"
-)
+ )
 
 foreach ($pkg in $Packages) {
     Write-Host "[INFO] Installing scoop package: $pkg"
     scoop install $pkg
 }
 
+# --- SQLite DLL for Neovim ---
+Write-Host "[INFO] Installing SQLite for Neovim..."
+& "$PSScriptRoot\install-sqlite-for-neovim.ps1"
+
+# --- nvim-data Backup (Persistent storage) ---
+Write-Host "[INFO] Checking nvim-data backup setup..."
+
+$backupRepo = "$env:USERPROFILE\nvim-data-remote"
+$nvimData = "$env:LOCALAPPDATA\nvim-data"
+$needsSetup = $false
+
+# Check if backup repo exists
+if (-not (Test-Path "$backupRepo\.git")) {
+    Write-Host "[INFO] nvim-data backup not configured. Setting up..."
+    $needsSetup = $true
+} else {
+    # Check if junctions exist and are valid
+    $junctionsValid = $true
+    @("databases", "shada", "sessions", "undo") | ForEach-Object {
+        $junctionPath = Join-Path $nvimData $_
+        if (Test-Path $junctionPath) {
+            # Verify it's actually a junction (not a regular directory)
+            $junctionInfo = Get-Item $junctionPath | Select-Object LinkType
+            if ($junctionInfo.LinkType -ne "Junction") {
+                Write-Host "[WARN] $_ junction exists but is not a Junction. Will recreate."
+                $needsSetup = $true
+            }
+        } else {
+            Write-Host "[WARN] $_ junction missing. Will recreate."
+            $needsSetup = $true
+        }
+    }
+}
+
+# Only run setup if something needs fixing
+if ($needsSetup) {
+    Write-Host "[INFO] Running nvim-data backup setup..."
+    & "$PSScriptRoot\setup-nvim-data-backup.ps1"
+} else {
+    Write-Host "[OK] nvim-data backup already configured"
+}
 
 # --- AutoHotkey Portable (CapsLock -> Esc) ---
 $ahkDir = "$Base\autohotkey-portable"
@@ -181,4 +222,15 @@ Write-Host "git checkout -f main"
 Write-Host "for notes, run mkdir notes"
 Write-Host "cd notes"
 Write-Host "git clone https://github.com/jitumaatgit/notes . "
+Write-Host ""
+Write-Host "===== nvim-data backup ====="
+Write-Host "Check nvim-data status:"
+Write-Host "  cd ~/vim-data-remote && git status"
+Write-Host ""
+Write-Host "Sync nvim-data to GitHub:"
+Write-Host "  cd ~/vim-data-remote"
+Write-Host "  git add ."
+Write-Host "  git commit -m 'Update nvim data'"
+Write-Host "  git push -u origin main"
+Write-Host "============================================================"
 Stop-Transcript
