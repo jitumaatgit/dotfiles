@@ -1,5 +1,7 @@
+local M = {}
 local wezterm = require("wezterm")
 local act = wezterm.action
+local utils = require("utils")
 local config = wezterm.config_builder()
 -- make git bash the default shell (via Scoop)
 config.default_prog = {
