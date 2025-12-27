@@ -123,7 +123,117 @@ wezterm.on("update-right-status", function(window, pane)
 	window:set_right_status(name or "")
 end)
 
-config.audible_bell = "Disabled"
+-- Helper function to move panes between tabs
+local function show_move_pane_selector(window, pane, direction)
+	wezterm.log_info("show_move_pane_selector called with direction: " .. direction)
+
+	-- Map direction names to CLI arguments
+	local direction_map = {
+		Left = "left",
+		Right = "right",
+		Up = "top",
+		Down = "bottom",
+	}
+	local cli_direction = direction_map[direction] or direction:lower()
+
+	local success, stdout, stderr = wezterm.run_child_process({
+		"wezterm",
+		"cli",
+		"list",
+		"--format",
+		"json",
+	})
+
+	wezterm.log_info("list panes success: " .. tostring(success))
+	wezterm.log_info("list panes stdout: " .. stdout)
+
+	if not success then
+		window:toast_notification("Failed to list panes: " .. (stderr or "unknown error"))
+		return
+	end
+
+	local panes = wezterm.json_parse(stdout) or {}
+	wezterm.log_info("parsed panes count: " .. #panes)
+	local choices = {}
+
+	for _, p in ipairs(panes) do
+		if p.pane_id ~= pane:pane_id() then
+			local _, cwd = utils.split_from_url(p.cwd or "file://")
+			local dir_display = utils.convert_useful_path(cwd)
+			local label = string.format(
+				"[Tab %d] [%s] %s - %s",
+				p.tab_id,
+				p.workspace or "unknown",
+				dir_display,
+				p.title or "No title"
+			)
+			table.insert(choices, {
+				id = tostring(p.pane_id),
+				label = label,
+			})
+		end
+	end
+
+	if #choices == 0 then
+		window:toast_notification("No other panes available to move")
+		return
+	end
+
+	wezterm.log_info("Calling InputSelector with " .. #choices .. " choices")
+	window:perform_action(
+		act.InputSelector({
+			title = "Move Pane - Split " .. direction,
+			choices = choices,
+			fuzzy = true,
+			action = wezterm.action_callback(function(inner_window, inner_pane, pane_id)
+				if not pane_id then
+					return
+				end
+
+				local cli_direction = ({
+					Up = "top",
+					Down = "bottom",
+					Left = "left",
+					Right = "right",
+				})[direction]
+
+				local move_success, move_stdout, move_stderr = wezterm.run_child_process({
+					"wezterm",
+					"cli",
+					"split-pane",
+					"--move-pane-id",
+					pane_id,
+					"--" .. cli_direction,
+					"--percent",
+					"50",
+				})
+
+				if not move_success then
+					window:toast_notification("Failed to move pane: " .. (move_stderr or "unknown error"))
+				end
+			end),
+		}),
+		pane
+	)
+end
+
+-- Move pane events
+wezterm.on("move-pane-split-left", function(window, pane)
+	show_move_pane_selector(window, pane, "Left")
+end)
+
+wezterm.on("move-pane-split-down", function(window, pane)
+	show_move_pane_selector(window, pane, "Down")
+end)
+
+wezterm.on("move-pane-split-up", function(window, pane)
+	show_move_pane_selector(window, pane, "Up")
+end)
+
+wezterm.on("move-pane-split-right", function(window, pane)
+	show_move_pane_selector(window, pane, "Right")
+end)
+
 -- Keybinds
 config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
 -- Main key assignments
@@ -214,6 +324,14 @@ config.keys = {
 			alphabet = "1234567890",
 		}),
 	},
+	{
+		key = "m",
+		mods = "LEADER",
+		action = act.ActivateKeyTable({
+			name = "move_pane_direction",
+			one_shot = false,
+		}),
+	},
 }
 
 -- Pane resize
@@ -226,6 +344,14 @@ config.key_tables = {
 		-- Esc or leader again to exit leader mode
 		{ key = "Space", mods = "CTRL", action = "PopKeyTable" }, -- Exit leader
 		{ key = "Escape", action = "PopKeyTable" },
+	},
+	move_pane_direction = {
+		{ key = "h", action = act.EmitEvent("move-pane-split-left") },
+		{ key = "j", action = act.EmitEvent("move-pane-split-down") },
+		{ key = "k", action = act.EmitEvent("move-pane-split-up") },
+		{ key = "l", action = act.EmitEvent("move-pane-split-right") },
+		{ key = "Escape", action = "PopKeyTable" },
+		{ key = "Space", mods = "CTRL", action = "PopKeyTable" },
 	},
 }
 
