@@ -97,84 +97,121 @@ Write-Host "[INFO] Extracting AutoHotkey..."
 Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
 Remove-Item $ahkZip -ErrorAction SilentlyContinue
 
-# --- Install WindowsVirtualDesktopHelper ---
-Write-Host "[INFO] Installing WindowsVirtualDesktopHelper..."
-scoop install windows-virtualdesktop-helper
+# --- Download VD.ahk Library ---
+Write-Host "[INFO] Downloading VD.ahk virtual desktop library..."
+$vdAhkPath = Join-Path $ahkDir "VD.ahk"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/FuPeiJiang/VD.ahk/class_VD/VD.ahk" -OutFile $vdAhkPath
+if (Test-Path $vdAhkPath) {
+    Write-Host "[OK] VD.ahk downloaded to $vdAhkPath"
+} else {
+    throw "[ERROR] Failed to download VD.ahk"
+}
 
-# Configure WindowsVirtualDesktopHelper for Alt+# desktop switching
-$configDir = "$env:APPDATA\WindowsVirtualDesktopHelper"
-New-Item -ItemType Directory -Force -Path $configDir | Out-Null
-$configFile = Join-Path $configDir "WindowsVirtualDesktopHelper.exe.config"
-$configContent = @'
-feature.showDesktopNameInIconTray: false
-feature.useHotKeyToJumpToDesktopNumber: true
-feature.showDesktopSwitchOverlay.animate: true
-feature.showDesktopSwitchOverlay.duration: 500
-feature.showDesktopSwitchOverlay.position: "bottomleft"
-feature.showDesktopSwitchOverlay.translucent: true
-'@
-$configContent | Out-File $configFile -Encoding UTF8
-Write-Host "[INFO] Configured WindowsVirtualDesktopHelper with Alt+# hotkeys"
+# --- Cleanup WindowsVirtualDesktopHelper ---
+Write-Host "[INFO] Cleaning up WindowsVirtualDesktopHelper..."
+scoop uninstall windows-virtualdesktop-helper -ErrorAction SilentlyContinue
+Remove-Item "$env:APPDATA\WindowsVirtualDesktopHelper" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\windows-virtualdesktop-helper.lnk" -ErrorAction SilentlyContinue
+Write-Host "[OK] WindowsVirtualDesktopHelper removed"
 
-# --- AutoHotkey remap script (Win+# to Alt+#) ---
+# --- AutoHotkey remap script with VD.ahk ---
+Write-Host "[INFO] Creating AutoHotkey script with VD.ahk..."
 $remapAhk = "$ahkDir\remap-v2.ahk"
 $remapContent = @'
-; AutoHotkey v2 remap script for productivity
-CapsLock::Esc
-RWin::LCtrl
+; AutoHotkey v2 remap script with VD.ahk for virtual desktop management
+; Source: https://github.com/FuPeiJiang/VD.ahk
+; Replaces: WindowsVirtualDesktopHelper (removed due to focus issue)
 
-; Remap Win + (1...9) to Alt + (1...9)
-; for WindowsVirtualDesktopHelper to change desktops
+; Performance headers - required for VD.ahk (see VD.ahk README)
+; Without these, virtual desktop operations will be slow
+#NoEnv
+#SingleInstance force
+ListLines Off
+SetBatchLines -1
+SendMode Input
+SetWorkingDir %A_ScriptDir%
+#WinActivateForce
+Process, Priority,, H
+SetWinDelay -1
+SetControlDelay -1
+
+; Include VD.ahk library - provides virtual desktop management for Windows 11
+; Must be in same directory as this script
+#Include %A_LineFile%\VD.ahk
+
+; Disable desktop switching animations for instant navigation
+; Set to true to enable smooth but slower transitions
+VD.animation_on:=false
+
+; Create up to 5 desktops on startup if they don't exist
+; This ensures consistent workspace configuration across reboots
+; Note: Doesn't delete extra desktops if more than 5 exist
+VD.createUntil(5)
+
+; Desktop switching: Win + (1-9) jumps directly to desktop 1-9
+; VD.ahk automatically focuses first window on destination desktop
+; This solves: focus issue present in WindowsVirtualDesktopHelper
+#1::VD.goToDesktopNum(1)
+#2::VD.goToDesktopNum(2)
+#3::VD.goToDesktopNum(3)
+#4::VD.goToDesktopNum(4)
+#5::VD.goToDesktopNum(5)
+#6::VD.goToDesktopNum(6)
+#7::VD.goToDesktopNum(7)
+#8::VD.goToDesktopNum(8)
+#9::VD.goToDesktopNum(9)
+
+; Navigate to previous desktop: Win + [
+; Navigate to next desktop: Win + ]
+; Wraps around (from desktop 9, goes to desktop 1)
+#[::VD.goToRelativeDesktopNum(-1)
+#]::VD.goToRelativeDesktopNum(1)
+
+; Move current window to desktop N and follow it: Win + Shift + (1-9)
+; "A" refers to active window
+; .follow() switches to the destination desktop after moving
+#+1::VD.MoveWindowToDesktopNum("A",1).follow()
+#+2::VD.MoveWindowToDesktopNum("A",2).follow()
+#+3::VD.MoveWindowToDesktopNum("A",3).follow()
+#+4::VD.MoveWindowToDesktopNum("A",4).follow()
+#+5::VD.MoveWindowToDesktopNum("A",5).follow()
+#+6::VD.MoveWindowToDesktopNum("A",6).follow()
+#+7::VD.MoveWindowToDesktopNum("A",7).follow()
+#+8::VD.MoveWindowToDesktopNum("A",8).follow()
+#+9::VD.MoveWindowToDesktopNum("A",9).follow()
+
+; Move current window to desktop N without following: Win + Alt + (1-9)
+; Window moves to destination but you stay on current desktop
+; Uses Loop to avoid repeating hotkey definitions
 Loop 9 {
     n := A_Index
-    fDown := KeyDown.Bind(n)
-    fUp   := KeyUp.Bind(n)
-    Hotkey("#" . n, fDown)
-    Hotkey("#" . n . " Up", fUp)
+    Hotkey("#!" . n, (*) => VD.MoveWindowToDesktopNum("A", n))
 }
 
-KeyDown(n, *) {
-    Send("{Alt down}")
-    Send("{" n " down}")
-}
+; Toggle pin current window to all desktops: Win + Shift + P
+; Pinned windows appear on all virtual desktops
+; Pinning is like "Show this window on all desktops" in Windows 11
+#+p::VD.TogglePinWindow("A")
 
-KeyUp(n, *) {
-    Send("{Alt up}")
-    Send("{" n " up}")
-}
+; Existing productivity remaps (from original setup)
+; CapsLock -> Esc (Vim-friendly)
+; Right Win -> Left Ctrl (keyboard ergonomics)
+CapsLock::Esc
+RWin::LCtrl
 '@
 $remapContent | Out-File $remapAhk -Encoding UTF8
-Write-Host "[INFO] Creating startup shortcuts..."
+Write-Host "[OK] AutoHotkey script created with VD.ahk integration"
+Write-Host "[INFO] Creating AutoHotkey startup shortcut..."
 $WshShell = New-Object -comObject WScript.Shell
 
-# AutoHotkey startup shortcut
+# AutoHotkey startup shortcut only (VD.ahk replaces WindowsVirtualDesktopHelper)
 $Shortcut = $WshShell.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\autohotkey-remap.lnk")
 $Shortcut.TargetPath = "$ahkDir\AutoHotkey64.exe"
 $Shortcut.Arguments = $remapAhk
 $Shortcut.Save()
 
-# WindowsVirtualDesktopHelper startup shortcut
-$wvdhDir = "$env:USERPROFILE\scoop\apps\windows-virtualdesktop-helper"
-$wvdhPath = Get-ChildItem $wvdhDir -Directory | Where-Object { $_.Name -match '^\d' } | Select-Object -First 1 -ExpandProperty FullName
-$wvdhExe = $null
-if ($wvdhPath) {
-    $wvdhExe = Join-Path $wvdhPath "WindowsVirtualDesktopHelper.exe"
-    if (Test-Path $wvdhExe) {
-        $Shortcut = $WshShell.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\windows-virtualdesktop-helper.lnk")
-        $Shortcut.TargetPath = $wvdhExe
-        $Shortcut.Save()
-    }
-}
-
-Write-Host "[INFO] Starting AutoHotkey remap (CapsLock->Esc, Win+#->Alt+#)..."
+Write-Host "[INFO] Starting AutoHotkey remap with VD.ahk (virtual desktop management)..."
 Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
-
-Write-Host "[INFO] Starting WindowsVirtualDesktopHelper (Alt+# for desktops)..."
-if ($wvdhExe -and (Test-Path $wvdhExe)) {
-    Start-Process $wvdhExe
-} else {
-    Write-Host "[WARN] Could not find WindowsVirtualDesktopHelper.exe"
-}
 
 # --- Zen Browser Installer ---
 scoop install zen-browser
@@ -214,6 +251,20 @@ Stop-Process -Name explorer -Force
 Start-Process explorer
 
 Write-Host "===== bootstrap complete ====="
+Write-Host ""
+Write-Host "Key Bindings Summary:"
+Write-Host "  Desktop Switching:"
+Write-Host "    Win + 1-9: Switch to desktop 1-9 (auto-focus)"
+Write-Host "    Win + [ / ]: Previous / next desktop"
+Write-Host "  Window Management:"
+Write-Host "    Win + Shift + 1-9: Move window to desktop (follow)"
+Write-Host "    Win + Alt + 1-9: Move window to desktop (stay)"
+Write-Host "    Win + Shift + P: Pin window to all desktops"
+Write-Host "  Other:"
+Write-Host "    CapsLock: Esc | Right Win: Left Ctrl"
+Write-Host ""
+Write-Host "Virtual Desktops: VD.ahk (instant switching, auto-focus enabled)"
+Write-Host ""
 Write-Host "run gh auth login to authenticate"
 Write-Host "then run git init -b main"
 Write-Host "git remote add origin https://github.com/jitumaatgit/dotfiles"
