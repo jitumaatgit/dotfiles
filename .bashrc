@@ -58,7 +58,8 @@ export PROMPT_COMMAND=''
 alias ls='eza'
 # Colorize grep, etc.
 alias grep='grep --color=auto'
-
+# make lg = lazygit
+alias lg='lazygit'
 # Make vim = nvim
 command -v nvim >/dev/null && alias vim='nvim'
 # make neovim default editor
