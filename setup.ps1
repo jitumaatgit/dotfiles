@@ -49,7 +49,8 @@ foreach ($pkg in $Packages) {
 
 # --- SQLite DLL for Neovim ---
 Write-Host "[INFO] Installing SQLite for Neovim..."
-& "$PSScriptRoot\install-sqlite-for-neovim.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/install-sqlite-for-neovim.ps1" -OutFile "$env:TEMP\install-sqlite-for-neovim.ps1"
+& "$env:TEMP\install-sqlite-for-neovim.ps1"
 
 # --- nvim-data Backup (Persistent storage) ---
 Write-Host "[INFO] Checking nvim-data backup setup..."
@@ -84,7 +85,8 @@ if (-not (Test-Path "$backupRepo\.git")) {
 # Only run setup if something needs fixing
 if ($needsSetup) {
     Write-Host "[INFO] Running nvim-data backup setup..."
-    & "$PSScriptRoot\setup-nvim-data-backup.ps1"
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/setup-nvim-data-backup.ps1" -OutFile "$env:TEMP\setup-nvim-data-backup.ps1"
+    & "$env:TEMP\setup-nvim-data-backup.ps1"
 } else {
     Write-Host "[OK] nvim-data backup already configured"
 }
