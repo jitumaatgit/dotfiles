@@ -1,27 +1,53 @@
 # Install SQLite for Neovim (yanky.nvim / sqlite.lua)
-# This script installs SQLite via Scoop and configures Neovim to use the DLL
+# This script downloads SQLite DLL directly and configures Neovim to use the DLL
 
 Write-Host "[INFO] Installing SQLite for Neovim..."
 
-# --- Install SQLite via Scoop ---
-Write-Host "[INFO] Checking if SQLite is already installed..."
-if (-not (Get-Command sqlite3 -ErrorAction SilentlyContinue)) {
-    Write-Host "[INFO] Installing SQLite via Scoop..."
-    scoop install sqlite
+# --- Detect architecture ---
+$arch = $env:PROCESSOR_ARCHITECTURE.ToLower()
+if ($arch -eq "arm64") {
+    $archName = "arm64"
+} elseif ($arch -eq "amd64") {
+    $archName = "x64"
 } else {
-    Write-Host "[OK] SQLite already installed"
+    $archName = "x86"
+}
+Write-Host "[INFO] Detected architecture: $archName"
+
+# --- Download SQLite DLL ---
+$url = "https://www.sqlite.org/2024/sqlite-dll-win-$archName-3510100.zip"
+$tempZip = [System.IO.Path]::GetTempFileName() + ".zip"
+$tempDir = [System.IO.Path]::GetTempPath() + "sqlite_extract"
+Write-Host "[INFO] Downloading SQLite DLL from $url..."
+try {
+    Invoke-WebRequest -Uri $url -OutFile $tempZip -ErrorAction Stop
+    Write-Host "[OK] Download complete"
+} catch {
+    Write-Host "[ERROR] Failed to download SQLite DLL: $_"
+    throw "Download failed"
 }
 
-# --- Determine SQLite DLL path ---
-$sqliteDllPath = "$env:USERPROFILE\scoop\apps\sqlite\current\sqlite3.dll"
-Write-Host "[INFO] SQLite DLL path: $sqliteDllPath"
-
-# --- Verify DLL exists ---
-if (-not (Test-Path $sqliteDllPath)) {
-    Write-Host "[ERROR] SQLite DLL not found at $sqliteDllPath"
-    throw "SQLite DLL installation failed"
+# --- Extract SQLite DLL ---
+Write-Host "[INFO] Extracting SQLite DLL..."
+try {
+    Expand-Archive -Path $tempZip -DestinationPath $tempDir -Force -ErrorAction Stop
+    Write-Host "[OK] Extraction complete"
+} catch {
+    Write-Host "[ERROR] Failed to extract SQLite DLL: $_"
+    Remove-Item $tempZip -ErrorAction SilentlyContinue
+    throw "Extraction failed"
 }
-Write-Host "[OK] SQLite DLL found"
+
+# --- Place DLL in local bin ---
+$binDir = "$env:LOCALAPPDATA\nvim\bin"
+$sqliteDllPath = "$binDir\sqlite3.dll"
+New-Item -ItemType Directory -Path $binDir -Force -ErrorAction Stop
+Copy-Item "$tempDir\sqlite3.dll" $sqliteDllPath -Force -ErrorAction Stop
+Write-Host "[OK] SQLite DLL placed at $sqliteDllPath"
+
+# --- Clean up ---
+Remove-Item $tempZip -ErrorAction SilentlyContinue
+Remove-Item $tempDir -Recurse -ErrorAction SilentlyContinue
 
 # --- Configure Neovim to use SQLite DLL ---
 $nvimOptionsPath = "$env:LOCALAPPDATA\nvim\lua\config\options.lua"
