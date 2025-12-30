@@ -44,6 +44,9 @@ export TERM=xterm-256color
 # Fix display issues in nvim inside Git Bash
 export COLORTERM=truecolor
 
+# Set COLUMNS for proper ls formatting in Git Bash + WezTerm
+export COLUMNS=80
+
 # Make bash less noisy when running shells inside shells
 export PROMPT_COMMAND=''
 
@@ -51,8 +54,9 @@ export PROMPT_COMMAND=''
 # OPTIONAL QUALITY OF LIFE
 ###############################################
 
-# Colorize ls, grep, etc.
-alias ls='ls --color=auto'
+# use eza instead of ls
+alias ls='eza'
+# Colorize grep, etc.
 alias grep='grep --color=auto'
 
 # Make vim = nvim

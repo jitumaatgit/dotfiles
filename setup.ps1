@@ -38,7 +38,8 @@ $Packages = @(
     "neovim",
     "opencode",
     "starship",
-    "gh"
+    "gh",
+    "eza"
  )
 
 foreach ($pkg in $Packages) {
@@ -53,8 +54,7 @@ Write-Host "[INFO] Installing SQLite for Neovim..."
 # --- nvim-data Backup (Persistent storage) ---
 Write-Host "[INFO] Checking nvim-data backup setup..."
 
-$backupRepo = "$env:USERPROFILE\nvim-data-remote"
-$nvimData = "$env:LOCALAPPDATA\nvim-data"
+$backupRepo = "$env:USERPROFILE\nvim-data-remote" $nvimData = "$env:LOCALAPPDATA\nvim-data"
 $needsSetup = $false
 
 # Check if backup repo exists
