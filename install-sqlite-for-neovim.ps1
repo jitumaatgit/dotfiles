@@ -15,7 +15,7 @@ if ($arch -eq "arm64") {
 Write-Host "[INFO] Detected architecture: $archName"
 
 # --- Download SQLite DLL ---
-$url = "https://www.sqlite.org/2024/sqlite-dll-win-$archName-3510100.zip"
+$url = "https://www.sqlite.org/2025/sqlite-dll-win-$archName-3510100.zip"
 $tempZip = [System.IO.Path]::GetTempFileName() + ".zip"
 $tempDir = [System.IO.Path]::GetTempPath() + "sqlite_extract"
 Write-Host "[INFO] Downloading SQLite DLL from $url..."
