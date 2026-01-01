@@ -49,36 +49,36 @@ Write-Host "[OK] SQLite DLL placed at $sqliteDllPath"
 Remove-Item $tempZip -ErrorAction SilentlyContinue
 Remove-Item $tempDir -Recurse -ErrorAction SilentlyContinue
 
-# --- Configure Neovim to use SQLite DLL ---
-$nvimOptionsPath = "$env:LOCALAPPDATA\nvim\lua\config\options.lua"
+# # --- Configure Neovim to use SQLite DLL ---
+# $nvimOptionsPath = "$env:LOCALAPPDATA\nvim\lua\config\options.lua"
 
-# Check if options.lua exists
-if (-not (Test-Path $nvimOptionsPath)) {
-    Write-Host "[WARN] Neovim options.lua not found at $nvimOptionsPath"
-    throw "Neovim configuration directory not found"
-}
+# # Check if options.lua exists
+# if (-not (Test-Path $nvimOptionsPath)) {
+#     Write-Host "[WARN] Neovim options.lua not found at $nvimOptionsPath"
+#     throw "Neovim configuration directory not found"
+# }
 
-# Read existing options.lua
-$optionsContent = Get-Content $nvimOptionsPath -Raw
+# # Read existing options.lua
+# $optionsContent = Get-Content $nvimOptionsPath -Raw
 
-# Convert Windows path to forward slashes for Lua compatibility
-$sqliteDllPathLua = $sqliteDllPath -replace "\\", "/"
+# # Convert Windows path to forward slashes for Lua compatibility
+# $sqliteDllPathLua = $sqliteDllPath -replace "\\", "/"
 
-# Check if sqlite_clib_path is already configured
-if ($optionsContent -match "sqlite_clib_path") {
-    Write-Host "[WARN] sqlite_clib_path already configured in options.lua"
-    Write-Host "[INFO] Updating existing configuration..."
-    # Replace existing sqlite_clib_path line
-    $optionsContent = $optionsContent -replace "vim\.g\.sqlite_clib_path\s*=\s*`"[^`"]*`"", "vim.g.sqlite_clib_path = `"$sqliteDllPathLua`""
-} else {
-    Write-Host "[INFO] Adding sqlite_clib_path to options.lua..."
-    # Append new configuration
-    $optionsContent += "`nvim.g.sqlite_clib_path = `"$sqliteDllPathLua`"`n"
-}
+# # Check if sqlite_clib_path is already configured
+# if ($optionsContent -match "sqlite_clib_path") {
+#     Write-Host "[WARN] sqlite_clib_path already configured in options.lua"
+#     Write-Host "[INFO] Updating existing configuration..."
+#     # Replace existing sqlite_clib_path line
+#     $optionsContent = $optionsContent -replace "vim\.g\.sqlite_clib_path\s*=\s*`"[^`"]*`"", "vim.g.sqlite_clib_path = `"$sqliteDllPathLua`""
+# } else {
+#     Write-Host "[INFO] Adding sqlite_clib_path to options.lua..."
+#     # Append new configuration
+#     $optionsContent += "`nvim.g.sqlite_clib_path = `"$sqliteDllPathLua`"`n"
+# }
 
-# Write updated options.lua
-$optionsContent | Set-Content $nvimOptionsPath -Encoding UTF8
-Write-Host "[OK] Neovim configured to use SQLite DLL at $sqliteDllPathLua"
+# # Write updated options.lua
+# $optionsContent | Set-Content $nvimOptionsPath -Encoding UTF8
+# Write-Host "[OK] Neovim configured to use SQLite DLL at $sqliteDllPathLua"
 
-Write-Host "[INFO] SQLite installation for Neovim complete"
-Write-Host "[INFO] Neovim will use: $sqliteDllPathLua"
+# Write-Host "[INFO] SQLite installation for Neovim complete"
+# Write-Host "[INFO] Neovim will use: $sqliteDllPathLua"
