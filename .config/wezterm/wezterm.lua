@@ -16,7 +16,7 @@ config.font = wezterm.font_with_fallback({
 config.animation_fps = 1
 config.cursor_blink_ease_in = "Constant"
 config.cursor_blink_ease_out = "Constant"
-config.font_size = 12.0
+config.font_size = 10.0
 config.adjust_window_size_when_changing_font_size = false
 config.harfbuzz_features = { "calt=1", "clig=1", "liga=1" }
 config.color_scheme = "Catppuccin Mocha"
