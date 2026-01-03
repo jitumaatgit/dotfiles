@@ -4,5 +4,6 @@
   "keybinds": {
     "messages_page_down": "shift+j",
     "messages_page_up": "shift+k"
-}
+  },
+  "plugin": ["@plannotator/opencode"]
 }
