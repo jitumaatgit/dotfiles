@@ -18,6 +18,6 @@ return {
     -- char = "⋮",
     -- char = "",
     char = "║",
-    virtcolumn = "80",
+    virtcolumn = "120",
   },
 }
