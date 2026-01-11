@@ -12,6 +12,7 @@ return {
         end,
       },
       ["markdownlint-cli2"] = {
+        args = { "--config", "~/.markdownlint-cli2.jsonc", "--" },
         condition = function(_, ctx)
           local diag = vim.tbl_filter(function(d)
             return d.source == "markdownlint"
