@@ -5,3 +5,6 @@
 
 -- SQLite DLL path for yanky.nvim (sqlite.lua)
 vim.g.sqlite_clib_path = "C:/Users/student/AppData/Local/nvim/bin/sqlite3.dll"
+
+-- set textwidth (default 80)
+vim.opt.textwidth = 120
