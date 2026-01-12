@@ -7,9 +7,7 @@ return {
     opts = {},
   },
   {
-    "folke/snacks.nvim",
-    opts = {
-      explorer = { enabled = false },
-    },
+    "ibhagwan/fzf-lua",
+    enabled = false,
   },
 }
