@@ -31,7 +31,7 @@ return {
         -- Highlight for the checked icon
         highlight = "RenderMarkdownChecked",
         -- Highlight for item associated with checked checkbox
-        scope_highlight = nil,
+        scope_highlight = "@markup.strikethrough",
       },
     },
     html = {
