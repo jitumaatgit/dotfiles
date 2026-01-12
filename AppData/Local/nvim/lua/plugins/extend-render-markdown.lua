@@ -33,6 +33,18 @@ return {
         -- Highlight for item associated with checked checkbox
         scope_highlight = "@markup.strikethrough",
       },
+      custom = {
+        todo = {
+          raw = "[-]",
+          rendered = "   󰜺 ",
+          highlight = "DiagnosticError",
+        },
+        in_progress = {
+          raw = "[/]",
+          rendered = "   󰍟 ",
+          highlight = "DiagnosticWarn",
+        },
+      },
     },
     html = {
       -- Turn on / off all HTML rendering
