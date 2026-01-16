@@ -53,7 +53,9 @@ export PROMPT_COMMAND=''
 ###############################################
 # OPTIONAL QUALITY OF LIFE
 ###############################################
-
+# make opencode start on port 4096
+alias oc='opencode --port 4096'
+# alias opencode='opencode --port 4096'
 # use eza instead of ls
 alias ls='eza'
 # Colorize grep, etc.
