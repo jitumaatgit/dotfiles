@@ -234,79 +234,6 @@ wezterm.on("move-pane-split-right", function(window, pane)
 	show_move_pane_selector(window, pane, "Right")
 end)
 
--- Helper function to swap panes in the specified direction
-local function swap_adjacent_pane(window, pane, direction)
-	wezterm.log_info("swap_adjacent_pane called with direction: " .. direction)
-
-	local direction_map = {
-		Left = "left",
-		Right = "right",
-		Up = "top",
-		Down = "bottom",
-	}
-	local cli_direction = direction_map[direction] or direction:lower()
-
-	-- Get pane in the specified direction
-	-- Note: get-pane-direction expects capitalized direction names
-	local success, stdout, stderr = wezterm.run_child_process({
-		"wezterm",
-		"cli",
-		"get-pane-direction",
-		"--pane-id",
-		tostring(pane:pane_id()),
-		direction,
-	})
-
-	if not success then
-		window:toast_notification("Failed to get pane direction: " .. (stderr or "unknown error"))
-		return
-	end
-
-	local pane_info = wezterm.json_parse(stdout)
-	if not pane_info or not pane_info.pane_id then
-		window:toast_notification("No pane found in that direction")
-		return
-	end
-
-	local adjacent_pane_id = tostring(pane_info.pane_id)
-	local current_pane_id = tostring(pane:pane_id())
-
-	-- Move adjacent pane to current pane's position
-	-- Use split-pane command to move adjacent pane
-	local move_success, move_stdout, move_stderr = wezterm.run_child_process({
-		"wezterm",
-		"cli",
-		"split-pane",
-		"--pane-id",
-		current_pane_id,
-		"--move-pane-id",
-		adjacent_pane_id,
-		"--" .. cli_direction,
-	})
-
-	if not move_success then
-		window:toast_notification("Failed to swap pane: " .. (move_stderr or "unknown error"))
-		return
-	end
-end
-
--- Swap pane events
-wezterm.on("swap-pane-left", function(window, pane)
-	swap_adjacent_pane(window, pane, "Left")
-end)
-
-wezterm.on("swap-pane-right", function(window, pane)
-	swap_adjacent_pane(window, pane, "Right")
-end)
-
-wezterm.on("swap-pane-up", function(window, pane)
-	swap_adjacent_pane(window, pane, "Up")
-end)
-
-wezterm.on("swap-pane-down", function(window, pane)
-	swap_adjacent_pane(window, pane, "Down")
-end)
-
 -- Keybinds
 config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 2000 }
 -- Main key assignments
@@ -393,9 +320,8 @@ config.keys = {
 	{
 		key = "s",
 		mods = "LEADER",
-		action = act.ActivateKeyTable({
-			name = "swap_pane_select",
-			one_shot = false,
+		action = act.PaneSelect({
+			alphabet = "1234567890",
 		}),
 	},
 	{
@@ -407,8 +333,8 @@ config.keys = {
 		}),
 	},
 	-- Rotate panes
-	{ key = "}", mods = "LEADER|SHIFT", action = act.RotatePanes 'Clockwise' },
-	{ key = "{", mods = "LEADER|SHIFT", action = act.RotatePanes 'CounterClockwise' },
+	{ key = "}", mods = "LEADER|SHIFT", action = act.RotatePanes("Clockwise") },
+	{ key = "{", mods = "LEADER|SHIFT", action = act.RotatePanes("CounterClockwise") },
 }
 
 -- Pane resize
@@ -427,19 +353,6 @@ config.key_tables = {
 		{ key = "j", action = act.EmitEvent("move-pane-split-down") },
 		{ key = "k", action = act.EmitEvent("move-pane-split-up") },
 		{ key = "l", action = act.EmitEvent("move-pane-split-right") },
-		{ key = "Escape", action = "PopKeyTable" },
-		{ key = "Space", mods = "CTRL", action = "PopKeyTable" },
-	},
-	swap_pane_select = {
-		{ key = "w", action = act.ActivateKeyTable({ name = "swap_pane_direction", one_shot = false }) },
-		{ key = "Escape", action = "PopKeyTable" },
-		{ key = "Space", mods = "CTRL", action = "PopKeyTable" },
-	},
-	swap_pane_direction = {
-		{ key = "h", action = act.EmitEvent("swap-pane-left") },
-		{ key = "j", action = act.EmitEvent("swap-pane-down") },
-		{ key = "k", action = act.EmitEvent("swap-pane-up") },
-		{ key = "l", action = act.EmitEvent("swap-pane-right") },
 		{ key = "Escape", action = "PopKeyTable" },
 		{ key = "Space", mods = "CTRL", action = "PopKeyTable" },
 	},
