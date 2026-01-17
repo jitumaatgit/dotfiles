@@ -5,5 +5,10 @@
     "messages_page_down": "shift+j",
     "messages_page_up": "shift+k"
   },
-  "plugin": ["@plannotator/opencode"]
+  "plugin": ["@plannotator/opencode"],
+  "tui": {
+    "scroll_acceleration": {
+      "enabled": true
+    }
+  }
 }
