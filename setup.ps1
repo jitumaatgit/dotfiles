@@ -33,6 +33,7 @@ $Packages = @(
     "fzf",
     "lazygit",
     "tree-sitter",
+    "luacheck",
     "Cascadia-Code",
     "JetBrainsMono-NF",
     "neovim",
