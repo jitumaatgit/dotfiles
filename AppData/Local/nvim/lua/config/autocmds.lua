@@ -11,7 +11,9 @@
 vim.api.nvim_create_autocmd({ "ColorScheme", "FileType" }, {
   pattern = { "*", "markdown" },
   callback = function()
-    if vim.bo.filetype == "markdown" or (vim.tbl_contains(vim.api.nvim_get_autocmds({ event = "ColorScheme" }), true)) then
+    if
+      vim.bo.filetype == "markdown" or (vim.tbl_contains(vim.api.nvim_get_autocmds({ event = "ColorScheme" }), true))
+    then
       vim.api.nvim_set_hl(0, "@markup.strong", {
         fg = "#f38ba8",
         bold = true,
