@@ -103,15 +103,15 @@ return {
       -- Used in LazyVim to view the different keymaps, this by default is
       -- configured as <leader>sk but I run it too often
       -- Sometimes I need to see if a keymap is already taken or not
-      {
-        "<M-k>",
-        function()
-          Snacks.picker.keymaps({
-            layout = "vertical",
-          })
-        end,
-        desc = "Keymaps",
-      },
+      -- {
+      --   "<M-k>",
+      --   function()
+      --     Snacks.picker.keymaps({
+      --       layout = "vertical",
+      --     })
+      --   end,
+      --   desc = "Keymaps",
+      -- },
       -- File picker
       {
         "<leader><space>",
@@ -161,7 +161,11 @@ return {
       { "<leader>:", "<cmd>lua Snacks.picker.cmd_history()<cr>", desc = "Command History" },
       { "<leader>fb", "<cmd>lua Snacks.picker.buffers({ sort_lastused = true })<cr>", desc = "Buffers" },
       { "<leader>fB", "<cmd>lua Snacks.picker.buffers()<cr>", desc = "Buffers (all)" },
-      { "<leader>fc", "<cmd>lua Snacks.picker.files({ cwd = vim.fn.stdpath(\"config\") })<cr>", desc = "Find Config File" },
+      {
+        "<leader>fc",
+        '<cmd>lua Snacks.picker.files({ cwd = vim.fn.stdpath("config") })<cr>',
+        desc = "Find Config File",
+      },
       { "<leader>ff", "<cmd>lua Snacks.picker.files()<cr>", desc = "Find Files (Root Dir)" },
       { "<leader>fF", "<cmd>lua Snacks.picker.files({ cwd = vim.uv.cwd() })<cr>", desc = "Find Files (cwd)" },
       { "<leader>fg", "<cmd>lua Snacks.picker.git_files()<cr>", desc = "Find Files (git-files)" },
@@ -191,7 +195,12 @@ return {
       { "<leader>sw", "<cmd>lua Snacks.picker.grep_cword()<cr>", desc = "Word (Root Dir)" },
       { "<leader>sW", "<cmd>lua Snacks.picker.grep_cword({ cwd = vim.uv.cwd() })<cr>", desc = "Word (cwd)" },
       { "<leader>sw", "<cmd>lua Snacks.picker.grep_visual()<cr>", mode = "x", desc = "Selection (Root Dir)" },
-      { "<leader>sW", "<cmd>lua Snacks.picker.grep_visual({ cwd = vim.uv.cwd() })<cr>", mode = "x", desc = "Selection (cwd)" },
+      {
+        "<leader>sW",
+        "<cmd>lua Snacks.picker.grep_visual({ cwd = vim.uv.cwd() })<cr>",
+        mode = "x",
+        desc = "Selection (cwd)",
+      },
       { "<leader>uC", "<cmd>lua Snacks.picker.colorschemes()<cr>", desc = "Colorscheme with Preview" },
       {
         "<leader>ss",
