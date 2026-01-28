@@ -92,6 +92,40 @@ if ($needsSetup) {
     Write-Host "[OK] nvim-data backup already configured"
 }
 
+# --- Neovim Plugin Dependencies ---
+Write-Host "[INFO] Installing Neovim plugin dependencies..."
+$nvimLazyPath = "$env:LOCALAPPDATA\nvim-data\lazy"
+
+# Install markdown-preview.nvim dependencies
+$mkdpPath = "$nvimLazyPath\markdown-preview.nvim"
+if (Test-Path "$mkdpPath\app") {
+    Write-Host "[INFO] Installing markdown-preview.nvim dependencies..." -ForegroundColor Cyan
+    Push-Location "$mkdpPath\app"
+
+    try {
+        npm install
+        if (Test-Path "node_modules") {
+            Write-Host "[OK] markdown-preview.nvim dependencies installed" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "[WARN] npm install failed: $_" -ForegroundColor Yellow
+        Write-Host "[INFO] Trying alternative: PowerShell install script..." -ForegroundColor Yellow
+
+        # Fallback to pre-built binary
+        powershell.exe -ExecutionPolicy Bypass -File ".\install.cmd" v0.0.10
+
+        if (Test-Path "bin\markdown-preview-win.exe") {
+            Write-Host "[OK] Pre-built binary installed successfully" -ForegroundColor Green
+        } else {
+            Write-Host "[WARN] Installation may be incomplete" -ForegroundColor Yellow
+        }
+    }
+
+    Pop-Location
+} else {
+    Write-Host "[INFO] markdown-preview.nvim not yet installed (lazy.nvim will handle it)" -ForegroundColor Yellow
+}
+
 # --- AutoHotkey Portable (CapsLock -> Esc) ---
 $ahkDir = "$Base\autohotkey-portable"
 $ahkZip = "$Downloads\autohotkey.zip"
