@@ -14,7 +14,7 @@ return {
         -- port = 3000, dont enable this, opencode.nvim will not find the process if I set port manually (on my windows
         -- setup)
         provider = {
-          cmd = "C:/Users/student/scoop/shims/opencode.exe"
+          cmd = "C:/Users/student/scoop/shims/opencode.exe",
           enabled = "snacks",
           -- wezterm = {
           --   direction = "bottom",
