@@ -40,7 +40,8 @@ $Packages = @(
     "opencode",
     "starship",
     "gh",
-    "eza"
+    "eza",
+    "python"
  )
 
 foreach ($pkg in $Packages) {
