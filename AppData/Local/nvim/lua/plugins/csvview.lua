@@ -3,7 +3,21 @@ return {
   ---@module "csvview"
   ---@type CsvView.Options
   opts = {
-    parser = { comments = { "#", "//" } },
+    parser = {
+      comments = { "#", "//" },
+      max_lookahead = 50,
+      quote_char = '"',
+    },
+    view = {
+      display_mode = "border",
+      min_column_width = 10,
+      spacing = 2,
+      header_lnum = true,
+      sticky_header = {
+        enabled = true,
+        separator = "─",
+      },
+    },
     keymaps = {
       -- Text objects for selecting fields
       textobject_field_inner = { "if", mode = { "o", "x" } },
