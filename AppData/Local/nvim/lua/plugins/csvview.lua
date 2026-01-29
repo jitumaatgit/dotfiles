@@ -5,17 +5,17 @@ return {
   opts = {
     parser = {
       comments = { "#", "//" },
-      max_lookahead = 50,
+      max_lookahead = 200,
       quote_char = '"',
     },
     view = {
       display_mode = "border",
-      min_column_width = 10,
-      spacing = 2,
+      min_column_width = 5,
+      spacing = 0,
       header_lnum = true,
       sticky_header = {
         enabled = true,
-        separator = "─",
+        separator = "═",
       },
     },
     keymaps = {
