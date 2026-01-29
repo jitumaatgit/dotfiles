@@ -3,11 +3,7 @@ return {
   optional = true,
   opts = {
     default_format_opts = {
-      timeout_ms = 10000,
-    },
-    format_after_save = {
-      timeout_ms = 10000,
-      lsp_format = "fallback",
+      timeout_ms = 1000,
     },
     formatters = {
       ["markdown-toc"] = {
