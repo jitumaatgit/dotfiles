@@ -93,6 +93,12 @@ if ($needsSetup) {
     Write-Host "[OK] nvim-data backup already configured"
 }
 
+# --- OpenCode Data Backup (Persistent storage) ---
+Write-Host "[INFO] Checking OpenCode data backup setup..."
+
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/setup-opencode-data-backup.ps1" -OutFile "$env:TEMP\setup-opencode-data-backup.ps1"
+& "$env:TEMP\setup-opencode-data-backup.ps1"
+
 # --- Neovim Plugin Dependencies ---
 Write-Host "[INFO] Installing Neovim plugin dependencies..."
 $nvimLazyPath = "$env:LOCALAPPDATA\nvim-data\lazy"
@@ -330,5 +336,15 @@ Write-Host "  cd ~/vim-data-remote"
 Write-Host "  git add ."
 Write-Host "  git commit -m 'Update nvim data'"
 Write-Host "  git push -u origin main"
+Write-Host ""
+Write-Host "===== opencode-data backup ====="
+Write-Host "Check opencode-data status:"
+Write-Host "  cd ~/notes && git status"
+Write-Host ""
+Write-Host "Sync opencode-data to GitHub:"
+Write-Host "  cd ~/notes"
+Write-Host "  git add opencode-data/"
+Write-Host "  git commit -m 'Update OpenCode sessions'"
+Write-Host "  git push"
 Write-Host "============================================================"
 Stop-Transcript
