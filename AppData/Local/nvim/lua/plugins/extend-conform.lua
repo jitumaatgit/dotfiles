@@ -38,6 +38,9 @@ return {
   "stevearc/conform.nvim",
   optional = true,
   opts = {
+    default_format_opts = {
+      timeout_ms = 10000,
+    },
     formatters = {
       ["markdown-toc"] = {
         condition = function(_, ctx)
