@@ -38,4 +38,27 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   end,
 })
 
+-- Set PowerShell execution policy to Unrestricted for LSP
+-- Note: Scope CurrentUser does NOT require admin privileges
+vim.api.nvim_create_autocmd("VimEnter", {
+  pattern = "*",
+  callback = function()
+    if vim.fn.has('win32') == 1 then
+      vim.fn.jobstart({'powershell.exe', '-NoProfile', '-Command',
+        'Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted -Force'},
+        {on_exit = function() end, detach = true}
+      )
+    end
+  end,
+  once = true,
+})
+
+-- Ensure PowerShell files are detected with correct filetype
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { "*.ps1", "*.psm1", "*.psd1", "*.ps1xml" },
+  callback = function()
+    vim.bo.filetype = "ps1"
+  end,
+})
+
 return M
