@@ -67,7 +67,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
     if vim.bo.filetype == "ps1" and args.data and args.data.client_id then
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client and client.name == "powershell_es" then
-        vim.opt_local.winbar = "%{%v:lua require'nvim-navic'.get_location()%}"
+        vim.api.nvim_create_autocmd("CursorHold", {
+          buffer = 0,
+          callback = function()
+            local navic = require("nvim-navic")
+            if navic.is_available() then
+              vim.wo.winbar = navic.get_location()
+            end
+          end,
+        })
       end
     end
   end,

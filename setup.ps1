@@ -9,20 +9,45 @@ New-Item -ItemType Directory -Force -Path $Downloads, $Logs | Out-Null
 # Transcript
 Start-Transcript -Path "$Logs\setup-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
 
+# Global error handling
+$ErrorActionPreference = 'Stop'
+$script:ExitCode = 0
+
+trap {
+    Write-Host "[ERROR] Script failed: $_" -ForegroundColor Red
+    $script:ExitCode = 1
+    Stop-Transcript
+    exit $script:ExitCode
+}
+
 # Configuration
 $Config = @{
     BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
-    ScoopPackages = @('wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit', 
-                      'tree-sitter', 'luacheck', 'Cascadia-Code', 'JetBrainsMono-NF', 
+    ScoopPackages = @('wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
+                      'tree-sitter', 'luacheck', 'Cascadia-Code', 'JetBrainsMono-NF',
                       'neovim', 'opencode', 'starship', 'gh', 'eza', 'python')
-    AhkVersion = 'v2.0.18'
     AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
 
 # Helper functions
 function Invoke-SafeDownload {
-    param([string]$Uri, [string]$OutFile)
-    Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing
+    param([string]$Uri, [string]$OutFile, [int]$MaxRetries = 3)
+    $retryCount = 0
+    while ($retryCount -lt $MaxRetries) {
+        try {
+            Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
+            if (Test-Path $OutFile) {
+                return
+            }
+        } catch {
+            $retryCount++
+            if ($retryCount -ge $MaxRetries) {
+                throw "[ERROR] Failed to download $Uri after $MaxRetries attempts: $_"
+            }
+            Write-Host "[WARN] Download failed, retrying ($retryCount/$MaxRetries)..."
+            Start-Sleep -Seconds 2
+        }
+    }
 }
 
 function New-JunctionCheck {
@@ -42,44 +67,76 @@ function New-JunctionCheck {
 Write-Host "[INFO] Installing Scoop..."
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-    Invoke-WebRequest -Uri 'https://get.scoop.sh' -OutFile "$env:TEMP\install.ps1" -UseBasicParsing
-    & "$env:TEMP\install.ps1" -RunAsAdmin
+    irm get.scoop.sh | iex
 }
 
 Write-Host "[INFO] Installing git..."
 scoop install git
-scoop bucket add extras, nerd-fonts
+scoop bucket add extras 2>$null
+scoop bucket add nerd-fonts 2>$null
 
-# Install packages in parallel (PS 7+) or sequentially (PS 5.1)
+# Install packages
 Write-Host "[INFO] Installing scoop packages..."
 $Config.ScoopPackages | ForEach-Object {
-    Write-Host "[INFO] Installing $_..."
-    scoop install $_
+    $result = scoop install $_ 2>&1
+    if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 2) {
+        Write-Host "[OK] $_"
+    } else {
+        Write-Host "[WARN] Issue installing $_: $result"
+    }
 }
 
 # Notes Repository
 $notesDir = "$env:USERPROFILE\notes"
 if (-not (Test-Path "$notesDir\.git")) {
     Write-Host "[INFO] Setting up notes repository..."
-    New-Item -ItemType Directory -Force -Path $notesDir | Out-Null
-    git clone https://github.com/jitumaatgit/notes $notesDir
+    if (Test-Path $notesDir) {
+        $itemCount = (Get-ChildItem $notesDir -Force | Measure-Object).Count
+        if ($itemCount -gt 0) {
+            Write-Host "[WARN] Notes directory exists and is not empty. Skipping clone."
+        } else {
+            Remove-Item $notesDir -Force -Recurse
+            git clone https://github.com/jitumaatgit/notes $notesDir
+        }
+    } else {
+        New-Item -ItemType Directory -Force -Path $notesDir | Out-Null
+        git clone https://github.com/jitumaatgit/notes $notesDir
+    }
 } else {
     Write-Host "[OK] Notes repository configured"
 }
 
 # SQLite for Neovim
 Write-Host "[INFO] Installing SQLite for Neovim..."
+$nvimProcess = Get-Process nvim -ErrorAction SilentlyContinue
+if ($nvimProcess) {
+    Write-Host "[INFO] Stopping nvim to update sqlite3.dll..."
+    Stop-Process -Name nvim -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+}
 Invoke-SafeDownload "$($Config.BaseUrl)/install-sqlite-for-neovim.ps1" "$env:TEMP\install-sqlite-for-neovim.ps1"
-& "$env:TEMP\install-sqlite-for-neovim.ps1"
+if (-not (Test-Path "$env:TEMP\install-sqlite-for-neovim.ps1")) {
+    throw "[ERROR] Failed to download SQLite install script"
+}
+try {
+    & "$env:TEMP\install-sqlite-for-neovim.ps1"
+} catch {
+    Write-Host "[WARN] SQLite installation encountered errors: $_"
+}
 
 # nvim-data Backup
 Write-Host "[INFO] Checking nvim-data backup..."
-$backupRepo = "$env:USERPROFILE\nvim-data-remote"
 $nvimData = "$env:LOCALAPPDATA\nvim-data"
 
-if (-not (Test-Path "$backupRepo\.git") -or -not (New-JunctionCheck $nvimData @('databases','shada','sessions','undo'))) {
+if (-not (Test-Path "$env:USERPROFILE\nvim-data-remote\.git") -or -not (New-JunctionCheck $nvimData @('databases','shada','sessions','undo'))) {
     Write-Host "[INFO] Running nvim-data backup setup..."
+    if (-not (Test-Path $nvimData)) {
+        New-Item -ItemType Directory -Path $nvimData -Force | Out-Null
+    }
     Invoke-SafeDownload "$($Config.BaseUrl)/setup-nvim-data-backup.ps1" "$env:TEMP\setup-nvim-data-backup.ps1"
+    if (-not (Test-Path "$env:TEMP\setup-nvim-data-backup.ps1")) {
+        throw "[ERROR] Failed to download nvim-data backup script"
+    }
     & "$env:TEMP\setup-nvim-data-backup.ps1"
 } else {
     Write-Host "[OK] nvim-data backup configured"
@@ -106,8 +163,20 @@ if (Test-Path "$mkdpPath\app") {
 # AutoHotkey Portable
 $ahkDir = "$Base\autohotkey-portable"
 $ahkZip = "$Downloads\autohotkey.zip"
+
+# Stop existing AutoHotkey processes
+$ahkProcess = Get-Process -Name "*AutoHotkey*" -ErrorAction SilentlyContinue
+if ($ahkProcess) {
+    Write-Host "[INFO] Stopping running AutoHotkey processes..."
+    Stop-Process -Name "*AutoHotkey*" -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+}
+
 Write-Host "[INFO] Downloading AutoHotkey..."
 Invoke-SafeDownload $Config.AhkDownloadUrl $ahkZip
+if (-not (Test-Path $ahkZip)) {
+    throw "[ERROR] Failed to download AutoHotkey"
+}
 Write-Host "[INFO] Extracting AutoHotkey..."
 Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
 Remove-Item $ahkZip -ErrorAction SilentlyContinue
@@ -119,15 +188,19 @@ if (-not (Test-Path $vdAhkPath)) { throw "[ERROR] Failed to download VD.ah2" }
 
 # Cleanup WindowsVirtualDesktopHelper
 Write-Host "[INFO] Removing WindowsVirtualDesktopHelper..."
-@('scoop uninstall windows-virtualdesktop-helper', 
-  "Remove-Item '$env:APPDATA\WindowsVirtualDesktopHelper' -Recurse -Force",
-  "Remove-Item '$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\windows-virtualdesktop-helper.lnk'") | ForEach-Object {
-    Invoke-Expression $_ 2>$null
-}
+scoop uninstall windows-virtualdesktop-helper 2>$null
+Remove-Item "$env:APPDATA\WindowsVirtualDesktopHelper" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\windows-virtualdesktop-helper.lnk" -ErrorAction SilentlyContinue
+Write-Host "[OK] WindowsVirtualDesktopHelper cleanup complete"
 
 # AutoHotkey v2 script with VD.ah2
 $remapAhk = "$ahkDir\remap-v2.ahk"
-$ahkScript = @'
+
+$winVersion = [Environment]::OSVersion.Version
+$isWindows11 = $winVersion.Major -ge 10 -and $winVersion.Build -ge 22000
+
+if ($isWindows11) {
+    $ahkScript = @'
 #SingleInstance force
 ListLines 0
 SendMode "Input"
@@ -162,6 +235,23 @@ Loop 9 { hotkey "#!" A_Index, ((i) => VD.MoveWindowToDesktopNum("A",i)).Bind(A_I
 CapsLock::Esc
 RWin::LCtrl
 '@
+} else {
+    Write-Host "[WARN] VD.ah2 virtual desktop features require Windows 11. Using basic remaps only."
+    $ahkScript = @'
+#SingleInstance force
+ListLines 0
+SendMode "Input"
+SetWorkingDir A_ScriptDir
+KeyHistory 0
+ProcessSetPriority "H"
+SetWinDelay -1
+SetControlDelay -1
+
+; Remaps
+CapsLock::Esc
+RWin::LCtrl
+'@
+}
 $ahkScript | Out-File $remapAhk -Encoding UTF8
 
 # Create startup shortcut
@@ -187,9 +277,17 @@ $themePath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize
 }
 
 # Auto-hide taskbar
-$taskbarSettings = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3' -Name Settings
-$taskbarSettings.Settings[8] = 0x03
-Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3' -Name Settings $taskbarSettings.Settings
+try {
+    $taskbarSettings = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3' -Name Settings -ErrorAction Stop
+    if ($taskbarSettings.Settings.Count -gt 8) {
+        $taskbarSettings.Settings[8] = 0x03
+        Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3' -Name Settings $taskbarSettings.Settings
+    } else {
+        Write-Host "[WARN] Could not set taskbar auto-hide: Settings array too short"
+    }
+} catch {
+    Write-Host "[WARN] Could not set taskbar auto-hide: $_"
+}
 
 # Hide icons
 Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideIcons 1 -Type Dword
@@ -202,9 +300,18 @@ public class Wallpaper {
     public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 }
 "@
-[Wallpaper]::SystemParametersInfo(20, 0, 'C:\Windows\Web\Wallpaper\ThemeA\img20.jpg', 1)
+$wallpaperPath = 'C:\Windows\Web\Wallpaper\ThemeA\img20.jpg'
+if (-not (Test-Path $wallpaperPath)) {
+    Write-Host "[WARN] Wallpaper not found at $wallpaperPath, skipping..."
+} else {
+    [Wallpaper]::SystemParametersInfo(20, 0, $wallpaperPath, 1)
+}
 
-Stop-Process -Name explorer -Force
+$explorer = Get-Process explorer -ErrorAction SilentlyContinue
+if ($explorer) {
+    Stop-Process -Name explorer -Force
+    Start-Sleep -Seconds 2
+}
 Start-Process explorer
 
 Write-Host "===== bootstrap complete =====`n"
