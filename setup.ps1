@@ -254,20 +254,40 @@ SetControlDelay -1
 VD.animation_on:=false
 VD.createUntil(5)
 
-; Desktop switch
-Loop 9 { hotkey "#" A_Index, ((i) => VD.goToDesktopNum(i)).Bind(A_Index) }
+; Desktop switch: Win + 1-9
+Loop 9 {
+    Hotkey "#" . A_Index, "SwitchDesktop"
+}
 
-; Desktop nav
+SwitchDesktop(ThisHotkey) {
+    VD.goToDesktopNum(SubStr(ThisHotkey.Name, -1))
+}
+
+; Desktop nav: Win + [ / ]
 #[::VD.goToRelativeDesktopNum(-1)
 #]::VD.goToRelativeDesktopNum(1)
 
-; Move window + follow
-Loop 9 { hotkey "#+" A_Index, ((i) => VD.MoveWindowToDesktopNum("A",i).follow()).Bind(A_Index) }
+; Move window + follow: Win + Shift + 1-9
+Loop 9 {
+    Hotkey "#+" . A_Index, "MoveWindowFollow"
+}
 
-; Move window - stay
-Loop 9 { hotkey "#!" A_Index, ((i) => VD.MoveWindowToDesktopNum("A",i)).Bind(A_Index) }
+MoveWindowFollow(ThisHotkey) {
+    desktopNum := SubStr(ThisHotkey.Name, -1)
+    VD.MoveWindowToDesktopNum("A", desktopNum).follow()
+}
 
-; Pin window
+; Move window - stay: Win + Alt + 1-9
+Loop 9 {
+    Hotkey "#!" . A_Index, "MoveWindowStay"
+}
+
+MoveWindowStay(ThisHotkey) {
+    desktopNum := SubStr(ThisHotkey.Name, -1)
+    VD.MoveWindowToDesktopNum("A", desktopNum)
+}
+
+; Pin window: Win + Shift + P
 #+p::VD.TogglePinWindow("A")
 
 ; Remaps
