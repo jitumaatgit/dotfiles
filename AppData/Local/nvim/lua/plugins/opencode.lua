@@ -57,14 +57,6 @@ return {
         require("opencode").toggle()
       end, { desc = "Toggle opencode" })
 
-      vim.keymap.set("n", "<S-C-u>", function()
-        require("opencode").command("session.half.page.up")
-      end, { desc = "opencode half page up" })
-
-      vim.keymap.set("n", "<S-C-d>", function()
-        require("opencode").command("session.half.page.down")
-      end, { desc = "opencode half page down" })
-
       -- Toggle opencode window width (maximize/minimize)
       vim.keymap.set("n", "<leader>om", function()
         local opencode_win = nil
