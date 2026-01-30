@@ -270,6 +270,55 @@ Write-Host "[INFO] Applying Windows settings..."
 
 scoop install zen-browser
 
+# zen-browser Data Backup
+Write-Host "[INFO] Checking zen-browser data backup..."
+$zenBackupRepo = "$env:USERPROFILE\zen-browser-data"
+$zenProfileBase = "$env:APPDATA\zen\Profiles"
+
+# Check if zen-browser profile exists and junction is set up
+$needsSetup = $false
+
+# Check if repo exists
+if (-not (Test-Path "$zenBackupRepo\.git")) {
+    $needsSetup = $true
+} else {
+    # Verify junction exists
+    $profileDirs = Get-ChildItem $zenBackupRepo -Directory | 
+        Where-Object { $_.LinkType -eq "Junction" }
+    
+    if (-not $profileDirs -or $profileDirs.Count -eq 0) {
+        $needsSetup = $true
+    } else {
+        # Verify junction is valid
+        $junctionValid = $true
+        foreach ($dir in $profileDirs) {
+            if (-not (Test-Path $dir.FullName)) {
+                $junctionValid = $false
+                break
+            }
+        }
+        if (-not $junctionValid) {
+            $needsSetup = $true
+        }
+    }
+}
+
+if ($needsSetup) {
+    Write-Host "[INFO] Running zen-browser data backup setup..."
+    if (-not (Test-Path $zenProfileBase)) {
+        Write-Host "[WARN] Zen-browser profile not found. Please launch zen-browser and re-run setup."
+        Write-Host "[INFO] Skipping zen-browser backup setup."
+    } else {
+        Invoke-SafeDownload "$($Config.BaseUrl)/setup-zen-data-backup.ps1" "$env:TEMP\setup-zen-data-backup.ps1"
+        if (-not (Test-Path "$env:TEMP\setup-zen-data-backup.ps1")) {
+            throw "[ERROR] Failed to download zen-browser backup script"
+        }
+        & "$env:TEMP\setup-zen-data-backup.ps1"
+    }
+} else {
+    Write-Host "[OK] zen-browser data backup configured"
+}
+
 # Dark mode
 $themePath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
 @{ AppsUseLightTheme = 0; SystemUsesLightTheme = 0 }.GetEnumerator() | ForEach-Object {
@@ -324,5 +373,6 @@ Write-Host "Dotfiles setup:
   git init -b main && git remote add origin https://github.com/jitumaatgit/dotfiles
   git fetch && git checkout -f main`n"
 Write-Host "nvim-data: cd ~/vim-data-remote && git status"
+Write-Host "zen-browser-data: cd ~/zen-browser-data && git status"
 Write-Host "============================================================"
 Stop-Transcript
