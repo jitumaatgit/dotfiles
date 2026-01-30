@@ -3,7 +3,9 @@
   "theme": "catppuccin",
   "keybinds": {
     "messages_page_down": "shift+j",
-    "messages_page_up": "shift+k"
+    "messages_page_up": "shift+k",
+    "terminal_suspend": "none",
+    "input_undo": "ctrl+z"
   },
   "plugin": ["@plannotator/opencode"],
   "tui": {
