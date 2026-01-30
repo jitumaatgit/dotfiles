@@ -71,18 +71,25 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
 }
 
 Write-Host "[INFO] Installing git..."
-scoop install git
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    scoop install git
+} else {
+    Write-Host "[OK] git already installed"
+}
 scoop bucket add extras 2>$null
 scoop bucket add nerd-fonts 2>$null
 
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
+$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }
 $Config.ScoopPackages | ForEach-Object {
-    $result = scoop install $_ 2>&1
-    if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 2) {
-        Write-Host "[OK] ${_}"
+    $pkg = $_
+    if ($installedPackages -contains $pkg) {
+        Write-Host "[OK] ${pkg} already installed"
     } else {
-        Write-Host "[WARN] Issue installing ${_}: ${result}"
+        Write-Host "[INFO] Installing ${pkg}..."
+        scoop install $pkg 2>&1 | Out-Null
+        Write-Host "[OK] ${pkg} installed"
     }
 }
 
@@ -107,21 +114,26 @@ if (-not (Test-Path "$notesDir\.git")) {
 }
 
 # SQLite for Neovim
-Write-Host "[INFO] Installing SQLite for Neovim..."
-$nvimProcess = Get-Process nvim -ErrorAction SilentlyContinue
-if ($nvimProcess) {
-    Write-Host "[INFO] Stopping nvim to update sqlite3.dll..."
-    Stop-Process -Name nvim -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 1
-}
-Invoke-SafeDownload "$($Config.BaseUrl)/install-sqlite-for-neovim.ps1" "$env:TEMP\install-sqlite-for-neovim.ps1"
-if (-not (Test-Path "$env:TEMP\install-sqlite-for-neovim.ps1")) {
-    throw "[ERROR] Failed to download SQLite install script"
-}
-try {
-    & "$env:TEMP\install-sqlite-for-neovim.ps1"
-} catch {
-    Write-Host "[WARN] SQLite installation encountered errors: $_"
+$sqliteDllPath = "$env:LOCALAPPDATA\nvim\bin\sqlite3.dll"
+if (Test-Path $sqliteDllPath) {
+    Write-Host "[OK] SQLite already installed"
+} else {
+    Write-Host "[INFO] Installing SQLite for Neovim..."
+    $nvimProcess = Get-Process nvim -ErrorAction SilentlyContinue
+    if ($nvimProcess) {
+        Write-Host "[INFO] Stopping nvim to update sqlite3.dll..."
+        Stop-Process -Name nvim -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+    }
+    Invoke-SafeDownload "$($Config.BaseUrl)/install-sqlite-for-neovim.ps1" "$env:TEMP\install-sqlite-for-neovim.ps1"
+    if (-not (Test-Path "$env:TEMP\install-sqlite-for-neovim.ps1")) {
+        throw "[ERROR] Failed to download SQLite install script"
+    }
+    try {
+        & "$env:TEMP\install-sqlite-for-neovim.ps1"
+    } catch {
+        Write-Host "[WARN] SQLite installation encountered errors: $_"
+    }
 }
 
 # nvim-data Backup
@@ -145,17 +157,21 @@ if (-not (Test-Path "$env:USERPROFILE\nvim-data-remote\.git") -or -not (New-Junc
 # Neovim Plugin Dependencies
 $mkdpPath = "$env:LOCALAPPDATA\nvim-data\lazy\markdown-preview.nvim"
 if (Test-Path "$mkdpPath\app") {
-    Push-Location "$mkdpPath\app"
-    try {
-        npm install
-        Write-Host "[OK] markdown-preview.nvim installed"
-    } catch {
-        powershell.exe -ExecutionPolicy Bypass -File ".\install.cmd" v0.0.10
-        if (-not (Test-Path "bin\markdown-preview-win.exe")) {
-            Write-Host "[WARN] markdown-preview.nvim install incomplete"
+    if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+        Write-Host "[WARN] npm not found, skipping markdown-preview.nvim setup"
+    } else {
+        Push-Location "$mkdpPath\app"
+        try {
+            npm install
+            Write-Host "[OK] markdown-preview.nvim installed"
+        } catch {
+            powershell.exe -ExecutionPolicy Bypass -File ".\install.cmd" v0.0.10
+            if (-not (Test-Path "bin\markdown-preview-win.exe")) {
+                Write-Host "[WARN] markdown-preview.nvim install incomplete"
+            }
         }
+        Pop-Location
     }
-    Pop-Location
 } else {
     Write-Host "[INFO] markdown-preview.nvim will be handled by lazy.nvim"
 }
@@ -163,28 +179,51 @@ if (Test-Path "$mkdpPath\app") {
 # AutoHotkey Portable
 $ahkDir = "$Base\autohotkey-portable"
 $ahkZip = "$Downloads\autohotkey.zip"
+$ahkExe = "$ahkDir\AutoHotkey64.exe"
+$needsAhkInstall = $false
+$needsVdDownload = $false
 
-# Stop existing AutoHotkey processes
-$ahkProcess = Get-Process -Name "*AutoHotkey*" -ErrorAction SilentlyContinue
-if ($ahkProcess) {
-    Write-Host "[INFO] Stopping running AutoHotkey processes..."
-    Stop-Process -Name "*AutoHotkey*" -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 2
+# Check if AutoHotkey needs installation
+if (-not (Test-Path $ahkExe)) {
+    $needsAhkInstall = $true
+    Write-Host "[INFO] AutoHotkey not found, will install..."
+} else {
+    Write-Host "[OK] AutoHotkey already installed"
 }
 
-Write-Host "[INFO] Downloading AutoHotkey..."
-Invoke-SafeDownload $Config.AhkDownloadUrl $ahkZip
-if (-not (Test-Path $ahkZip)) {
-    throw "[ERROR] Failed to download AutoHotkey"
-}
-Write-Host "[INFO] Extracting AutoHotkey..."
-Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
-Remove-Item $ahkZip -ErrorAction SilentlyContinue
-
-Write-Host "[INFO] Downloading VD.ah2..."
+# Check if VD.ah2 needs download
 $vdAhkPath = Join-Path $ahkDir "VD.ah2"
-Invoke-SafeDownload 'https://raw.githubusercontent.com/FuPeiJiang/VD.ahk/v2_port/VD.ah2' $vdAhkPath
-if (-not (Test-Path $vdAhkPath)) { throw "[ERROR] Failed to download VD.ah2" }
+if (-not (Test-Path $vdAhkPath)) {
+    $needsVdDownload = $true
+    Write-Host "[INFO] VD.ah2 not found, will download..."
+}
+
+if ($needsAhkInstall -or $needsVdDownload) {
+    # Stop existing AutoHotkey processes
+    $ahkProcess = Get-Process -Name "AutoHotkey64" -ErrorAction SilentlyContinue
+    if ($ahkProcess) {
+        Write-Host "[INFO] Stopping AutoHotkey..."
+        Stop-Process -Name "AutoHotkey64" -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+    }
+}
+
+if ($needsAhkInstall) {
+    Write-Host "[INFO] Downloading AutoHotkey..."
+    Invoke-SafeDownload $Config.AhkDownloadUrl $ahkZip
+    if (-not (Test-Path $ahkZip)) {
+        throw "[ERROR] Failed to download AutoHotkey"
+    }
+    Write-Host "[INFO] Extracting AutoHotkey..."
+    Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
+    Remove-Item $ahkZip -ErrorAction SilentlyContinue
+}
+
+if ($needsVdDownload) {
+    Write-Host "[INFO] Downloading VD.ah2..."
+    Invoke-SafeDownload 'https://raw.githubusercontent.com/FuPeiJiang/VD.ahk/v2_port/VD.ah2' $vdAhkPath
+    if (-not (Test-Path $vdAhkPath)) { throw "[ERROR] Failed to download VD.ah2" }
+}
 
 # Cleanup WindowsVirtualDesktopHelper
 Write-Host "[INFO] Removing WindowsVirtualDesktopHelper..."
@@ -252,15 +291,39 @@ CapsLock::Esc
 RWin::LCtrl
 '@
 }
-$ahkScript | Out-File $remapAhk -Encoding UTF8
+
+# Check if AHK script needs update
+$scriptNeedsUpdate = $true
+if (Test-Path $remapAhk) {
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    $ahkScript | Out-File $tempFile -Encoding UTF8
+    $existingHash = (Get-FileHash $remapAhk -Algorithm SHA256).Hash
+    $newHash = (Get-FileHash $tempFile -Algorithm SHA256).Hash
+    
+    if ($existingHash -eq $newHash) {
+        Write-Host "[OK] AutoHotkey script up to date"
+        $scriptNeedsUpdate = $false
+        Remove-Item $tempFile
+    } else {
+        Move-Item $tempFile $remapAhk -Force
+        Write-Host "[OK] AutoHotkey script updated"
+    }
+} else {
+    $ahkScript | Out-File $remapAhk -Encoding UTF8
+    Write-Host "[OK] AutoHotkey script created"
+}
 
 # Create startup shortcut
 $shortcutPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\autohotkey-remap.lnk"
-$WshShell = New-Object -comObject WScript.Shell
-$shortcut = $WshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "$ahkDir\AutoHotkey64.exe"
-$shortcut.Arguments = $remapAhk
-$shortcut.Save()
+$WshShell = New-Object -ComObject WScript.Shell
+try {
+    $shortcut = $WshShell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = "$ahkDir\AutoHotkey64.exe"
+    $shortcut.Arguments = $remapAhk
+    $shortcut.Save()
+} finally {
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($WshShell) | Out-Null
+}
 
 Write-Host "[INFO] Starting AutoHotkey..."
 Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
@@ -268,7 +331,12 @@ Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
 # Windows Settings
 Write-Host "[INFO] Applying Windows settings..."
 
-scoop install zen-browser
+# Check if zen-browser needs installation
+if ($installedPackages -contains "zen-browser") {
+    Write-Host "[OK] zen-browser already installed"
+} else {
+    scoop install zen-browser
+}
 
 # zen-browser Data Backup
 Write-Host "[INFO] Checking zen-browser data backup..."
@@ -289,9 +357,14 @@ if (-not (Test-Path "$zenBackupRepo\.git")) {
     if (-not $profileDirs -or $profileDirs.Count -eq 0) {
         $needsSetup = $true
     } else {
-        # Verify junction is valid
+        # Verify all items are actually junctions and targets exist
         $junctionValid = $true
         foreach ($dir in $profileDirs) {
+            $item = Get-Item $dir.FullName -ErrorAction SilentlyContinue
+            if (-not $item -or $item.LinkType -ne "Junction") {
+                $junctionValid = $false
+                break
+            }
             if (-not (Test-Path $dir.FullName)) {
                 $junctionValid = $false
                 break
@@ -320,9 +393,14 @@ if ($needsSetup) {
 }
 
 # Dark mode
-$themePath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
-@{ AppsUseLightTheme = 0; SystemUsesLightTheme = 0 }.GetEnumerator() | ForEach-Object {
-    Set-ItemProperty $themePath $_.Key $_.Value -Type Dword
+try {
+    $themePath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+    @{ AppsUseLightTheme = 0; SystemUsesLightTheme = 0 }.GetEnumerator() | ForEach-Object {
+        Set-ItemProperty $themePath $_.Key $_.Value -Type Dword -ErrorAction Stop
+    }
+    Write-Host "[OK] Dark mode enabled"
+} catch {
+    Write-Host "[WARN] Could not enable dark mode: ${_}"
 }
 
 # Auto-hide taskbar
