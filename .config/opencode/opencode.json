@@ -7,7 +7,7 @@
     "terminal_suspend": "none",
     "input_undo": "ctrl+z"
   },
-  "plugin": ["@plannotator/opencode"],
+  "plugin": ["@plannotator/opencode", "opencode-synced"],
   "tui": {
     "scroll_acceleration": {
       "enabled": true
