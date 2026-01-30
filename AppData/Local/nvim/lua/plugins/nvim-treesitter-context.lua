@@ -16,7 +16,13 @@
 return {
   "nvim-treesitter/nvim-treesitter-context",
   event = "LazyFile",
-  opts = { mode = "cursor", max_lines = 3 },
+  opts = {
+    mode = "cursor",
+    max_lines = 3,
+    disable = function()
+      return vim.bo.filetype == "ps1"
+    end,
+  },
   keys = {
     {
       "<leader>ut",

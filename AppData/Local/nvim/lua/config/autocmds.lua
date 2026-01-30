@@ -61,4 +61,16 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   end,
 })
 
+-- Enable nvim-navic breadcrumbs in winbar for PowerShell files
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    if vim.bo.filetype == "ps1" and args.data and args.data.client_id then
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client and client.name == "powershell_es" then
+        vim.opt_local.winbar = "%{%v:lua require'nvim-navic'.get_location()%}"
+      end
+    end
+  end,
+})
+ 
 return M
