@@ -67,7 +67,7 @@ function New-JunctionCheck {
 Write-Host "[INFO] Installing Scoop..."
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-    irm get.scoop.sh | iex
+    Invoke-RestMethod get.scoop.sh | Invoke-Expression
 }
 
 Write-Host "[INFO] Installing git..."
@@ -80,9 +80,9 @@ Write-Host "[INFO] Installing scoop packages..."
 $Config.ScoopPackages | ForEach-Object {
     $result = scoop install $_ 2>&1
     if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 2) {
-        Write-Host "[OK] $_"
+        Write-Host "[OK] ${_}"
     } else {
-        Write-Host "[WARN] Issue installing $_: $result"
+        Write-Host "[WARN] Issue installing ${_}: ${result}"
     }
 }
 
