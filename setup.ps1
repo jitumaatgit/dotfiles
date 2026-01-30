@@ -49,6 +49,21 @@ foreach ($pkg in $Packages) {
     scoop install $pkg
 }
 
+# --- Notes Repository ---
+Write-Host "[INFO] Checking notes repository..."
+
+$notesDir = "$env:USERPROFILE\notes"
+
+if (-not (Test-Path "$notesDir\.git")) {
+    Write-Host "[INFO] Notes repository not found. Setting up..."
+    New-Item -ItemType Directory -Force -Path $notesDir | Out-Null
+    Set-Location $notesDir
+    git clone https://github.com/jitumaatgit/notes .
+    Write-Host "[OK] Notes repository cloned to $notesDir"
+} else {
+    Write-Host "[OK] Notes repository already configured"
+}
+
 # --- SQLite DLL for Neovim ---
 Write-Host "[INFO] Installing SQLite for Neovim..."
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/install-sqlite-for-neovim.ps1" -OutFile "$env:TEMP\install-sqlite-for-neovim.ps1"
@@ -92,12 +107,6 @@ if ($needsSetup) {
 } else {
     Write-Host "[OK] nvim-data backup already configured"
 }
-
-# --- OpenCode Data Backup (Persistent storage) ---
-Write-Host "[INFO] Checking OpenCode data backup setup..."
-
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/setup-opencode-data-backup.ps1" -OutFile "$env:TEMP\setup-opencode-data-backup.ps1"
-& "$env:TEMP\setup-opencode-data-backup.ps1"
 
 # --- Neovim Plugin Dependencies ---
 Write-Host "[INFO] Installing Neovim plugin dependencies..."
@@ -323,9 +332,6 @@ Write-Host "then run git init -b main"
 Write-Host "git remote add origin https://github.com/jitumaatgit/dotfiles"
 Write-Host "git fetch"
 Write-Host "git checkout -f main"
-Write-Host "for notes, run mkdir notes"
-Write-Host "cd notes"
-Write-Host "git clone https://github.com/jitumaatgit/notes . "
 Write-Host ""
 Write-Host "===== nvim-data backup ====="
 Write-Host "Check nvim-data status:"
@@ -337,14 +343,5 @@ Write-Host "  git add ."
 Write-Host "  git commit -m 'Update nvim data'"
 Write-Host "  git push -u origin main"
 Write-Host ""
-Write-Host "===== opencode-data backup ====="
-Write-Host "Check opencode-data status:"
-Write-Host "  cd ~/notes && git status"
-Write-Host ""
-Write-Host "Sync opencode-data to GitHub:"
-Write-Host "  cd ~/notes"
-Write-Host "  git add opencode-data/"
-Write-Host "  git commit -m 'Update OpenCode sessions'"
-Write-Host "  git push"
 Write-Host "============================================================"
 Stop-Transcript
