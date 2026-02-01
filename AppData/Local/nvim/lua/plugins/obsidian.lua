@@ -28,25 +28,25 @@ return {
     mappings = {
       ["gf"] = {
         action = function()
-          return require("obsidian").util.gf_passthrough()
+          return require("obsidian.util").gf_passthrough()
         end,
         opts = { desc = "Follow link", noremap = false, expr = true, buffer = true },
       },
       ["<leader>nn"] = {
         action = function()
-          return require("obsidian").commands.new_note()
+          vim.cmd("ObsidianNew")
         end,
         opts = { desc = "New note", buffer = true },
       },
       ["<leader>nt"] = {
         action = function()
-          return require("obsidian").commands.today()
+          vim.cmd("ObsidianToday")
         end,
         opts = { desc = "Open today's daily note", buffer = true },
       },
       ["<leader>ny"] = {
         action = function()
-          return require("obsidian").commands.yesterday()
+          vim.cmd("ObsidianYesterday")
         end,
         opts = { desc = "Open yesterday's note", buffer = true },
       },
@@ -74,7 +74,7 @@ return {
       substitutions = {},
     },
     follow_url_func = function(url)
-      vim.fn.jobstart({ "cmd", "/c", "start", url })
+      vim.fn.jobstart({ "cmd.exe", "/c", "start", "", url })
     end,
     picker = {
       name = "snacks.nvim",
