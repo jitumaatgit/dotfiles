@@ -30,25 +30,25 @@ return {
         action = function()
           return require("obsidian").util.gf_passthrough()
         end,
-        opts = { noremap = false, expr = true, buffer = true },
+        opts = { desc = "Follow link", noremap = false, expr = true, buffer = true },
       },
       ["<leader>nn"] = {
         action = function()
           return require("obsidian").commands.new_note()
         end,
-        opts = { buffer = true },
+        opts = { desc = "New note", buffer = true },
       },
       ["<leader>nt"] = {
         action = function()
           return require("obsidian").commands.today()
         end,
-        opts = { buffer = true },
+        opts = { desc = "Open today's daily note", buffer = true },
       },
       ["<leader>ny"] = {
         action = function()
           return require("obsidian").commands.yesterday()
         end,
-        opts = { buffer = true },
+        opts = { desc = "Open yesterday's note", buffer = true },
       },
     },
     new_notes_location = "current_dir",
