@@ -15,21 +15,51 @@ $script:ExitCode = 0
 
 trap {
     Write-Host "[ERROR] Script failed: $_" -ForegroundColor Red
+    Write-Host "[ERROR] Error details: $($_.Exception.Message)" -ForegroundColor Red
+    if ($_.ScriptStackTrace) {
+        Write-Host "[ERROR] Stack trace: $($_.ScriptStackTrace)" -ForegroundColor Red
+    }
+    Write-Host "[INFO] Check the transcript log for full details: $Logs\setup-*.log" -ForegroundColor Cyan
     $script:ExitCode = 1
     Stop-Transcript
-    exit $script:ExitCode
+    if (-not [string]::IsNullOrEmpty($global:scriptFailed)) {
+        # Continue if this is a non-fatal package installation error
+        Write-Host "[INFO] Continuing despite error..." -ForegroundColor Yellow
+    } else {
+        exit $script:ExitCode
+    }
 }
 
 # Configuration
 $Config = @{
     BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
     ScoopPackages = @('wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
-                      'tree-sitter', 'luacheck', 'Cascadia-Code', 'JetBrainsMono-NF',
+                      'tree-sitter', 'luacheck',
                       'neovim', 'opencode', 'starship', 'gh', 'eza', 'python')
     AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
 
 # Helper functions
+function Test-DomainTrust {
+    # Check if computer is domain-joined and trust is working
+    try {
+        $computerInfo = Get-WmiObject -Class Win32_ComputerSystem -ErrorAction SilentlyContinue
+        if ($computerInfo -and $computerInfo.PartOfDomain) {
+            $trustValid = Test-ComputerSecureChannel -ErrorAction SilentlyContinue
+            if (-not $trustValid) {
+                Write-Host "[WARN] This computer is domain-joined but the trust relationship is broken!" -ForegroundColor Yellow
+                Write-Host "[INFO] Fonts will be downloaded manually instead of installing via Scoop to avoid this issue." -ForegroundColor Cyan
+                Write-Host "[INFO] To fix domain trust, run PowerShell as Administrator and execute: Test-ComputerSecureChannel -Repair" -ForegroundColor Cyan
+                return $false
+            }
+        }
+        return $true
+    } catch {
+        # Test-ComputerSecureChannel may not be available on all systems
+        return $true
+    }
+}
+
 function Invoke-SafeDownload {
     param([string]$Uri, [string]$OutFile, [int]$MaxRetries = 3)
     $retryCount = 0
@@ -63,6 +93,9 @@ function New-JunctionCheck {
     return $true
 }
 
+# Check domain trust before proceeding
+Test-DomainTrust
+
 # Install Scoop
 Write-Host "[INFO] Installing Scoop..."
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
@@ -82,15 +115,27 @@ scoop bucket add nerd-fonts 2>$null
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
 $installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }
+$failedPackages = @()
+
 $Config.ScoopPackages | ForEach-Object {
     $pkg = $_
     if ($installedPackages -contains $pkg) {
         Write-Host "[OK] ${pkg} already installed"
     } else {
         Write-Host "[INFO] Installing ${pkg}..."
-        scoop install $pkg 2>&1 | Out-Null
-        Write-Host "[OK] ${pkg} installed"
+        try {
+            scoop install $pkg 2>&1 | Out-Null
+            Write-Host "[OK] ${pkg} installed"
+        } catch {
+            Write-Host "[WARN] Failed to install ${pkg}: $_" -ForegroundColor Yellow
+            $failedPackages += $pkg
+        }
     }
+}
+
+if ($failedPackages.Count -gt 0) {
+    Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
+    Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
 }
 
 # Notes Repository
@@ -488,6 +533,59 @@ if ($explorer) {
     Start-Sleep -Seconds 2
 }
 Start-Process explorer
+
+# Font Installation (manual, no admin required)
+Write-Host "[INFO] Installing fonts manually..."
+$fontDir = "$env:USERPROFILE\Desktop\DownloadedFonts"
+$fontTempDir = "$env:TEMP\fonts-install"
+New-Item -ItemType Directory -Force -Path $fontDir, $fontTempDir | Out-Null
+
+try {
+    # Download Cascadia Code
+    $cascadiaUrl = "https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip"
+    $cascadiaZip = "$fontTempDir\CascadiaCode.zip"
+
+    Write-Host "[INFO] Downloading Cascadia Code..."
+    Invoke-SafeDownload $cascadiaUrl $cascadiaZip
+    if (Test-Path $cascadiaZip) {
+        Expand-Archive -Path $cascadiaZip -DestinationPath $fontTempDir -Force
+        $cascadiaFontFiles = Get-ChildItem "$fontTempDir\CascadiaCode-2407.24\ttf\static" -Filter *.ttf -ErrorAction SilentlyContinue
+        if ($cascadiaFontFiles) {
+            Copy-Item "$fontTempDir\CascadiaCode-2407.24\ttf\static\*.ttf" -Destination $fontDir -Force
+        }
+    }
+    
+    # Download JetBrains Mono
+    $jetbrainsUrl = "https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip"
+    $jetbrainsZip = "$fontTempDir\JetBrainsMono.zip"
+    
+    Write-Host "[INFO] Downloading JetBrains Mono..."
+    Invoke-SafeDownload $jetbrainsUrl $jetbrainsZip
+    if (Test-Path $jetbrainsZip) {
+        Expand-Archive -Path $jetbrainsZip -DestinationPath $fontTempDir -Force
+        $jetbrainsFontFiles = Get-ChildItem "$fontTempDir\JetBrainsMono-2.304\fonts\ttf" -Filter *.ttf -ErrorAction SilentlyContinue
+        if ($jetbrainsFontFiles) {
+            Copy-Item "$fontTempDir\JetBrainsMono-2.304\fonts\ttf\*.ttf" -Destination $fontDir -Force
+        }
+    }
+    
+    Write-Host "[OK] Fonts downloaded to: $fontDir"
+    Write-Host ""
+    Write-Host "[INFO] To install fonts:" -ForegroundColor Cyan
+    Write-Host "  1. Open File Explorer and navigate to: $fontDir"
+    Write-Host "  2. Select all font files"
+    Write-Host "  3. Right-click and select 'Install' for current user only"
+    Write-Host "  4. Restart your terminal/editor to see the new fonts"
+    Write-Host ""
+} catch {
+    Write-Host "[WARN] Font download failed: $_" -ForegroundColor Yellow
+    Write-Host "[INFO] You can download fonts manually later from:" -ForegroundColor Cyan
+    Write-Host "  - Cascadia Code: https://github.com/microsoft/cascadia-code/releases" -ForegroundColor Cyan
+    Write-Host "  - JetBrains Mono: https://www.jetbrains.com/lp/mono/" -ForegroundColor Cyan
+} finally {
+    # Cleanup temp files
+    Remove-Item $fontTempDir -Recurse -Force -ErrorAction SilentlyContinue
+}
 
 Write-Host "===== bootstrap complete =====`n"
 Write-Host "Key Bindings:
