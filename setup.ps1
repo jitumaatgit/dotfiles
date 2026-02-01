@@ -540,6 +540,9 @@ $fontDir = "$env:USERPROFILE\Desktop\DownloadedFonts"
 $fontTempDir = "$env:TEMP\fonts-install"
 New-Item -ItemType Directory -Force -Path $fontDir, $fontTempDir | Out-Null
 
+$cascadiaCopied = 0
+$jetbrainsCopied = 0
+
 try {
     # Download Cascadia Code
     $cascadiaUrl = "https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip"
@@ -547,12 +550,37 @@ try {
 
     Write-Host "[INFO] Downloading Cascadia Code..."
     Invoke-SafeDownload $cascadiaUrl $cascadiaZip
+    
     if (Test-Path $cascadiaZip) {
+        Write-Host "[INFO] Extracting Cascadia Code..."
         Expand-Archive -Path $cascadiaZip -DestinationPath $fontTempDir -Force
-        $cascadiaFontFiles = Get-ChildItem "$fontTempDir\CascadiaCode-2407.24\ttf\static" -Filter *.ttf -ErrorAction SilentlyContinue
-        if ($cascadiaFontFiles) {
-            Copy-Item "$fontTempDir\CascadiaCode-2407.24\ttf\static\*.ttf" -Destination $fontDir -Force
+        
+        # List extracted contents for debugging
+        $extractedDir = Get-ChildItem $fontTempDir -Directory
+        if ($extractedDir) {
+            Write-Host "[DEBUG] Extracted directory: $($extractedDir.Name)"
+            $cascadiaRoot = $extractedDir.FullName
+            
+            # Try multiple possible paths
+            $staticTtfPath = Join-Path $cascadiaRoot "ttf\static"
+            $ttfPath = Join-Path $cascadiaRoot "ttf"
+            
+            if (Test-Path $staticTtfPath) {
+                Write-Host "[INFO] Found static TTF files, copying..."
+                $fontFiles = Get-ChildItem $staticTtfPath -Filter *.ttf
+                $fontFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
+                $cascadiaCopied = $fontFiles.Count
+            } elseif (Test-Path $ttfPath) {
+                Write-Host "[INFO] Found TTF files, copying..."
+                $fontFiles = Get-ChildItem $ttfPath -Filter *.ttf -Recurse
+                $fontFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
+                $cascadiaCopied = $fontFiles.Count
+            } else {
+                Write-Host "[WARN] Could not find TTF files in Cascadia Code archive" -ForegroundColor Yellow
+            }
         }
+    } else {
+        Write-Host "[WARN] Cascadia Code download failed" -ForegroundColor Yellow
     }
     
     # Download JetBrains Mono
@@ -561,22 +589,48 @@ try {
     
     Write-Host "[INFO] Downloading JetBrains Mono..."
     Invoke-SafeDownload $jetbrainsUrl $jetbrainsZip
+    
     if (Test-Path $jetbrainsZip) {
+        Write-Host "[INFO] Extracting JetBrains Mono..."
         Expand-Archive -Path $jetbrainsZip -DestinationPath $fontTempDir -Force
-        $jetbrainsFontFiles = Get-ChildItem "$fontTempDir\JetBrainsMono-2.304\fonts\ttf" -Filter *.ttf -ErrorAction SilentlyContinue
-        if ($jetbrainsFontFiles) {
-            Copy-Item "$fontTempDir\JetBrainsMono-2.304\fonts\ttf\*.ttf" -Destination $fontDir -Force
+        
+        # Find all TTF files in extracted directory
+        $allTtfFiles = Get-ChildItem $fontTempDir -Filter *.ttf -Recurse -ErrorAction SilentlyContinue
+        if ($allTtfFiles) {
+            Write-Host "[INFO] Found $($allTtfFiles.Count) JetBrains Mono font files, copying..."
+            $allTtfFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
+            $jetbrainsCopied = $allTtfFiles.Count
+        } else {
+            Write-Host "[WARN] Could not find TTF files in JetBrains Mono archive" -ForegroundColor Yellow
         }
+    } else {
+        Write-Host "[WARN] JetBrains Mono download failed" -ForegroundColor Yellow
     }
     
-    Write-Host "[OK] Fonts downloaded to: $fontDir"
-    Write-Host ""
-    Write-Host "[INFO] To install fonts:" -ForegroundColor Cyan
-    Write-Host "  1. Open File Explorer and navigate to: $fontDir"
-    Write-Host "  2. Select all font files"
-    Write-Host "  3. Right-click and select 'Install' for current user only"
-    Write-Host "  4. Restart your terminal/editor to see the new fonts"
-    Write-Host ""
+    # Report results
+    if ($cascadiaCopied -gt 0 -or $jetbrainsCopied -gt 0) {
+        Write-Host ""
+        Write-Host "[OK] Font download complete:" -ForegroundColor Green
+        if ($cascadiaCopied -gt 0) {
+            Write-Host "  - Cascadia Code: $cascadiaCopied files" -ForegroundColor Green
+        }
+        if ($jetbrainsCopied -gt 0) {
+            Write-Host "  - JetBrains Mono: $jetbrainsCopied files" -ForegroundColor Green
+        }
+        Write-Host "[OK] Fonts saved to: $fontDir" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "[INFO] To install fonts:" -ForegroundColor Cyan
+        Write-Host "  1. Open File Explorer and navigate to: $fontDir"
+        Write-Host "  2. Select all font files"
+        Write-Host "  3. Right-click and select 'Install' for current user only"
+        Write-Host "  4. Restart your terminal/editor to see the new fonts"
+        Write-Host ""
+    } else {
+        Write-Host "[WARN] No fonts were downloaded successfully" -ForegroundColor Yellow
+        Write-Host "[INFO] You can download fonts manually later from:" -ForegroundColor Cyan
+        Write-Host "  - Cascadia Code: https://github.com/microsoft/cascadia-code/releases" -ForegroundColor Cyan
+        Write-Host "  - JetBrains Mono: https://www.jetbrains.com/lp/mono/" -ForegroundColor Cyan
+    }
 } catch {
     Write-Host "[WARN] Font download failed: $_" -ForegroundColor Yellow
     Write-Host "[INFO] You can download fonts manually later from:" -ForegroundColor Cyan
@@ -584,6 +638,7 @@ try {
     Write-Host "  - JetBrains Mono: https://www.jetbrains.com/lp/mono/" -ForegroundColor Cyan
 } finally {
     # Cleanup temp files
+    Write-Host "[INFO] Cleaning up temporary files..."
     Remove-Item $fontTempDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
