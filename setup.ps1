@@ -649,9 +649,13 @@ Write-Host "Key Bindings:
   Other: CapsLock=Esc | RWin=LCtrl`n"
 Write-Host "Dotfiles setup:
   gh auth login
-  git init -b main && git remote add origin https://github.com/jitumaatgit/dotfiles
-  git fetch && git checkout -f main`n"
-Write-Host "nvim-data: cd ~/vim-data-remote && git status"
-Write-Host "zen-browser-data: cd ~/zen-browser-data && git status"
+  git init -b main 
+  git remote add origin https://github.com/jitumaatgit/dotfiles
+  git fetch 
+  git checkout -f main`n"
+Write-Host "nvim-data: cd ~/vim-data-remote 
+Write-Host "git status"
+Write-Host "zen-browser-data: cd ~/zen-browser-data 
+Write-Host "git status"
 Write-Host "============================================================"
 Stop-Transcript

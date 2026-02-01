@@ -10,13 +10,13 @@ return {
     workspaces = {
       {
         name = "notes",
-        path = "~/notes",
+        path = "C:/Users/student/notes",
       },
     },
     notes_subdir = "",
     daily_notes = {
-      folder = "docs/30-DailyNotes/",
-      date_format = "%Y-%m-%d",
+      folder = "docs/30-DailyNotes",
+      date_format = "%Y/%m/%Y-%m-%d",
       alias_format = "%B %-d, %Y",
       default_tags = { "daily-notes" },
       template = "docs/50-Templates/DailyNote Template.md",
@@ -32,24 +32,7 @@ return {
         end,
         opts = { desc = "Follow link", noremap = false, expr = true, buffer = true },
       },
-      ["<leader>nn"] = {
-        action = function()
-          vim.cmd("ObsidianNew")
-        end,
-        opts = { desc = "New note", buffer = true },
-      },
-      ["<leader>nt"] = {
-        action = function()
-          vim.cmd("ObsidianToday")
-        end,
-        opts = { desc = "Open today's daily note", buffer = true },
-      },
-      ["<leader>ny"] = {
-        action = function()
-          vim.cmd("ObsidianYesterday")
-        end,
-        opts = { desc = "Open yesterday's note", buffer = true },
-      },
+      -- Note: <leader>nn, <leader>nt, <leader>ny are defined globally in keys table
     },
     new_notes_location = "current_dir",
     note_id_func = function(title)
@@ -104,6 +87,9 @@ return {
     ui = { enable = false },
   },
   keys = {
+    { "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
+    { "<leader>nt", "<cmd>ObsidianToday<cr>", desc = "Open today's daily note" },
+    { "<leader>ny", "<cmd>ObsidianYesterday<cr>", desc = "Open yesterday's note" },
     { "<leader>ns", "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
     { "<leader>nb", "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
     { "<leader>nl", "<cmd>ObsidianLinks<cr>", desc = "Show outgoing links" },
