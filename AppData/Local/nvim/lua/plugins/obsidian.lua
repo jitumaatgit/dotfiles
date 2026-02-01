@@ -15,11 +15,11 @@ return {
     },
     notes_subdir = "",
     daily_notes = {
-      folder = "daily/",
+      folder = "docs/30-DailyNotes/",
       date_format = "%Y-%m-%d",
       alias_format = "%B %-d, %Y",
       default_tags = { "daily-notes" },
-      template = nil,
+      template = "docs/50-Templates/DailyNote Template.md",
     },
     completion = {
       nvim_cmp = true,
@@ -68,7 +68,7 @@ return {
     end,
     preferred_link_style = "wiki",
     templates = {
-      folder = "templates",
+      folder = "docs/50-Templates",
       date_format = "%Y-%m-%d",
       time_format = "%H:%M",
       substitutions = {},
