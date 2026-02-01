@@ -32,7 +32,7 @@ return {
         end,
         opts = { desc = "Follow link", noremap = false, expr = true, buffer = true },
       },
-      -- Note: <leader>nn, <leader>nt, <leader>ny are defined globally in keys table
+      -- Note: <leader>nn, <leader>nt, <leader>ny are defined globally in keys table so they can be used from dashboard
     },
     new_notes_location = "current_dir",
     note_id_func = function(title)
