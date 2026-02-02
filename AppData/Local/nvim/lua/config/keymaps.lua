@@ -5,3 +5,7 @@ vim.keymap.set("i", "jj", "<Esc>")
 vim.keymap.set("i", "kk", "<Esc>")
 vim.keymap.set("i", "jk", "<Esc>")
 vim.keymap.set("i", "kj", "<Esc>")
+vim.keymap.set("n", "gj", [[/^#\+ .*<CR>]], { desc = "Next markdown heading" })
+vim.keymap.set("n", "gk", [[?^#\+ .*<CR>]], { desc = "Previous markdown heading" })
+-- Pressing Esc clears search highlight
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<cr>")
