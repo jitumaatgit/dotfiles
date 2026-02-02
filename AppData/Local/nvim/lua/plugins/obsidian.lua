@@ -46,9 +46,12 @@ return {
         return suffix
       end
     end,
-    wiki_link_func = function(opts)
-      return require("obsidian.util").wiki_link_path_prefix(opts)
-    end,
+    -- going to try `use_alias_only and see if I can still follow` formerly `wiki_link_path_prefix`
+    -- `wiki_link_path_prefix` isnt even in the docs, but seems to work funtionally like `prepend_note_path`
+    wiki_link_func = "use_alias_only",
+    -- wiki_link_func = function(opts)
+    --   return require("obsidian.util").wiki_link_path_prefix(opts)
+    -- end,
     preferred_link_style = "wiki",
     templates = {
       folder = "docs/50-Templates",
