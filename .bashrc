@@ -67,3 +67,10 @@ command -v nvim >/dev/null && alias vim='nvim'
 export EDITOR="nvim"
 # initialize starship in bash
 eval "$(starship init bash)"
+
+###############################################
+# OPENCODE PLUGIN PERFORMANCE FIX
+# Disables auto-update to prevent re-downloading
+# plugins on every startup (GitHub issue #8729)
+###############################################
+export OPENCODE_DISABLE_AUTOUPDATE=true
