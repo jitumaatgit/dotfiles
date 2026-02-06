@@ -99,4 +99,32 @@ return {
     { "<leader>ni", "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
     { "<leader>nc", "<cmd>ObsidianToggleCheckbox<cr>", desc = "Toggle checkbox" },
   },
+  config = function(_, opts)
+    require("obsidian").setup(opts)
+    -- Smart action on <CR> in markdown files
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "markdown",
+      callback = function(ev)
+        vim.keymap.set("n", "<CR>", function()
+          local ok, actions = pcall(require, "obsidian.actions")
+          if ok then
+            actions.smart_action()
+          else
+            -- Fallback: try manual fold toggle
+            local line = vim.api.nvim_win_get_cursor(0)[1]
+            local foldlevel = vim.fn.foldlevel(line)
+            if foldlevel > 0 then
+              vim.cmd("normal! za")
+            else
+              -- Normal Enter behavior
+              vim.cmd("normal! j")
+            end
+          end
+        end, {
+          buffer = true,
+          desc = "Obsidian smart action or toggle fold",
+        })
+      end,
+    })
+  end,
 }
