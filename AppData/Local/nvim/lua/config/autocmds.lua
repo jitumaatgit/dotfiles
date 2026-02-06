@@ -43,10 +43,15 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 vim.api.nvim_create_autocmd("VimEnter", {
   pattern = "*",
   callback = function()
-    if vim.fn.has('win32') == 1 then
-      vim.fn.jobstart({'powershell.exe', '-NoProfile', '-Command',
-        'Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted -Force'},
-        {on_exit = function() end, detach = true}
+    if vim.fn.has("win32") == 1 then
+      vim.fn.jobstart(
+        {
+          "powershell.exe",
+          "-NoProfile",
+          "-Command",
+          "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted -Force",
+        },
+        { on_exit = function() end, detach = true }
       )
     end
   end,
@@ -80,5 +85,5 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end
   end,
 })
- 
+
 return M
