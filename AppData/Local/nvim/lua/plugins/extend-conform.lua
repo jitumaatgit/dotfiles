@@ -118,7 +118,14 @@ $_ = join("\n", @out);
       -- typst = { "typstyle", lsp_format = "prefer" },
       -- typst = { "prettypst" },
 
-      ["markdown"] = { "prettier", "markdownlint-cli2", "markdown-toc" },
+      ["markdown"] = function(bufnr)
+        -- Skip formatting for files in tasks folder or kanban files (special characters in filenames break shell commands)
+        local filepath = vim.api.nvim_buf_get_name(bufnr)
+        if filepath:match("[\\/]tasks[\\/]") or filepath:match("kanban%.md$") then
+          return {}
+        end
+        return { "prettier", "markdownlint-cli2", "markdown-toc" }
+      end,
       ["markdown.mdx"] = { "prettier", "markdownlint-cli2", "markdown-toc" },
     },
   },

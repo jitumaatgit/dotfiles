@@ -88,6 +88,10 @@ return {
     },
     -- Disable obsidian UI (using render-markdown.nvim instead)
     ui = { enable = false },
+    -- Disable frontmatter for files in the tasks folder or kanban files to avoid conflicts with kanban.nvim
+    disable_frontmatter = function(filename)
+      return filename:match("[\\/]tasks[\\/]") or filename:match("^tasks[\\/]") or filename:match("kanban%.md$")
+    end,
   },
   keys = {
     { "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
