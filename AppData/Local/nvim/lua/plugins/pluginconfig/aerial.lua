@@ -218,14 +218,35 @@ require("aerial").setup({
     -- How long to wait (in ms) after a buffer change before updating
     update_delay = 300,
   },
+
+  -- Custom highlight function to color markdown headings by level
+  get_highlight = function(symbol, is_icon, is_collapsed)
+    -- Only apply to markdown Interface symbols (headings)
+    if symbol.kind == "Interface" and symbol.level then
+      local level = math.min(symbol.level + 1, 6)
+      if is_icon then
+        return "AerialH" .. level .. "Icon"
+      else
+        return "AerialH" .. level
+      end
+    end
+    -- Return nil to use default highlighting
+  end,
 })
 
 vim.keymap.set("n", "gt", "<Cmd>:AerialToggle<CR>", { noremap = true, silent = true, desc = "Toggle Aerial outline" })
 
--- Link aerial markdown headings to theme's markdown colors
-vim.api.nvim_set_hl(0, "AerialMarkdownH1", { link = "markdownH1" })
-vim.api.nvim_set_hl(0, "AerialMarkdownH2", { link = "markdownH2" })
-vim.api.nvim_set_hl(0, "AerialMarkdownH3", { link = "markdownH3" })
-vim.api.nvim_set_hl(0, "AerialMarkdownH4", { link = "markdownH4" })
-vim.api.nvim_set_hl(0, "AerialMarkdownH5", { link = "markdownH5" })
-vim.api.nvim_set_hl(0, "AerialMarkdownH6", { link = "markdownH6" })
+-- Link aerial markdown heading levels to render-markdown colors
+vim.api.nvim_set_hl(0, "AerialH1", { link = "RenderMarkdownH1" })
+vim.api.nvim_set_hl(0, "AerialH2", { link = "RenderMarkdownH2" })
+vim.api.nvim_set_hl(0, "AerialH3", { link = "RenderMarkdownH3" })
+vim.api.nvim_set_hl(0, "AerialH4", { link = "RenderMarkdownH4" })
+vim.api.nvim_set_hl(0, "AerialH5", { link = "RenderMarkdownH5" })
+vim.api.nvim_set_hl(0, "AerialH6", { link = "RenderMarkdownH6" })
+-- Also link the icon variants
+vim.api.nvim_set_hl(0, "AerialH1Icon", { link = "RenderMarkdownH1" })
+vim.api.nvim_set_hl(0, "AerialH2Icon", { link = "RenderMarkdownH2" })
+vim.api.nvim_set_hl(0, "AerialH3Icon", { link = "RenderMarkdownH3" })
+vim.api.nvim_set_hl(0, "AerialH4Icon", { link = "RenderMarkdownH4" })
+vim.api.nvim_set_hl(0, "AerialH5Icon", { link = "RenderMarkdownH5" })
+vim.api.nvim_set_hl(0, "AerialH6Icon", { link = "RenderMarkdownH6" })
