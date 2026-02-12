@@ -220,4 +220,12 @@ require("aerial").setup({
   },
 })
 
-vim.keymap.set("n", "gt", "<Cmd>:AerialToggle<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "gt", "<Cmd>:AerialToggle<CR>", { noremap = true, silent = true, desc = "Toggle Aerial outline" })
+
+-- Link aerial markdown headings to theme's markdown colors
+vim.api.nvim_set_hl(0, "AerialMarkdownH1", { link = "markdownH1" })
+vim.api.nvim_set_hl(0, "AerialMarkdownH2", { link = "markdownH2" })
+vim.api.nvim_set_hl(0, "AerialMarkdownH3", { link = "markdownH3" })
+vim.api.nvim_set_hl(0, "AerialMarkdownH4", { link = "markdownH4" })
+vim.api.nvim_set_hl(0, "AerialMarkdownH5", { link = "markdownH5" })
+vim.api.nvim_set_hl(0, "AerialMarkdownH6", { link = "markdownH6" })
