@@ -63,7 +63,7 @@ return {
       vim.fn.jobstart({ "cmd.exe", "/c", "start", "", url })
     end,
     picker = {
-      name = "snacks.nvim",
+      name = "telescope.nvim",
       note_mappings = {
         new = "<C-x>",
         insert_link = "<C-l>",
