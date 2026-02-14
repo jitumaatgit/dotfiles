@@ -1,7 +1,7 @@
 return {
   "sphamba/smear-cursor.nvim",
   event = "VeryLazy",
-  cond = vim.g.neovide == nil,
+  cond = vim.g.neovide == nil and vim.env.OPENCODE_EDITOR == nil,
   opts = {
     legacy_computing_symbols_support = true,
     legacy_computing_symbols_support_vertical_bars = true,

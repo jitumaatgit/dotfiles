@@ -63,8 +63,10 @@ alias grep='grep --color=auto'
 alias lg='lazygit'
 # Make vim = nvim
 command -v nvim >/dev/null && alias vim='nvim'
-# make neovim default editor
-export EDITOR="nvim"
+# Add ~/bin to PATH for custom scripts
+export PATH="$HOME/bin:$PATH"
+# make neovim default editor (use wrapper for opencode integration)
+export EDITOR="nvim-opencode"
 # initialize starship in bash
 eval "$(starship init bash)"
 
