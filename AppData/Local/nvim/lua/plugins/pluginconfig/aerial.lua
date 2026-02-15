@@ -128,7 +128,7 @@ require("aerial").setup({
 
   -- Use symbol tree for folding. Set to true or false to enable/disable
   -- 'auto' will manage folds if your previous foldmethod was 'manual'
-  manage_folds = true,
+  manage_folds = false,
 
   -- Set default symbol icons to use patched font icons (see https://www.nerdfonts.com/)
   -- "auto" will set it to true if nvim-web-devicons or lspkind-nvim is installed.
