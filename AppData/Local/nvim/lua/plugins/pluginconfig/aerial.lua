@@ -250,3 +250,7 @@ vim.api.nvim_set_hl(0, "AerialH3Icon", { link = "RenderMarkdownH3" })
 vim.api.nvim_set_hl(0, "AerialH4Icon", { link = "RenderMarkdownH4" })
 vim.api.nvim_set_hl(0, "AerialH5Icon", { link = "RenderMarkdownH5" })
 vim.api.nvim_set_hl(0, "AerialH6Icon", { link = "RenderMarkdownH6" })
+
+-- Use cursor line highlight for current symbol
+vim.api.nvim_set_hl(0, "AerialLine", { link = "CursorLine" })
+vim.api.nvim_set_hl(0, "AerialLineNC", { link = "CursorLine" })
