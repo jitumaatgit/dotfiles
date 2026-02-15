@@ -26,18 +26,6 @@ vim.api.nvim_create_autocmd({ "ColorScheme", "FileType" }, {
 
 
 
--- Enable tree-sitter folding for markdown files
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "markdown",
-  callback = function()
-    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-    vim.wo.foldmethod = "expr"
-    vim.wo.foldtext = ""
-    vim.opt_local.fillchars = { fold = "" }
-    -- Disable aerial for markdown to prevent fold interference
-    require("aerial").close()
-  end,
-})
 
 -- Enable rainbow_csv and csvview for CSV files
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {

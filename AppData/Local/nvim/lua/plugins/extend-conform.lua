@@ -124,9 +124,9 @@ $_ = join("\n", @out);
         if filepath:match("[\\/]tasks[\\/]") or filepath:match("kanban%.md$") then
           return {}
         end
-        return { "prettier", "markdownlint-cli2", "markdown-toc" }
+        return { "markdownlint-cli2", "markdown-toc" }
       end,
-      ["markdown.mdx"] = { "prettier", "markdownlint-cli2", "markdown-toc" },
+      ["markdown.mdx"] = { "markdownlint-cli2", "markdown-toc" },
     },
   },
 }

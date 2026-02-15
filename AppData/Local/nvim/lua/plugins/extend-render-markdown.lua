@@ -1,32 +1,35 @@
 -- Parse query once outside function for performance
-local callout_query = vim.treesitter.query.parse('markdown', [[
+local callout_query = vim.treesitter.query.parse(
+  "markdown",
+  [[
   (block_quote
     (paragraph) @callout_header
     (#match? @callout_header "^\\[!\\w+\\]"))
-]])
+]]
+)
 
 -- Map callout types to highlight groups
 local callout_highlights = {
-  note = 'RenderMarkdownInfo',
-  tip = 'RenderMarkdownSuccess',
-  important = 'RenderMarkdownHint',
-  warning = 'RenderMarkdownWarn',
-  caution = 'RenderMarkdownError',
-  abstract = 'RenderMarkdownInfo',
-  info = 'RenderMarkdownInfo',
-  todo = 'RenderMarkdownInfo',
-  success = 'RenderMarkdownSuccess',
-  question = 'RenderMarkdownHint',
-  failure = 'RenderMarkdownError',
-  danger = 'RenderMarkdownError',
-  bug = 'RenderMarkdownError',
-  example = 'RenderMarkdownHint',
-  quote = 'RenderMarkdownQuote',
+  note = "RenderMarkdownInfo",
+  tip = "RenderMarkdownSuccess",
+  important = "RenderMarkdownHint",
+  warning = "RenderMarkdownWarn",
+  caution = "RenderMarkdownError",
+  abstract = "RenderMarkdownInfo",
+  info = "RenderMarkdownInfo",
+  todo = "RenderMarkdownInfo",
+  success = "RenderMarkdownSuccess",
+  question = "RenderMarkdownHint",
+  failure = "RenderMarkdownError",
+  danger = "RenderMarkdownError",
+  bug = "RenderMarkdownError",
+  example = "RenderMarkdownHint",
+  quote = "RenderMarkdownQuote",
 }
 
 -- Extract callout type from header text
 local function get_callout_type(text)
-  local callout_type = text:match('%[!(%w+)%]')
+  local callout_type = text:match("%[!(%w+)%]")
   if callout_type then
     return callout_type:lower()
   end
@@ -43,17 +46,17 @@ local function parse_callout_backgrounds(ctx)
     -- Get the header text to determine callout type
     local header_text = vim.treesitter.get_node_text(node, buf)
     local callout_type = get_callout_type(header_text)
-    local highlight_group = callout_type and callout_highlights[callout_type] or 'RenderMarkdownQuote'
+    local highlight_group = callout_type and callout_highlights[callout_type] or "RenderMarkdownQuote"
 
     -- Get the parent block_quote to find all lines
     local block_quote = node:parent()
-    if block_quote and block_quote:type() == 'block_quote' then
+    if block_quote and block_quote:type() == "block_quote" then
       local quote_start_row, _, quote_end_row, _ = block_quote:range()
 
       -- Add background to all lines in the callout (starting from line 2)
       for row = quote_start_row + 1, quote_end_row - 1 do
         -- Get the line text to calculate width
-        local line_text = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ''
+        local line_text = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ""
         -- Calculate visual width (handles unicode, tabs, etc.)
         local text_width = vim.fn.strdisplaywidth(line_text)
 
@@ -65,7 +68,7 @@ local function parse_callout_backgrounds(ctx)
             start_col = 0,
             opts = {
               end_row = row,
-              end_col = text_width,  -- Stop at text width instead of hl_eol
+              end_col = text_width, -- Stop at text width instead of hl_eol
               hl_group = highlight_group,
             },
           }
@@ -76,8 +79,8 @@ local function parse_callout_backgrounds(ctx)
             start_row = row,
             start_col = 0,
             opts = {
-              virt_text = { { '█', highlight_group } },
-              virt_text_pos = 'overlay',
+              virt_text = { { "█", highlight_group } },
+              virt_text_pos = "overlay",
             },
           }
         end
@@ -196,6 +199,5 @@ return {
         parse = parse_callout_backgrounds,
       },
     },
-
   },
 }

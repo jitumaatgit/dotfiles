@@ -128,7 +128,7 @@ require("aerial").setup({
 
   -- Use symbol tree for folding. Set to true or false to enable/disable
   -- 'auto' will manage folds if your previous foldmethod was 'manual'
-  manage_folds = false,
+  manage_folds = true,
 
   -- Set default symbol icons to use patched font icons (see https://www.nerdfonts.com/)
   -- "auto" will set it to true if nvim-web-devicons or lspkind-nvim is installed.
@@ -234,7 +234,7 @@ require("aerial").setup({
   end,
 })
 
-vim.keymap.set("n", "gt", "<Cmd>:AerialToggle<CR>", { noremap = true, silent = true, desc = "Toggle Aerial outline" })
+-- vim.keymap.set("n", "gt", "<Cmd>:AerialToggle<CR>", { noremap = true, silent = true, desc = "Toggle Aerial outline" })
 
 -- Link aerial markdown heading levels to render-markdown colors
 vim.api.nvim_set_hl(0, "AerialH1", { link = "RenderMarkdownH1" })
