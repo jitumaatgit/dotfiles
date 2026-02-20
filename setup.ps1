@@ -555,29 +555,29 @@ try {
         Write-Host "[INFO] Extracting Cascadia Code..."
         Expand-Archive -Path $cascadiaZip -DestinationPath $fontTempDir -Force
         
-        # List extracted contents for debugging
-        $extractedDir = Get-ChildItem $fontTempDir -Directory
-        if ($extractedDir) {
-            Write-Host "[DEBUG] Extracted directory: $($extractedDir.Name)"
-            $cascadiaRoot = $extractedDir.FullName
-            
-            # Try multiple possible paths
-            $staticTtfPath = Join-Path $cascadiaRoot "ttf\static"
-            $ttfPath = Join-Path $cascadiaRoot "ttf"
-            
-            if (Test-Path $staticTtfPath) {
-                Write-Host "[INFO] Found static TTF files, copying..."
-                $fontFiles = Get-ChildItem $staticTtfPath -Filter *.ttf
-                $fontFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
-                $cascadiaCopied = $fontFiles.Count
-            } elseif (Test-Path $ttfPath) {
-                Write-Host "[INFO] Found TTF files, copying..."
-                $fontFiles = Get-ChildItem $ttfPath -Filter *.ttf -Recurse
-                $fontFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
-                $cascadiaCopied = $fontFiles.Count
-            } else {
-                Write-Host "[WARN] Could not find TTF files in Cascadia Code archive" -ForegroundColor Yellow
+        $staticTtfPath = Join-Path $fontTempDir "ttf\static"
+        $ttfPath = Join-Path $fontTempDir "ttf"
+        
+        if (-not (Test-Path $staticTtfPath) -and -not (Test-Path $ttfPath)) {
+            $extractedDir = Get-ChildItem $fontTempDir -Directory | Where-Object { Test-Path (Join-Path $_.FullName "ttf") } | Select-Object -First 1
+            if ($extractedDir) {
+                $staticTtfPath = Join-Path $extractedDir.FullName "ttf\static"
+                $ttfPath = Join-Path $extractedDir.FullName "ttf"
             }
+        }
+        
+        if (Test-Path $staticTtfPath) {
+            Write-Host "[INFO] Found static TTF files, copying..."
+            $fontFiles = Get-ChildItem $staticTtfPath -Filter *.ttf
+            $fontFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
+            $cascadiaCopied = $fontFiles.Count
+        } elseif (Test-Path $ttfPath) {
+            Write-Host "[INFO] Found TTF files, copying..."
+            $fontFiles = Get-ChildItem $ttfPath -Filter *.ttf -Recurse
+            $fontFiles | ForEach-Object { Copy-Item $_.FullName -Destination $fontDir -Force }
+            $cascadiaCopied = $fontFiles.Count
+        } else {
+            Write-Host "[WARN] Could not find TTF files in Cascadia Code archive" -ForegroundColor Yellow
         }
     } else {
         Write-Host "[WARN] Cascadia Code download failed" -ForegroundColor Yellow
