@@ -1,5 +1,8 @@
 return {
   "ThePrimeagen/99",
+  dependencies = {
+    "hrsh7th/nvim-cmp",
+  },
   config = function()
     local _99 = require("99")
 
@@ -56,7 +59,7 @@ return {
 
         --- What autocomplete do you use.  We currently only
         --- support cmp right now
-        source = "cmp" | "blink",
+        source = "cmp",
       },
 
       --- WARNING: if you change cwd then this is likely broken

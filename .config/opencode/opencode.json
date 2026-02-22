@@ -8,7 +8,7 @@
     "terminal_suspend": "none",
     "input_undo": "ctrl+z"
   },
-  "plugin": ["@plannotator/opencode@latest","@tarquinen/opencode-dcp@latest"],
+  "plugin": ["@tarquinen/opencode-dcp"],
   "tui": {
     "scroll_acceleration": {
       "enabled": true
