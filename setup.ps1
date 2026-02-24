@@ -103,6 +103,18 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Invoke-RestMethod get.scoop.sh | Invoke-Expression
 }
 
+# Remove Windows Store Python aliases to avoid conflicts
+$windowsAppsPython = "$env:LOCALAPPDATA\Microsoft\WindowsApps\python.exe"
+if (Test-Path $windowsAppsPython) {
+    Remove-Item $windowsAppsPython -Force -ErrorAction SilentlyContinue
+    Write-Host "[OK] Removed Windows Store python.exe alias"
+}
+$windowsAppsPython3 = "$env:LOCALAPPDATA\Microsoft\WindowsApps\python3.exe"
+if (Test-Path $windowsAppsPython3) {
+    Remove-Item $windowsAppsPython3 -Force -ErrorAction SilentlyContinue
+    Write-Host "[OK] Removed Windows Store python3.exe alias"
+}
+
 Write-Host "[INFO] Installing git..."
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     scoop install git
@@ -136,6 +148,14 @@ $Config.ScoopPackages | ForEach-Object {
 if ($failedPackages.Count -gt 0) {
     Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
     Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
+}
+
+# Configure Python for node-gyp native modules
+$python3Path = (Get-Command python3 -ErrorAction SilentlyContinue).Source
+if ($python3Path) {
+    $env:PYTHON = $python3Path
+    [Environment]::SetEnvironmentVariable("PYTHON", $python3Path, "User")
+    Write-Host "[OK] Python configured for node-gyp: $python3Path"
 }
 
 # Notes Repository

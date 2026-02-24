@@ -1,6 +1,6 @@
 -- Telescope is installed but has no keybindings
 -- It's only used by obsidian.nvim and obsidian-task-filter for their pickers
--- Your default picker (snacks) handles <leader>ff, <leader>fg, etc.
+-- My default picker (snacks) handles <leader>ff, <leader>fg, etc.
 -- note: telescope is used by 99 for model switching using a picker. I will have to make sure its loaded when 99 calls
 -- for it.
 return {

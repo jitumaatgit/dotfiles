@@ -14,7 +14,7 @@ return {
     _99.setup({
       -- provider = _99.Providers.ClaudeCodeProvider,  -- default: OpenCodeProvider
       logger = {
-        level = _99.DEBUG,
+        level = _99.WARN,
         path = "/tmp/" .. basename .. ".99.debug",
         print_on_error = true,
       },
@@ -71,18 +71,19 @@ return {
       --- /foo/bar/AGENT.md
       --- /foo/AGENT.md
       --- assuming that /foo is project root (based on cwd)
-      md_files = {
-        "AGENT.md",
-      },
     })
 
     -- take extra note that i have visual selection only in v mode
     -- technically whatever your last visual selection is, will be used
-    -- so i have this set to visual mode so i dont screw up and use an
+    -- so i have this set to visual mode so i dont screw up to use an
     -- old visual selection
     --
     -- likely ill add a mode check and assert on required visual mode
     -- so just prepare for it now
+    vim.keymap.set("n", "<leader>9s", function()
+      _99.search()
+    end)
+
     vim.keymap.set("v", "<leader>9v", function()
       _99.visual()
     end)
@@ -92,8 +93,12 @@ return {
       _99.stop_all_requests()
     end)
 
-    vim.keymap.set("n", "<leader>9s", function()
-      _99.search()
+    vim.keymap.set("n", "<leader>9m", function()
+      require("99.extensions.telescope").select_model()
+    end)
+
+    vim.keymap.set("n", "<leader>9p", function()
+      require("99.extensions.telescope").select_provider()
     end)
   end,
 }
