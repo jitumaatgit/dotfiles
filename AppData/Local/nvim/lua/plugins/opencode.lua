@@ -11,30 +11,32 @@ return {
       ---@type opencode.Opts
       vim.g.opencode_opts = {
         -- Your configuration, if any — see `lua/opencode/config.lua`, or "goto definition".
-        -- port = 3000, dont enable this, opencode.nvim will not find the process if I set port manually (on my windows
+        -- port = 3000, -- dont enable this, opencode.nvim will not find the process if I set port manually (on my windows
         -- setup)
-        provider = {
-          cmd = "C:/Users/student/scoop/shims/opencode.exe",
-          enabled = "snacks",
-          -- wezterm = {
-          --   direction = "bottom",
-          --   top_level = false,
-          --   percent = 40,
-          -- },
-          snacks = {
-            auto_close = true,
-            win = {
-              position = "right",
-              enter = false,
-              wo = {
-                winbar = "",
-              },
-              bo = {
-                filetype = "opencode_terminal",
-              },
-            },
-          },
-        },
+        -- provider is termporarily disabled and maintainer is working on fix. will have to use wezterm window split for
+        -- now
+        -- provider = {
+        --   cmd = "C:/Users/student/scoop/shims/opencode.exe",
+        --   enabled = "snacks",
+        --   -- wezterm = {
+        --   --   direction = "bottom",
+        --   --   top_level = false,
+        --   --   percent = 40,
+        --   -- },
+        --   snacks = {
+        --     auto_close = true,
+        --     win = {
+        --       position = "right",
+        --       enter = false,
+        --       wo = {
+        --         winbar = "",
+        --       },
+        --       bo = {
+        --         filetype = "opencode_terminal",
+        --       },
+        --     },
+        --   },
+        -- },
       }
 
       -- Required for `opts.events.reload`.
