@@ -3,22 +3,18 @@ return {
   lazy = false,
   build = ":TSUpdate",
   config = function()
-    require("nvim-treesitter.install").compilers = { "zig" }
-    require("nvim-treesitter").setup({
-      install_dir = vim.fn.stdpath("data") .. "/site",
-    })
     require("nvim-treesitter").install({
       "lua",
       "regex",
-      "sql",
+      -- "sql",
       "json",
-      "csv",
+      -- "csv",
       "javascript",
       "html",
       "markdown",
       "markdown_inline",
-      "elixir",
-      "powershell",
+      -- "elixir",
+      -- "powershell",
       "python",
       "yaml",
       "bash",
