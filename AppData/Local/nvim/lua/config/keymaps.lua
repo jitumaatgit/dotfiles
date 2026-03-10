@@ -32,3 +32,8 @@ local function smart_dd()
 end
 
 vim.keymap.set("n", "dd", smart_dd, { noremap = true, expr = true })
+
+-- Map Shift+Enter to insert a newline in normal mode
+vim.keymap.set("n", "<S-CR>", "a<CR><ESC>", { desc = "Split line" })
+-- Map Shift+Enter in insert mode
+vim.keymap.set("i", "<S-CR>", "<CR>", { desc = "Split line" })
