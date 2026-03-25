@@ -76,3 +76,4 @@ eval "$(starship init bash)"
 # plugins on every startup (GitHub issue #8729)
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
+export PATH="$PATH:/c/Users/student/qemu/qemu-w64-setup-20260318/"
