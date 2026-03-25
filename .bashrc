@@ -57,8 +57,8 @@ export PROMPT_COMMAND=''
 alias oc='opencode'
 # use eza instead of ls
 alias ls='eza'
-# Colorize grep, etc.
-alias grep='grep --color=auto'
+# Colorize grep, use rg, etc.
+alias grep='rg --color=auto'
 # make lg = lazygit
 alias lg='lazygit'
 # Make vim = nvim
@@ -72,7 +72,7 @@ eval "$(starship init bash)"
 
 ###############################################
 # OPENCODE PLUGIN PERFORMANCE FIX
-# Disables auto-update to prevent re-downloading
+# Disables aukto-update to prevent re-downloading
 # plugins on every startup (GitHub issue #8729)
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
