@@ -10,6 +10,9 @@ winpath() {
 # ⭐ Scoop shims (wezterm, nvim, rg, bat, etc.)
 export PATH="$PATH:$(winpath "$USERPROFILE/scoop/shims")"
 
+# QEMU path (may change later but works here now)
+export PATH="$PATH:/c/Users/student/qemu/qemu-w64-setup-20260318/"
+
 # ⭐ Git's own binaries (just in case)
 export PATH="$PATH:/usr/bin"
 
@@ -76,4 +79,3 @@ eval "$(starship init bash)"
 # plugins on every startup (GitHub issue #8729)
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
-export PATH="$PATH:/c/Users/student/qemu/qemu-w64-setup-20260318/"
