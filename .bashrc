@@ -11,7 +11,7 @@ winpath() {
 export PATH="$PATH:$(winpath "$USERPROFILE/scoop/shims")"
 
 # QEMU path (may change later but works here now)
-export PATH="$PATH:/c/Users/student/qemu/qemu-w64-setup-20260318/"
+export PATH="$PATH:/c/Users/student/portable-dev/qemu/"
 
 # ⭐ Git's own binaries (just in case)
 export PATH="$PATH:/usr/bin"

@@ -8,7 +8,7 @@ local M = {}
 ---@field preview_context integer Number of context lines to show in preview
 ---@field format string Format string for task display
 
--- Cache compiled patterns for performance
+-- Cache compiled patterns for performance (vim.regex objects)
 local cached_patterns = {}
 
 ---Default configuration
@@ -26,13 +26,13 @@ M.opts = {
   format = "{filename}:{line} [{tags}] {task}",
 }
 
----Compile and cache patterns
+---Compile and cache patterns as vim.regex objects
 local function ensure_patterns_cached()
-  if next(cached_patterns) ~= nil then
+  if not vim.tbl_isempty(cached_patterns) then
     return cached_patterns
   end
   for name, pattern in pairs(M.opts.task_patterns) do
-    cached_patterns[name] = pattern
+    cached_patterns[name] = vim.regex(pattern)
   end
   return cached_patterns
 end
@@ -49,10 +49,8 @@ M.register_commands = function()
   vim.api.nvim_create_user_command("ObsidianTasksByTag", function(args)
     local tags = {}
     if args.args and args.args ~= "" then
-      -- Parse comma or space separated tags
-      for tag in string.gmatch(args.args, "[^%s,]+") do
-        table.insert(tags, (tag:gsub("^#", ""))) -- Remove leading # if present
-      end
+      tags = vim.split(args.args, "[%s,]+", { trimempty = true })
+      tags = vim.tbl_map(function(t) return t:gsub("^#", "") end, tags)
     end
     M.filter_tasks_by_tags(tags)
   end, {
@@ -70,20 +68,20 @@ end
 ---@return string|? task_type The type of task (incomplete, in_progress, completed) or nil
 M.is_task_line = function(line)
   local patterns = ensure_patterns_cached()
-  
+
   -- Fast path: incomplete and in-progress tasks
-  if line:match(patterns.incomplete) then
+  if patterns.incomplete:match_str(line) then
     return "incomplete"
   end
-  if line:match(patterns.in_progress) then
+  if patterns.in_progress:match_str(line) then
     return "in_progress"
   end
-  
+
   -- Check completed only if enabled
-  if M.opts.show_completed and line:match(patterns.completed) then
+  if M.opts.show_completed and patterns.completed:match_str(line) then
     return "completed"
   end
-  
+
   return nil
 end
 
@@ -207,9 +205,9 @@ M.find_and_display_tasks = function(client, tags)
         local path = tostring(loc.path)
         if not processed_paths[path] then
           processed_paths[path] = { tags = {}, note = loc.note }
+          all_matching_files[path] = processed_paths[path]
         end
         processed_paths[path].tags[loc.tag] = true
-        all_matching_files[path] = processed_paths[path]
       end
     end
     search_complete.inline = true
@@ -224,13 +222,16 @@ M.find_and_display_tasks = function(client, tags)
     -- Try to load the note to check frontmatter
     local ok, note = pcall(Note.from_file_async, path)
     if ok and note and note.tags then
+      -- Build tag set for O(1) lookup
+      local fm_tag_set = {}
+      for _, fm_tag in ipairs(note.tags) do
+        fm_tag_set[fm_tag] = true
+      end
       -- Check if any of the requested tags are in frontmatter
       for _, required_tag in ipairs(tags) do
-        for _, fm_tag in ipairs(note.tags) do
-          if fm_tag == required_tag then
-            found_frontmatter_files[path] = { note = note, tag = required_tag }
-            break
-          end
+        if fm_tag_set[required_tag] then
+          found_frontmatter_files[path] = { note = note, tag = required_tag }
+          break
         end
       end
     end
@@ -261,10 +262,17 @@ M.process_tag_locations = function(client, tag_locations, required_tags)
   for _, loc in ipairs(tag_locations) do
     local path = tostring(loc.path)
     if not files[path] then
+      local fm_tag_set = {}
+      if loc.note and loc.note.tags then
+        for _, fm_tag in ipairs(loc.note.tags) do
+          fm_tag_set[fm_tag] = true
+        end
+      end
       files[path] = {
         path = path,
         note = loc.note,
         tags = {},
+        fm_tag_set = fm_tag_set,
         tag_locations = {},
       }
     end
@@ -272,26 +280,13 @@ M.process_tag_locations = function(client, tag_locations, required_tags)
     table.insert(files[path].tag_locations, loc)
   end
 
-  -- Build frontmatter tag lookup for efficiency
-  local function note_has_tag(note, tag)
-    if not note or not note.tags then
-      return false
-    end
-    for _, fm_tag in ipairs(note.tags) do
-      if fm_tag == tag then
-        return true
-      end
-    end
-    return false
-  end
-
   -- Filter for files that have ALL required tags
   local matching_files = {}
   for path, file_data in pairs(files) do
     local has_all_tags = true
     for _, required_tag in ipairs(required_tags) do
-      -- Check inline tags OR frontmatter tags
-      if not file_data.tags[required_tag] and not note_has_tag(file_data.note, required_tag) then
+      -- Check inline tags OR frontmatter tags (both are O(1) now)
+      if not file_data.tags[required_tag] and not file_data.fm_tag_set[required_tag] then
         has_all_tags = false
         break
       end
@@ -316,18 +311,12 @@ end
 ---@return table[] Array of task data
 M.extract_tasks_from_file = function(path, note)
   local tasks = {}
-  local lines = {}
 
-  -- Read file lines
-  local file = io.open(path, "r")
-  if not file then
+  -- Read file lines using vim's built-in function
+  local lines = vim.fn.readfile(path)
+  if not lines or #lines == 0 then
     return tasks
   end
-
-  for line in file:lines() do
-    table.insert(lines, line)
-  end
-  file:close()
 
   -- Find task lines
   for i, line in ipairs(lines) do
@@ -353,13 +342,7 @@ end
 M.get_context = function(lines, line_num)
   local context = {}
   local start_line = math.max(1, line_num - M.opts.preview_context)
-  local end_line = math.min(#lines, line_num + M.opts.preview_context)
-
-  for i = start_line, end_line do
-    table.insert(context, lines[i])
-  end
-
-  return context
+  return vim.list_slice(lines, start_line, end_line)
 end
 
 ---Show task picker
@@ -368,14 +351,18 @@ end
 ---@param tags string[]
 M.show_task_picker = function(client, files, tags)
   local items = {}
+  local tag_str = table.concat(tags, ",")
+  local path_cache = {}
 
   -- Build picker items
   for _, file_data in ipairs(files) do
-    for _, task in ipairs(file_data.tasks) do
-      local filename = vim.fn.fnamemodify(file_data.path, ":t")
-      local tag_str = table.concat(tags, ",")
+    local filename = path_cache[file_data.path]
+    if not filename then
+      filename = vim.fn.fnamemodify(file_data.path, ":t")
+      path_cache[file_data.path] = filename
+    end
 
-      -- Format the display line
+    for _, task in ipairs(file_data.tasks) do
       local display = M.opts.format
         :gsub("{filename}", filename)
         :gsub("{line}", tostring(task.line_num))
@@ -506,9 +493,11 @@ M.show_fzf_lua_picker = function(items)
     return
   end
 
+  local n = #items
   local formatted_items = {}
-  for i, item in ipairs(items) do
-    table.insert(formatted_items, string.format("%s|%d|%s", item.path, item.line, item.display))
+  for i = 1, n do
+    local item = items[i]
+    formatted_items[i] = string.format("%s|%d|%s", item.path, item.line, item.display)
   end
 
   fzf_lua.fzf_exec(formatted_items, {
