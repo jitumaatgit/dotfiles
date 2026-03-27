@@ -37,7 +37,7 @@ trap
 # Configuration
 $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
-  ScoopPackages = @('wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
+  ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck',
     'neovim', 'opencode', 'starship', 'gh', 'eza', 'yazi', 'poppler', 'uv', 'mandoc','wget')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
