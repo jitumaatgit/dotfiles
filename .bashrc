@@ -10,7 +10,7 @@ winpath() {
 # ⭐ Scoop shims (wezterm, nvim, rg, bat, etc.)
 export PATH="$PATH:$(winpath "$USERPROFILE/scoop/shims")"
 
-# QEMU path (may change later but works here now)
+# QEMU path
 export PATH="$PATH:/c/Users/student/portable-dev/qemu/"
 
 # ⭐ Git's own binaries (just in case)
