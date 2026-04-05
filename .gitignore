@@ -13,3 +13,4 @@ AppData/Local/*
 
 AppData/LocalLow/*
 AppData/Roaming/*
+!scoop/persist/btop/btop.conf
