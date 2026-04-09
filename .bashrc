@@ -59,7 +59,7 @@ export PROMPT_COMMAND=''
 # make opencode, start on port 4096
 alias oc='opencode'
 # use eza instead of ls
-alias ls='eza'
+alias ls='eza -a'
 # Colorize grep, use rg, etc.
 alias grep='rg --color=auto'
 # make lg = lazygit
