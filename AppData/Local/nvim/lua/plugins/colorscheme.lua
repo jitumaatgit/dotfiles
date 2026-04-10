@@ -21,8 +21,8 @@ return {
           RenderMarkdownQuote4 = { bg = colors.surface0 },
           RenderMarkdownQuote5 = { bg = colors.surface0 },
           RenderMarkdownQuote6 = { bg = colors.surface0 },
-          Folded = { bg = 'NONE', fg = 'NONE' },
-          FoldColumn = { bg = 'NONE', fg = 'NONE' },
+           Folded = { bg = 'NONE', fg = colors.lavender },
+           FoldColumn = { bg = 'NONE', fg = colors.lavender },
         }
       end,
     },
