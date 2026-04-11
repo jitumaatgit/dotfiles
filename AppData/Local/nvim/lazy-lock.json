@@ -17,6 +17,7 @@
   "csvview.nvim": { "branch": "main", "commit": "7022e18a0fbae9aecf99a3ba02b2a541edc2b8a1" },
   "dial.nvim": { "branch": "master", "commit": "f2634758455cfa52a8acea6f142dcd6271a1bf57" },
   "flash.nvim": { "branch": "main", "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2" },
+  "flatten.nvim": { "branch": "main", "commit": "72527798e75b5e34757491947c2cb853ce21dc0e" },
   "fzf-lua": { "branch": "main", "commit": "940ffbfb54842b1b2bdd7aacc35db998a952b616" },
   "gitsigns.nvim": { "branch": "main", "commit": "8d82c240f190fc33723d48c308ccc1ed8baad69d" },
   "grug-far.nvim": { "branch": "main", "commit": "21604255d0e8f9968322f61f2b6c09e5efe1285a" },

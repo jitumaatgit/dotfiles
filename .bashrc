@@ -37,6 +37,8 @@ if [ -d "$HOME/AppData/Roaming/npm" ]; then
   export PATH="$PATH:$(winpath "$HOME/AppData/Roaming/npm")"
 fi
 
+# Add ~/bin to PATH for custom scripts
+export PATH="$PATH:$(winpath "$HOME/bin")"
 ###############################################
 # TERMINAL + NEOVIM FIXES
 ###############################################
@@ -66,10 +68,9 @@ alias grep='rg --color=auto'
 alias lg='lazygit'
 # Make vim = nvim
 command -v nvim >/dev/null && alias vim='nvim'
-# Add ~/bin to PATH for custom scripts
-export PATH="$HOME/bin:$PATH"
 # make neovim default editor (use wrapper for opencode integration)
-export EDITOR="nvim-opencode"
+export EDITOR="nvim"
+export VISUAL="wezterm start -- nvim"
 # initialize starship in bash
 eval "$(starship init bash)"
 
