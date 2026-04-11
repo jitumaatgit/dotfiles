@@ -12,6 +12,7 @@ return {
       -- I use this keymap with mini.files, but snacks explorer was taking over
       -- https://github.com/folke/snacks.nvim/discussions/949
       { "<leader>e", false },
+      { "<leader>n", false }, -- disable notification history picker
       {
         "<leader>sg",
         function()
