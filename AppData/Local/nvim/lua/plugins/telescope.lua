@@ -12,7 +12,7 @@ return {
   -- No keys defined - telescope is only loaded when obsidian/my module calls it
   opts = {
     defaults = {
-      layout_strategy = "ivy",
+      -- layout_strategy = "ivy", -- wasnt working with kanban.nvim
       layout_config = {
         height = 0.30,
       },
