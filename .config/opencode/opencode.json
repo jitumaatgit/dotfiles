@@ -1,7 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
-  "plugin": ["@tarquinen/opencode-dcp", "@plannotator/opencode@latest"],
+  "plugin": [
+    "@tarquinen/opencode-dcp",
+    "@plannotator/opencode@latest"
+  ],
   "server": {
     "port": 3000
   },
@@ -31,5 +34,6 @@
         }
       }
     }
-  }
+  },
+  "model": "nvidia/z-ai/glm4.7"
 }
