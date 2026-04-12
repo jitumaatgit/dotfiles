@@ -7,5 +7,21 @@
   ],
   "server": {
     "port": 3000
-  }
+  },
+  "provider": {
+    "nvidia": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NVIDIA NIM",
+      "options": {
+        "baseURL": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "{env:NVIDIA_API_KEY}"
+      },
+      "models": {
+        "mistralai/devstral-2-123b-instruct-2512": {
+          "name": "Devstral 2 123B"
+        }
+      }
+    }
+  },
+  "model": "nvidia/mistralai/devstral-2-123b-instruct-2512"
 }

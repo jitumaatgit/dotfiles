@@ -80,3 +80,5 @@ eval "$(starship init bash)"
 # plugins on every startup (GitHub issue #8729)
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
+
+[ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env  # free-coding-models-env
