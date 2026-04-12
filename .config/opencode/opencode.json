@@ -19,9 +19,15 @@
       "models": {
         "mistralai/devstral-2-123b-instruct-2512": {
           "name": "Devstral 2 123B"
+        },
+        "z-ai/glm5": {
+          "name": "GLM 5"
+        },
+        "z-ai/glm4.7": {
+          "name": "GLM 4.7"
         }
       }
     }
   },
-  "model": "nvidia/mistralai/devstral-2-123b-instruct-2512"
+  "model": "nvidia/z-ai/glm4.7"
 }
