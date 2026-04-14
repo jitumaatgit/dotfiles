@@ -1,3 +1,4 @@
+-- i will make any notes from this that is not specific to the code in file anki-nvim install note.md
 return {
   "rareitems/anki.nvim",
   -- lazy -- don't lazy it, it tries to be as lazy possible and it needs to add a filetype association
