@@ -35,7 +35,7 @@ trap
 }
 
 # Configuration
-# python is for pip (for markdown2anki)
+# python is for pip
 # zstd is for compressing qemu disk images
 $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
