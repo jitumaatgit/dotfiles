@@ -58,8 +58,8 @@ export PROMPT_COMMAND=''
 ###############################################
 # OPTIONAL QUALITY OF LIFE
 ###############################################
-# make opencode, start on port 4096
-alias oc='opencode'
+# start free-coding-models to pick default model for plan mode before opencode starts
+alias oc='free-coding-models --opencode --premium'
 # use eza instead of ls
 alias ls='eza -a'
 # Colorize grep, use rg, etc.
@@ -81,4 +81,4 @@ eval "$(starship init bash)"
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
-[ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env  # free-coding-models-env
+[ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
