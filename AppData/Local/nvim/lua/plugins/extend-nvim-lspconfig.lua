@@ -13,6 +13,7 @@ return {
       -- stylua: ignore
       ["*"] = {
         keys = {
+          { "K", false }, -- Disable LazyVim's default K (hover) - using smart-peek instead
           -- { "gr", false }, -- disable references
           { "gd", function() Snacks.picker.lsp_definitions() end, desc = "Goto Definition", has = "definition" },
           { "gR", function() Snacks.picker.lsp_references() end, desc = "References", nowait = true },
