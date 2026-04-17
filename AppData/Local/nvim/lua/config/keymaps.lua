@@ -37,3 +37,14 @@ vim.keymap.set("n", "dd", smart_dd, { noremap = true, expr = true })
 vim.keymap.set("n", "<S-CR>", "a<CR><ESC>", { desc = "Split line" })
 -- Map Shift+Enter in insert mode
 vim.keymap.set("i", "<S-CR>", "<CR>", { desc = "Split line" })
+
+-- UFO fold keymaps
+vim.keymap.set("n", "zR", require("ufo").openAllFolds, { desc = "Open all folds" })
+vim.keymap.set("n", "zM", require("ufo").closeAllFolds, { desc = "Close all folds" })
+vim.keymap.set("n", "zr", require("ufo").openFoldsExceptKinds, { desc = "Open folds except kinds" })
+vim.keymap.set("n", "zm", require("ufo").closeFoldsWith, { desc = "Close folds with" })
+
+-- Smart peek: UFO peek → Custom fold peek → LSP hover
+vim.keymap.set("n", "K", function()
+  require("config.smart-peek").smart_peek()
+end, { desc = "Smart peek (fold or LSP hover)" })

@@ -95,6 +95,7 @@ return {
     end,
   },
   keys = {
+    { "<leader>nr", "<cmd>ObsidianRename<cr>", desc = "Rename note" },
     { "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
     { "<leader>nt", "<cmd>ObsidianToday<cr>", desc = "Open today's daily note" },
     { "<leader>ny", "<cmd>ObsidianYesterday<cr>", desc = "Open yesterday's note" },

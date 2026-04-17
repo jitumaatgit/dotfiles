@@ -26,8 +26,9 @@ return {
           end,
         },
         mapping = cmp.mapping.preset.insert({
-          ["<C-Space>"] = cmp.mapping.complete(),
-          ["<C-E>"] = cmp.mapping.abort(),
+      ["<C-A-Space>"] = cmp.mapping.complete(),
+      ["<S-Space>"] = cmp.mapping.confirm({ select = true }),
+      ["<C-E>"] = cmp.mapping.abort(),
           ["<C-Y>"] = cmp.mapping.confirm({ select = true }),
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then

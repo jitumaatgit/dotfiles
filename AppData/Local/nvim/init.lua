@@ -11,6 +11,7 @@ vim.g.sqlite_clib_path = vim.fn.expand("$HOME/.local/bin/sqlite3.dll")
 
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
+require("config.markdown-folding")
 require("snippets")
 
 -- Auto-move completed tasks to Completed section

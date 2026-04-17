@@ -31,9 +31,12 @@
         },
         "deepseek-ai/deepseek-v3.2": {
           "name": "DeepSeek V3.2"
+        },
+        "qwen/qwen3-next-80b-a3b-thinking": {
+          "name": "Qwen3 80B Thinking"
         }
       }
     }
   },
-  "model": "nvidia/z-ai/glm4.7"
+  "model": "nvidia/moonshotai/kimi-k2.5"
 }
