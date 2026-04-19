@@ -4,74 +4,56 @@ local VAULT_PATH = "C:/Users/student/notes"
 local DAILY_NOTES_PATH = VAULT_PATH .. "/docs/30-DailyNotes"
 local WEEKLY_NOTES_PATH = DAILY_NOTES_PATH .. "/WeeklyNotes"
 
-local function get_iso_week_data(date)
-	local year = date.year
-	local month = date.month
-	local day = date.day
+local JD_UNIX_EPOCH = 2440588
 
-	local function julian_day(y, m, d)
-		local a = math.floor((14 - m) / 12)
-		local y_adj = y + 4800 - a
-		local m_adj = m + 12 * a - 3
-		return d + math.floor((153 * m_adj + 2) / 5) + 365 * y_adj + math.floor(y_adj / 4) - math.floor(y_adj / 100) + math.floor(y_adj / 400) - 32045
-	end
+local function julian_day(y, m, d)
+local a = math.floor((14 - m) / 12)
+local y_adj = y + 4800 - a
+local m_adj = m + 12 * a - 3
+return d + math.floor((153 * m_adj + 2) / 5) + 365 * y_adj + math.floor(y_adj / 4) - math.floor(y_adj / 100) + math.floor(y_adj / 400) - 32045
+end
 
-	local jd = julian_day(year, month, day)
-	local d4 = (jd + 31741 - 1461) % 7 + 1
-	local jd_monday = jd - d4 + 1
-	local jd_sunday = jd_monday - 1
+local function jd_to_unix(jd)
+return (jd - JD_UNIX_EPOCH) * 86400 + 43200
+end
 
-	local function jd_to_date_inner(jd)
-		local a = jd + 32044
-		local b = math.floor((4 * a + 3) / 146097)
-		local c = a - math.floor(146097 * b / 4)
-		local d = math.floor((4 * c + 3) / 1461)
-		local e = c - math.floor(1461 * d / 4)
-		local m = math.floor((5 * e + 2) / 153)
-		local day = e - math.floor((153 * m + 2) / 5) + 1
-		local month = m + 3 - 12 * math.floor(m / 10)
-		local year = d - 4800 + math.floor(m / 10)
-		return { year = year, month = month, day = day }
-	end
-
-	local function get_iso_year_week(jd)
-		local jan1 = julian_day(jd_to_date_inner(jd).year, 1, 1)
-		local jan1_weekday = (jan1 + 1) % 7
-		local days_since_jan1 = jd - jan1
-		local week_num = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
-		if week_num < 1 then
-			week_num = 52
-		elseif week_num > 52 then
-			local next_jan1 = julian_day(jd_to_date_inner(jd).year + 1, 1, 1)
-			local next_jan1_weekday = (next_jan1 + 1) % 7
-			if (jd - next_jan1 + next_jan1_weekday) >= 0 then
-				week_num = 1
-			end
-		end
-		return jd_to_date_inner(jd).year, week_num
-	end
-
-	local yr, week = get_iso_year_week(jd)
-	local sunday_jd = jd - ((jd + 1) % 7)
-
-	return {
-		year = yr,
-		week = week,
-		sunday_jd = sunday_jd,
-	}
+local function unix_to_jd(t)
+return math.floor(t / 86400) + JD_UNIX_EPOCH
 end
 
 local function jd_to_date(jd)
-	local a = jd + 32044
-	local b = math.floor((4 * a + 3) / 146097)
-	local c = a - math.floor(146097 * b / 4)
-	local d = math.floor((4 * c + 3) / 1461)
-	local e = c - math.floor(1461 * d / 4)
-	local m = math.floor((5 * e + 2) / 153)
-	local day = e - math.floor((153 * m + 2) / 5) + 1
-	local month = m + 3 - 12 * math.floor(m / 10)
-	local year = d - 4800 + math.floor(m / 10)
-	return { year = year, month = month, day = day }
+local d = os.date("*t", jd_to_unix(jd))
+return { year = d.year, month = d.month, day = d.day }
+end
+
+local function get_iso_week_data(date)
+local jd = julian_day(date.year, date.month, date.day)
+
+local function get_iso_year_week(jd)
+local jan1 = julian_day(jd_to_date(jd).year, 1, 1)
+local jan1_weekday = (jan1 + 1) % 7
+local days_since_jan1 = jd - jan1
+local week_num = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
+if week_num < 1 then
+week_num = 52
+elseif week_num > 52 then
+local next_jan1 = julian_day(jd_to_date(jd).year + 1, 1, 1)
+local next_jan1_weekday = (next_jan1 + 1) % 7
+if (jd - next_jan1 + next_jan1_weekday) >= 0 then
+week_num = 1
+end
+end
+return jd_to_date(jd).year, week_num
+end
+
+local yr, week = get_iso_year_week(jd)
+local sunday_jd = jd - ((jd + 1) % 7)
+
+return {
+year = yr,
+week = week,
+sunday_jd = sunday_jd,
+}
 end
 
 local function format_date(d)
@@ -79,10 +61,10 @@ local function format_date(d)
 end
 
 local function get_day_name(d)
-	local days = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }
-	local jd = math.floor(os.time(d) / 86400 + 719163)
-	local weekday = (jd + 1) % 7
-	return days[weekday + 1]
+local days = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }
+local t = os.time(d)
+if not t then return "Unknown" end
+return days[os.date("*t", t).wday]
 end
 
 local function get_week_dates(iso_data)

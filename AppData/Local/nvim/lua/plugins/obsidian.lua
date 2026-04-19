@@ -109,8 +109,9 @@ return {
 		{ "<leader>nb", "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
 		{ "<leader>nl", "<cmd>ObsidianLinks<cr>", desc = "Show outgoing links" },
 		{ "<leader>ni", "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
-		{ "<leader>nc", "<cmd>ObsidianToggleCheckbox<cr>", desc = "Toggle checkbox" },
-	},
+    { "<leader>nc", "<cmd>ObsidianToggleCheckbox<cr>", desc = "Toggle checkbox" },
+    { "<leader>ne", "<cmd>ObsidianExtractNote<cr>", desc = "Extract note from selection", mode = "v" },
+  },
 	config = function(_, opts)
 		require("obsidian").setup(opts)
 		require("custom.weekly-note")
@@ -132,11 +133,72 @@ return {
               vim.cmd("normal! j")
             end
           end
-        end, {
-          buffer = true,
-          desc = "Obsidian smart action or toggle fold",
-        })
-      end,
-    })
-  end,
+end, {
+buffer = true,
+desc = "Obsidian smart action or toggle fold",
+})
+end,
+})
+vim.api.nvim_create_user_command("ObsidianExtractNote", function(data)
+  local client = require("obsidian").get_client()
+  local util = require("obsidian.util")
+  local log = require("obsidian.log")
+
+  local viz = util.get_visual_selection()
+  if not viz then
+    log.err "ObsidianExtractNote must be called with visual selection"
+    return
+  end
+
+  local content = vim.split(viz.selection, "\n", { plain = true })
+
+  local title
+  if data.args and string.len(data.args) > 0 then
+    title = util.strip_whitespace(data.args)
+  else
+    title = util.input "Enter title (optional): "
+    if not title then
+      log.warn "Aborted"
+      return
+    elseif title == "" then
+      title = nil
+    end
+  end
+
+  local orig_buf = vim.api.nvim_get_current_buf()
+  local orig_win = vim.api.nvim_get_current_win()
+
+  local note = client:create_note { title = title }
+  local link = client:format_link(note)
+
+  if vim.api.nvim_get_current_buf() ~= orig_buf then
+    vim.api.nvim_win_set_buf(orig_win, orig_buf)
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(orig_buf, viz.csrow - 1, viz.cerow, false)
+  if #lines == 0 then
+    log.err "Failed to get lines for extraction"
+    return
+  end
+
+  local cscol_byte = math.max(1, math.min(viz.cscol, #lines[1] + 1))
+  local cecol_byte = math.max(1, math.min(viz.cecol, #lines[#lines] + 1))
+
+  local new_lines
+  if #lines == 1 then
+    new_lines = { lines[1]:sub(1, cscol_byte - 1) .. link .. lines[1]:sub(cecol_byte + 1) }
+  else
+    new_lines = {
+      lines[1]:sub(1, cscol_byte - 1) .. link,
+      lines[#lines]:sub(cecol_byte + 1),
+    }
+  end
+
+  vim.api.nvim_buf_set_lines(orig_buf, viz.csrow - 1, viz.cerow, false, new_lines)
+  client:update_ui(orig_buf)
+
+  client:open_note(note, { sync = true })
+  vim.api.nvim_buf_set_lines(0, -1, -1, false, content)
+end, { nargs = "?", range = true, desc = "Extract selected text into a new note" })
+end,
 }
