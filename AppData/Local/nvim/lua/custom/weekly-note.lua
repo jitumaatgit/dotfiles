@@ -269,4 +269,140 @@ local function generate_weekly_note_content(iso_data, week_dates)
 	table.insert(lines, "## Week at a Glance")
 	table.insert(lines, "")
 
-	for _, d in ipairs(w
+	for _, d in ipairs(week_dates) do
+		local link_path = string.format("30-DailyNotes/%04d/%02d/%s", d.date.year, d.date.month, d.date_str)
+		local link_text = string.format("- [[%s|%s %s]]", link_path, d.day_name, d.date_str)
+		table.insert(lines, link_text)
+	end
+
+	table.insert(lines, "")
+
+	table.insert(lines, "---")
+	table.insert(lines, "## Log Digest")
+	table.insert(lines, "")
+
+	for _, d in ipairs(week_dates) do
+		local path = get_daily_note_path(d.date)
+		local content = read_daily_note(path)
+		if content then
+			local log_section = extract_section(content, "Log")
+			if log_section and log_section ~= "" then
+				table.insert(lines, string.format("### %s (%s)", d.day_name, d.date_str))
+				table.insert(lines, log_section)
+				table.insert(lines, "")
+			end
+		end
+	end
+
+	table.insert(lines, "---")
+	table.insert(lines, "## Tangent Parking Lot")
+	table.insert(lines, "")
+
+	for _, d in ipairs(week_dates) do
+		local path = get_daily_note_path(d.date)
+		local content = read_daily_note(path)
+		if content then
+			local tangent_section = extract_section(content, "Tangent Parking Lot")
+			if tangent_section and tangent_section ~= "" then
+				table.insert(lines, string.format("### %s (%s)", d.day_name, d.date_str))
+				table.insert(lines, tangent_section)
+				table.insert(lines, "")
+			end
+		end
+	end
+
+	table.insert(lines, "---")
+	table.insert(lines, "## Inbox")
+	table.insert(lines, "")
+	table.insert(lines, "Notes created this week that need to be PARA filed:")
+	table.insert(lines, "")
+	if #inbox_notes > 0 then
+		for _, note in ipairs(inbox_notes) do
+			table.insert(lines, string.format("- [[%s]]", note))
+		end
+	else
+		table.insert(lines, "- (none)")
+	end
+	table.insert(lines, "")
+
+	table.insert(lines, "---")
+	table.insert(lines, "## End Of Week Review")
+	table.insert(lines, "- What did I get done this week versus what I planned to get done?")
+	table.insert(lines, "- What unexpectedly arose this week that blocked my productivity?")
+	table.insert(lines, "- What worked well?")
+	table.insert(lines, "- Where did I get stuck?")
+	table.insert(lines, "- What did I learn?")
+	table.insert(lines, "- Am I showing up for the key people in my life (spouses, boss, close friends, close family)?")
+	table.insert(lines, "- When did I feel most energized?")
+	table.insert(lines, "")
+
+	table.insert(lines, "---")
+	table.insert(lines, "## Planned Tasks")
+	table.insert(lines, "Actions that will ensure I make progress on my goals")
+	table.insert(lines, "")
+	table.insert(lines, "- ")
+
+	return table.concat(lines, "\n")
+end
+
+function M.create_weekly_note(opts)
+	local today = os.date("*t")
+	local iso_data = get_iso_week_data(today)
+
+	if opts and opts.week and opts.year then
+		iso_data.week = tonumber(opts.week)
+		iso_data.year = tonumber(opts.year)
+	end
+
+	local year_dir = string.format("%s/%04d", WEEKLY_NOTES_PATH, iso_data.year)
+	ensure_dir(year_dir)
+
+	local filename = string.format("%04d-W%02d.md", iso_data.year, iso_data.week)
+	local filepath = string.format("%s/%s", year_dir, filename)
+
+	local file = io.open(filepath, "r")
+	if file then
+		file:close()
+		vim.cmd("edit " .. filepath)
+		return
+	end
+
+	local week_dates = get_week_dates(iso_data)
+	local content = generate_weekly_note_content(iso_data, week_dates)
+
+	file = io.open(filepath, "w")
+	if file then
+		file:write(content)
+		file:close()
+		vim.cmd("edit " .. filepath)
+	else
+		vim.notify("Failed to create weekly note", vim.log.levels.ERROR)
+	end
+end
+
+function M.create_weekly_note_for_date(date_str)
+	local year, month, day = date_str:match("(%d+)%-(%d+)%-(%d+)")
+	if not year then
+		vim.notify("Invalid date format. Use YYYY-MM-DD", vim.log.levels.ERROR)
+		return
+	end
+
+	local date = {
+		year = tonumber(year),
+		month = tonumber(month),
+		day = tonumber(day),
+	}
+
+	local iso_data = get_iso_week_data(date)
+	M.create_weekly_note({ week = iso_data.week, year = iso_data.year })
+end
+
+vim.api.nvim_create_user_command("ObsidianWeekly", function(args)
+	if args.args and args.args ~= "" then
+		M.create_weekly_note_for_date(args.args)
+	else
+		M.create_weekly_note()
+	end
+end, { nargs = "?", desc = "Create or open weekly note" })
+
+return M
