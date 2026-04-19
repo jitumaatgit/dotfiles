@@ -8,6 +8,11 @@ return {
     "hrsh7th/nvim-cmp",
   },
   opts = {
+    footer = {
+      enabled = true,
+      separator = false,
+      format = "({{backlinks}} backlinks)", -- limit to backlinks
+    },
     workspaces = {
       {
         name = "notes",
@@ -94,21 +99,22 @@ return {
       return filename:match("[\\/]tasks[\\/]") or filename:match("^tasks[\\/]") or filename:match("kanban%.md$")
     end,
   },
-  keys = {
-    { "<leader>nr", "<cmd>ObsidianRename<cr>", desc = "Rename note" },
-    { "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
-    { "<leader>nt", "<cmd>ObsidianToday<cr>", desc = "Open today's daily note" },
-    { "<leader>ny", "<cmd>ObsidianYesterday<cr>", desc = "Open yesterday's note" },
-    { "<leader>ns", "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
-    { "<leader>nb", "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
-    { "<leader>nl", "<cmd>ObsidianLinks<cr>", desc = "Show outgoing links" },
-    { "<leader>ni", "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
-    { "<leader>nc", "<cmd>ObsidianToggleCheckbox<cr>", desc = "Toggle checkbox" },
-  },
-  config = function(_, opts)
-    require("obsidian").setup(opts)
-    -- Smart action on <CR> in markdown files
-    vim.api.nvim_create_autocmd("FileType", {
+	keys = {
+		{ "<leader>nr", "<cmd>ObsidianRename<cr>", desc = "Rename note" },
+		{ "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
+		{ "<leader>nt", "<cmd>ObsidianToday<cr>", desc = "Open today's daily note" },
+		{ "<leader>ny", "<cmd>ObsidianYesterday<cr>", desc = "Open yesterday's note" },
+		{ "<leader>nw", "<cmd>ObsidianWeekly<cr>", desc = "Open weekly note" },
+		{ "<leader>ns", "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
+		{ "<leader>nb", "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
+		{ "<leader>nl", "<cmd>ObsidianLinks<cr>", desc = "Show outgoing links" },
+		{ "<leader>ni", "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
+		{ "<leader>nc", "<cmd>ObsidianToggleCheckbox<cr>", desc = "Toggle checkbox" },
+	},
+	config = function(_, opts)
+		require("obsidian").setup(opts)
+		require("custom.weekly-note")
+		vim.api.nvim_create_autocmd("FileType", {
       pattern = "markdown",
       callback = function(ev)
         vim.keymap.set("n", "<CR>", function()
