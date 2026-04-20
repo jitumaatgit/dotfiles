@@ -38,7 +38,7 @@ return {
         end,
         opts = { desc = "Follow link", noremap = false, expr = true, buffer = true },
       },
-      -- Note: <leader>nn, <leader>nt, <leader>ny are defined globally in keys table so they can be used from dashboard
+      -- Note: daily note keybindings defined globally in keys table so they can be used from dashboard
     },
     new_notes_location = "current_dir",
     note_id_func = function(title)
@@ -52,12 +52,10 @@ return {
         return suffix
       end
     end,
-    -- going to try `use_alias_only and see if I can still follow` formerly `wiki_link_path_prefix`
-    -- `wiki_link_path_prefix` isnt even in the docs, but seems to work funtionally like `prepend_note_path`
-    wiki_link_func = "use_alias_only",
+    wiki_link_func = "use_alias_only", -- confirmed working; `wiki_link_path_prefix` causes broken links
     -- wiki_link_func = function(opts)
     --   return require("obsidian.util").wiki_link_path_prefix(opts)
-    -- end,
+    -- end, -- kept for reference: this alternative caused broken wiki-links in practice
     preferred_link_style = "wiki",
     templates = {
       folder = "docs/50-Templates",
@@ -99,23 +97,24 @@ return {
       return filename:match("[\\/]tasks[\\/]") or filename:match("^tasks[\\/]") or filename:match("kanban%.md$")
     end,
   },
-	keys = {
-		{ "<leader>nr", "<cmd>ObsidianRename<cr>", desc = "Rename note" },
-		{ "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
-		{ "<leader>nt", "<cmd>ObsidianToday<cr>", desc = "Open today's daily note" },
-		{ "<leader>ny", "<cmd>ObsidianYesterday<cr>", desc = "Open yesterday's note" },
-		{ "<leader>nw", "<cmd>ObsidianWeekly<cr>", desc = "Open weekly note" },
-		{ "<leader>ns", "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
-		{ "<leader>nb", "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
-		{ "<leader>nl", "<cmd>ObsidianLinks<cr>", desc = "Show outgoing links" },
-		{ "<leader>ni", "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
+  keys = {
+    { "<leader>nr", "<cmd>ObsidianRename<cr>", desc = "Rename note" },
+    { "<leader>nn", "<cmd>ObsidianNew<cr>", desc = "New note" },
+    { "<leader>nt", "<cmd>ObsidianToday<cr>", desc = "Open today's daily note" },
+    { "<leader>ny", "<cmd>ObsidianToday -1<cr>", desc = "Open yesterday's note" },
+    { "<leader>nu", "<cmd>ObsidianToday 1<cr>", desc = "Open tomorrow's note" },
+    { "<leader>nw", "<cmd>ObsidianWeekly<cr>", desc = "Open weekly note" },
+    { "<leader>ns", "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
+    { "<leader>nb", "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
+    { "<leader>nl", "<cmd>ObsidianLinks<cr>", desc = "Show outgoing links" },
+    { "<leader>ni", "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
     { "<leader>nc", "<cmd>ObsidianToggleCheckbox<cr>", desc = "Toggle checkbox" },
     { "<leader>ne", "<cmd>ObsidianExtractNote<cr>", desc = "Extract note from selection", mode = "v" },
   },
-	config = function(_, opts)
-		require("obsidian").setup(opts)
-		require("custom.weekly-note")
-		vim.api.nvim_create_autocmd("FileType", {
+  config = function(_, opts)
+    require("obsidian").setup(opts)
+    require("custom.weekly-note")
+    vim.api.nvim_create_autocmd("FileType", {
       pattern = "markdown",
       callback = function(ev)
         vim.keymap.set("n", "<CR>", function()
@@ -133,72 +132,72 @@ return {
               vim.cmd("normal! j")
             end
           end
-end, {
-buffer = true,
-desc = "Obsidian smart action or toggle fold",
-})
-end,
-})
-vim.api.nvim_create_user_command("ObsidianExtractNote", function(data)
-  local client = require("obsidian").get_client()
-  local util = require("obsidian.util")
-  local log = require("obsidian.log")
+        end, {
+          buffer = true,
+          desc = "Obsidian smart action or toggle fold",
+        })
+      end,
+    })
+    vim.api.nvim_create_user_command("ObsidianExtractNote", function(data)
+      local client = require("obsidian").get_client()
+      local util = require("obsidian.util")
+      local log = require("obsidian.log")
 
-  local viz = util.get_visual_selection()
-  if not viz then
-    log.err "ObsidianExtractNote must be called with visual selection"
-    return
-  end
+      local viz = util.get_visual_selection()
+      if not viz then
+        log.err("ObsidianExtractNote must be called with visual selection")
+        return
+      end
 
-  local content = vim.split(viz.selection, "\n", { plain = true })
+      local content = vim.split(viz.selection, "\n", { plain = true })
 
-  local title
-  if data.args and string.len(data.args) > 0 then
-    title = util.strip_whitespace(data.args)
-  else
-    title = util.input "Enter title (optional): "
-    if not title then
-      log.warn "Aborted"
-      return
-    elseif title == "" then
-      title = nil
-    end
-  end
+      local title
+      if data.args and string.len(data.args) > 0 then
+        title = util.strip_whitespace(data.args)
+      else
+        title = util.input("Enter title (optional): ")
+        if not title then
+          log.warn("Aborted")
+          return
+        elseif title == "" then
+          title = nil
+        end
+      end
 
-  local orig_buf = vim.api.nvim_get_current_buf()
-  local orig_win = vim.api.nvim_get_current_win()
+      local orig_buf = vim.api.nvim_get_current_buf()
+      local orig_win = vim.api.nvim_get_current_win()
 
-  local note = client:create_note { title = title }
-  local link = client:format_link(note)
+      local note = client:create_note({ title = title })
+      local link = client:format_link(note)
 
-  if vim.api.nvim_get_current_buf() ~= orig_buf then
-    vim.api.nvim_win_set_buf(orig_win, orig_buf)
-  end
+      if vim.api.nvim_get_current_buf() ~= orig_buf then
+        vim.api.nvim_win_set_buf(orig_win, orig_buf)
+      end
 
-  local lines = vim.api.nvim_buf_get_lines(orig_buf, viz.csrow - 1, viz.cerow, false)
-  if #lines == 0 then
-    log.err "Failed to get lines for extraction"
-    return
-  end
+      local lines = vim.api.nvim_buf_get_lines(orig_buf, viz.csrow - 1, viz.cerow, false)
+      if #lines == 0 then
+        log.err("Failed to get lines for extraction")
+        return
+      end
 
-  local cscol_byte = math.max(1, math.min(viz.cscol, #lines[1] + 1))
-  local cecol_byte = math.max(1, math.min(viz.cecol, #lines[#lines] + 1))
+      local cscol_byte = math.max(1, math.min(viz.cscol, #lines[1] + 1))
+      local cecol_byte = math.max(1, math.min(viz.cecol, #lines[#lines] + 1))
 
-  local new_lines
-  if #lines == 1 then
-    new_lines = { lines[1]:sub(1, cscol_byte - 1) .. link .. lines[1]:sub(cecol_byte + 1) }
-  else
-    new_lines = {
-      lines[1]:sub(1, cscol_byte - 1) .. link,
-      lines[#lines]:sub(cecol_byte + 1),
-    }
-  end
+      local new_lines
+      if #lines == 1 then
+        new_lines = { lines[1]:sub(1, cscol_byte - 1) .. link .. lines[1]:sub(cecol_byte + 1) }
+      else
+        new_lines = {
+          lines[1]:sub(1, cscol_byte - 1) .. link,
+          lines[#lines]:sub(cecol_byte + 1),
+        }
+      end
 
-  vim.api.nvim_buf_set_lines(orig_buf, viz.csrow - 1, viz.cerow, false, new_lines)
-  client:update_ui(orig_buf)
+      vim.api.nvim_buf_set_lines(orig_buf, viz.csrow - 1, viz.cerow, false, new_lines)
+      client:update_ui(orig_buf)
 
-  client:open_note(note, { sync = true })
-  vim.api.nvim_buf_set_lines(0, -1, -1, false, content)
-end, { nargs = "?", range = true, desc = "Extract selected text into a new note" })
-end,
+      client:open_note(note, { sync = true })
+      vim.api.nvim_buf_set_lines(0, -1, -1, false, content)
+    end, { nargs = "?", range = true, desc = "Extract selected text into a new note" })
+  end,
 }

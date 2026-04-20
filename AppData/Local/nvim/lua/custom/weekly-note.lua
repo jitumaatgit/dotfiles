@@ -5,6 +5,7 @@ local DAILY_NOTES_PATH = VAULT_PATH .. "/docs/30-DailyNotes"
 local WEEKLY_NOTES_PATH = DAILY_NOTES_PATH .. "/WeeklyNotes"
 
 local JD_UNIX_EPOCH = 2440588
+local SECONDS_PER_DAY = 86400
 
 local function julian_day(y, m, d)
 local a = math.floor((14 - m) / 12)
@@ -14,11 +15,11 @@ return d + math.floor((153 * m_adj + 2) / 5) + 365 * y_adj + math.floor(y_adj / 
 end
 
 local function jd_to_unix(jd)
-return (jd - JD_UNIX_EPOCH) * 86400 + 43200
+  return (jd - JD_UNIX_EPOCH) * SECONDS_PER_DAY + 43200
 end
 
 local function unix_to_jd(t)
-return math.floor(t / 86400) + JD_UNIX_EPOCH
+  return math.floor(t / SECONDS_PER_DAY) + JD_UNIX_EPOCH
 end
 
 local function jd_to_date(jd)
@@ -136,8 +137,7 @@ local function read_daily_note(path)
 end
 
 local function ensure_dir(path)
-	local cmd = string.format('mkdir -p "%s"', path)
-	os.execute(cmd)
+  vim.fn.mkdir(path, "p")
 end
 
 local function calculate_week_stats(week_dates)
@@ -179,73 +179,83 @@ end
 
 -- Calculate adjacent week (direction: -1 for prev, +1 for next)
 local function get_adjacent_week(iso_data, direction)
-    local new_week = iso_data.week + direction
-    local new_year = iso_data.year
+  local new_week = iso_data.week + direction
+  local new_year = iso_data.year
 
-    if new_week < 1 then
-        -- Go to last week of previous year
-        new_year = new_year - 1
-        -- ISO weeks: 52 or 53 depending on year (Dec 28 is always in last week)
-        local dec28 = { year = new_year, month = 12, day = 28 }
-        local dec28_jd = julian_day(dec28.year, dec28.month, dec28.day)
-        local dec28_weekday = (dec28_jd + 1) % 7
-        local jan1 = julian_day(new_year, 1, 1)
-        local jan1_weekday = (jan1 + 1) % 7
-        local days_since_jan1 = dec28_jd - jan1
-        new_week = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
-    elseif new_week > 52 then
-        -- Check if year has 53 weeks (Dec 28 is always in last week)
-        local dec28 = { year = new_year, month = 12, day = 28 }
-        local dec28_jd = julian_day(dec28.year, dec28.month, dec28.day)
-        local jan1 = julian_day(new_year, 1, 1)
-        local jan1_weekday = (jan1 + 1) % 7
-        local days_since_jan1 = dec28_jd - jan1
-        local last_week = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
-        if new_week > last_week then
-            new_year = new_year + 1
-            new_week = 1
-        end
+  if new_week < 1 then
+    new_year = new_year - 1
+    local dec28_iso = get_iso_week_data({ year = new_year, month = 12, day = 28 })
+    new_week = dec28_iso.week
+  elseif new_week > 52 then
+    local dec28_iso = get_iso_week_data({ year = new_year, month = 12, day = 28 })
+    if new_week > dec28_iso.week then
+      new_year = new_year + 1
+      new_week = 1
     end
+  end
 
-    return { year = new_year, week = new_week }
+  return { year = new_year, week = new_week }
 end
 
 local function generate_week_navigation(iso_data)
-    local prev_week = get_adjacent_week(iso_data, -1)
-    local next_week = get_adjacent_week(iso_data, 1)
+  local prev_week = get_adjacent_week(iso_data, -1)
+  local next_week = get_adjacent_week(iso_data, 1)
 
-    local prev_filename = string.format("%04d-W%02d", prev_week.year, prev_week.week)
-    local next_filename = string.format("%04d-W%02d", next_week.year, next_week.week)
+  local prev_filename = string.format("%04d-W%02d", prev_week.year, prev_week.week)
+  local next_filename = string.format("%04d-W%02d", next_week.year, next_week.week)
 
-    local prev_link = string.format("[[%s|← Week %02d]]", prev_filename, prev_week.week)
-    local next_link = string.format("[[%s|Week %02d →]]", next_filename, next_week.week)
-    local current = string.format("**Week %d**", iso_data.week)
+  local prev_link = string.format("← [[%s|Week %02d]]", prev_filename, prev_week.week)
+  local next_link = string.format("[[%s|Week %02d]] →", next_filename, next_week.week)
+  local current = string.format("**Week %d**", iso_data.week)
 
-    return string.format("%s | %s | %s", prev_link, current, next_link)
+  return string.format("%s · %s · %s", prev_link, current, next_link)
 end
 
 local function get_inbox_notes(week_dates)
-	local inbox_notes = {}
-	local start_time = os.time(week_dates[1].date)
-	local end_time = os.time(week_dates[#week_dates].date) + 86400
+  local inbox_notes = {}
+  local start_time = os.time(week_dates[1].date)
+  local end_time = os.time(week_dates[#week_dates].date) + SECONDS_PER_DAY
 
-	local glob_result = vim.fn.glob(VAULT_PATH .. "/*.md", false, true)
-	for _, filepath in ipairs(glob_result) do
-		local mtime = vim.fn.getftime(filepath)
-		if mtime >= start_time and mtime <= end_time then
-			local name = vim.fn.fnamemodify(filepath, ":t:r")
-			table.insert(inbox_notes, name)
-		end
-	end
+  local glob_result = vim.fn.glob(VAULT_PATH .. "/*.md", false, true)
+  for _, filepath in ipairs(glob_result) do
+    local mtime = vim.fn.getftime(filepath)
+    if mtime >= start_time and mtime <= end_time then
+      local name = vim.fn.fnamemodify(filepath, ":t:r")
+      table.insert(inbox_notes, name)
+    end
+  end
 
-	table.sort(inbox_notes)
-	return inbox_notes
+  table.sort(inbox_notes)
+  return inbox_notes
+end
+
+local function cache_daily_notes(week_dates)
+  local cache = {}
+  for _, d in ipairs(week_dates) do
+    cache[d.date_str] = read_daily_note(get_daily_note_path(d.date))
+  end
+  return cache
+end
+
+local function add_section_digest(lines, cache, week_dates, section_name)
+  for _, d in ipairs(week_dates) do
+    local content = cache[d.date_str]
+    if content then
+      local section = extract_section(content, section_name)
+      if section and section ~= "" then
+        table.insert(lines, string.format("### %s (%s)", d.day_name, d.date_str))
+        table.insert(lines, section)
+        table.insert(lines, "")
+      end
+    end
+  end
 end
 
 local function generate_weekly_note_content(iso_data, week_dates)
-	local lines = {}
-	local sleep_avg, energy_avg, mood_avg = calculate_week_stats(week_dates)
-	local inbox_notes = get_inbox_notes(week_dates)
+  local lines = {}
+  local sleep_avg, energy_avg, mood_avg = calculate_week_stats(week_dates)
+  local inbox_notes = get_inbox_notes(week_dates)
+  local daily_cache = cache_daily_notes(week_dates)
 
   table.insert(lines, "---")
   table.insert(lines, string.format('id: "%d-W%02d"', iso_data.year, iso_data.week))
@@ -308,39 +318,15 @@ local function generate_weekly_note_content(iso_data, week_dates)
 
 	table.insert(lines, "")
 
-	table.insert(lines, "---")
-	table.insert(lines, "## Log Digest")
-	table.insert(lines, "")
+  table.insert(lines, "---")
+  table.insert(lines, "## Log Digest")
+  table.insert(lines, "")
+  add_section_digest(lines, daily_cache, week_dates, "Log")
 
-	for _, d in ipairs(week_dates) do
-		local path = get_daily_note_path(d.date)
-		local content = read_daily_note(path)
-		if content then
-			local log_section = extract_section(content, "Log")
-			if log_section and log_section ~= "" then
-				table.insert(lines, string.format("### %s (%s)", d.day_name, d.date_str))
-				table.insert(lines, log_section)
-				table.insert(lines, "")
-			end
-		end
-	end
-
-	table.insert(lines, "---")
-	table.insert(lines, "## Tangent Parking Lot")
-	table.insert(lines, "")
-
-	for _, d in ipairs(week_dates) do
-		local path = get_daily_note_path(d.date)
-		local content = read_daily_note(path)
-		if content then
-			local tangent_section = extract_section(content, "Tangent Parking Lot")
-			if tangent_section and tangent_section ~= "" then
-				table.insert(lines, string.format("### %s (%s)", d.day_name, d.date_str))
-				table.insert(lines, tangent_section)
-				table.insert(lines, "")
-			end
-		end
-	end
+  table.insert(lines, "---")
+  table.insert(lines, "## Tangent Parking Lot")
+  table.insert(lines, "")
+  add_section_digest(lines, daily_cache, week_dates, "Tangent Parking Lot")
 
 	table.insert(lines, "---")
 	table.insert(lines, "## Inbox")
@@ -428,6 +414,15 @@ function M.create_weekly_note_for_date(date_str)
 	M.create_weekly_note({ week = iso_data.week, year = iso_data.year })
 end
 
+local function get_current_week_context()
+  local bufname = vim.api.nvim_buf_get_name(0)
+  local year, week = bufname:match("(%d%d%d%d)%-W(%d%d)%.md$")
+  if year and week then
+    return { year = tonumber(year), week = tonumber(week) }
+  end
+  return nil
+end
+
 vim.api.nvim_create_user_command("ObsidianWeekly", function(args)
   if args.args and args.args ~= "" then
     M.create_weekly_note_for_date(args.args)
@@ -437,15 +432,25 @@ vim.api.nvim_create_user_command("ObsidianWeekly", function(args)
 end, { nargs = "?", desc = "Create or open weekly note" })
 
 vim.api.nvim_create_user_command("ObsidianWeeklyPrev", function()
-  local today = os.date("*t")
-  local iso_data = get_iso_week_data(today)
+  local context = get_current_week_context()
+  local iso_data
+  if context then
+    iso_data = context
+  else
+    iso_data = get_iso_week_data(os.date("*t"))
+  end
   local prev = get_adjacent_week(iso_data, -1)
   M.create_weekly_note({ week = prev.week, year = prev.year })
 end, { desc = "Open previous weekly note" })
 
 vim.api.nvim_create_user_command("ObsidianWeeklyNext", function()
-  local today = os.date("*t")
-  local iso_data = get_iso_week_data(today)
+  local context = get_current_week_context()
+  local iso_data
+  if context then
+    iso_data = context
+  else
+    iso_data = get_iso_week_data(os.date("*t"))
+  end
   local next = get_adjacent_week(iso_data, 1)
   M.create_weekly_note({ week = next.week, year = next.year })
 end, { desc = "Open next weekly note" })
