@@ -6,6 +6,8 @@
 winpath() {
   /usr/bin/cygpath -u "$1"
 }
+# google cloud CLI path
+export PATH="$PATH:$(winpath 'C:\google-cloud-sdk\bin')"
 
 # ⭐ Scoop shims (wezterm, nvim, rg, bat, etc.)
 export PATH="$PATH:$(winpath "$USERPROFILE/scoop/shims")"

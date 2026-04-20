@@ -177,6 +177,53 @@ local function calculate_week_stats(week_dates)
 	return sleep_avg, energy_avg, mood_avg
 end
 
+-- Calculate adjacent week (direction: -1 for prev, +1 for next)
+local function get_adjacent_week(iso_data, direction)
+    local new_week = iso_data.week + direction
+    local new_year = iso_data.year
+
+    if new_week < 1 then
+        -- Go to last week of previous year
+        new_year = new_year - 1
+        -- ISO weeks: 52 or 53 depending on year (Dec 28 is always in last week)
+        local dec28 = { year = new_year, month = 12, day = 28 }
+        local dec28_jd = julian_day(dec28.year, dec28.month, dec28.day)
+        local dec28_weekday = (dec28_jd + 1) % 7
+        local jan1 = julian_day(new_year, 1, 1)
+        local jan1_weekday = (jan1 + 1) % 7
+        local days_since_jan1 = dec28_jd - jan1
+        new_week = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
+    elseif new_week > 52 then
+        -- Check if year has 53 weeks (Dec 28 is always in last week)
+        local dec28 = { year = new_year, month = 12, day = 28 }
+        local dec28_jd = julian_day(dec28.year, dec28.month, dec28.day)
+        local jan1 = julian_day(new_year, 1, 1)
+        local jan1_weekday = (jan1 + 1) % 7
+        local days_since_jan1 = dec28_jd - jan1
+        local last_week = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
+        if new_week > last_week then
+            new_year = new_year + 1
+            new_week = 1
+        end
+    end
+
+    return { year = new_year, week = new_week }
+end
+
+local function generate_week_navigation(iso_data)
+    local prev_week = get_adjacent_week(iso_data, -1)
+    local next_week = get_adjacent_week(iso_data, 1)
+
+    local prev_filename = string.format("%04d-W%02d", prev_week.year, prev_week.week)
+    local next_filename = string.format("%04d-W%02d", next_week.year, next_week.week)
+
+    local prev_link = string.format("[[%s|← Week %02d]]", prev_filename, prev_week.week)
+    local next_link = string.format("[[%s|Week %02d →]]", next_filename, next_week.week)
+    local current = string.format("**Week %d**", iso_data.week)
+
+    return string.format("%s | %s | %s", prev_link, current, next_link)
+end
+
 local function get_inbox_notes(week_dates)
 	local inbox_notes = {}
 	local start_time = os.time(week_dates[1].date)
@@ -200,13 +247,15 @@ local function generate_weekly_note_content(iso_data, week_dates)
 	local sleep_avg, energy_avg, mood_avg = calculate_week_stats(week_dates)
 	local inbox_notes = get_inbox_notes(week_dates)
 
-	table.insert(lines, "---")
-	table.insert(lines, string.format('id: "%d-W%02d"', iso_data.year, iso_data.week))
-	table.insert(lines, "aliases: []")
-	table.insert(lines, "tags: []")
-	table.insert(lines, "---")
-	table.insert(lines, "")
-	table.insert(lines, string.format("# Weekly Note Week %d", iso_data.week))
+  table.insert(lines, "---")
+  table.insert(lines, string.format('id: "%d-W%02d"', iso_data.year, iso_data.week))
+  table.insert(lines, "aliases: []")
+  table.insert(lines, "tags: []")
+  table.insert(lines, "---")
+  table.insert(lines, "")
+  table.insert(lines, generate_week_navigation(iso_data))
+  table.insert(lines, "")
+  table.insert(lines, string.format("# Weekly Note Week %d", iso_data.week))
 	table.insert(lines, "")
 
 	table.insert(lines, "## Startup")
@@ -380,11 +429,25 @@ function M.create_weekly_note_for_date(date_str)
 end
 
 vim.api.nvim_create_user_command("ObsidianWeekly", function(args)
-	if args.args and args.args ~= "" then
-		M.create_weekly_note_for_date(args.args)
-	else
-		M.create_weekly_note()
-	end
+  if args.args and args.args ~= "" then
+    M.create_weekly_note_for_date(args.args)
+  else
+    M.create_weekly_note()
+  end
 end, { nargs = "?", desc = "Create or open weekly note" })
+
+vim.api.nvim_create_user_command("ObsidianWeeklyPrev", function()
+  local today = os.date("*t")
+  local iso_data = get_iso_week_data(today)
+  local prev = get_adjacent_week(iso_data, -1)
+  M.create_weekly_note({ week = prev.week, year = prev.year })
+end, { desc = "Open previous weekly note" })
+
+vim.api.nvim_create_user_command("ObsidianWeeklyNext", function()
+  local today = os.date("*t")
+  local iso_data = get_iso_week_data(today)
+  local next = get_adjacent_week(iso_data, 1)
+  M.create_weekly_note({ week = next.week, year = next.year })
+end, { desc = "Open next weekly note" })
 
 return M

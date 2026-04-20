@@ -41,7 +41,7 @@ $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'yazi',
-    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud')
+    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
 
@@ -179,8 +179,22 @@ $Config.ScoopPackages | ForEach-Object {
 
 if ($failedPackages.Count -gt 0)
 {
-  Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
-  Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
+    Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
+    Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
+}
+
+# Plannotator CLI for visual plan review
+Write-Host "[INFO] Installing plannotator CLI..."
+try {
+    $plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
+    if (-not $plannotatorPath) {
+        Invoke-Expression "& { $(Invoke-RestMethod https://plannotator.ai/install.ps1) }"
+        Write-Host "[OK] plannotator CLI installed"
+    } else {
+        Write-Host "[OK] plannotator CLI already installed"
+    }
+} catch {
+    Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
 }
 
 # Configure Python for node-gyp native modules
@@ -215,7 +229,26 @@ if (-not (Test-Path "$notesDir\.git"))
   }
 } else
 {
-  Write-Host "[OK] Notes repository configured"
+    Write-Host "[OK] Notes repository configured"
+}
+
+# Update notes .opencode to use plannotator plugin
+$notesOpencodePackage = "$env:USERPROFILE\notes\.opencode\package.json"
+if (Test-Path $notesOpencodePackage) {
+    Write-Host "[INFO] Updating notes .opencode package.json for plannotator..."
+    $pkgContent = Get-Content $notesOpencodePackage -Raw | ConvertFrom-Json
+    $pkgContent.dependencies = @{ "@plannotator/opencode" = "latest" }
+    $pkgContent | ConvertTo-Json -Depth 4 | Set-Content $notesOpencodePackage
+
+    # Install updated dependencies
+    Push-Location "$env:USERPROFILE\notes\.opencode"
+    try {
+        npm install 2>&1 | Out-Null
+        Write-Host "[OK] Notes .opencode updated with @plannotator/opencode"
+    } catch {
+        Write-Host "[WARN] npm install in notes/.opencode failed: $_" -ForegroundColor Yellow
+    }
+    Pop-Location
 }
 
 # SQLite for Neovim
@@ -805,7 +838,40 @@ try
 {
   # Cleanup temp files
   Write-Host "[INFO] Cleaning up temporary files..."
-  Remove-Item $fontTempDir -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item $fontTempDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Ensure opencode config has plannotator plugin
+$opencodeConfigDir = "$env:USERPROFILE\.config\opencode"
+$opencodeConfig = "$opencodeConfigDir\opencode.json"
+if (-not (Test-Path $opencodeConfigDir)) {
+    New-Item -ItemType Directory -Force -Path $opencodeConfigDir | Out-Null
+}
+if (Test-Path $opencodeConfig) {
+    Write-Host "[INFO] Checking opencode config for plannotator..."
+    $config = Get-Content $opencodeConfig -Raw | ConvertFrom-Json
+
+    # Add plannotator plugin if not present
+    if (-not $config.plugin -or $config.plugin -notcontains "@plannotator/opencode@latest") {
+        if (-not $config.plugin) {
+            $config.plugin = @()
+        }
+        $config.plugin += "@plannotator/opencode@latest"
+        $config | ConvertTo-Json -Depth 10 | Set-Content $opencodeConfig
+        Write-Host "[OK] Added @plannotator/opencode to opencode config"
+    } else {
+        Write-Host "[OK] opencode config already has plannotator"
+    }
+} else {
+    Write-Host "[INFO] Creating opencode config with plannotator..."
+    $newConfig = @{
+        '$schema' = "https://opencode.ai/config.json"
+        autoupdate = $false
+        plugin = @("@plannotator/opencode@latest")
+        server = @{ port = 3000 }
+    }
+    $newConfig | ConvertTo-Json -Depth 4 | Set-Content $opencodeConfig
+    Write-Host "[OK] Created opencode config with plannotator"
 }
 
 Write-Host "===== bootstrap complete =====`n"
@@ -819,9 +885,10 @@ Write-Host "Dotfiles setup:
   git remote add origin https://github.com/jitumaatgit/dotfiles
   git fetch 
   git checkout -f main`n"
-Write-Host "nvim-data: cd ~/vim-data-remote 
+Write-Host "nvim-data: cd ~/vim-data-remote
 Write-Host "git status"
-Write-Host "zen-browser-data: cd ~/zen-browser-data 
+Write-Host "zen-browser-data: cd ~/zen-browser-data
 Write-Host "git status"
+Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
 Write-Host "============================================================"
 Stop-Transcript

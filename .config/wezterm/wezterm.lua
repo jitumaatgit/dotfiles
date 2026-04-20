@@ -130,97 +130,148 @@ wezterm.on("update-right-status", function(window, pane)
 end)
 
 -- Helper function to move panes between tabs
+local function get_pane_last_command(pane_id)
+  local success, stdout = wezterm.run_child_process({
+    "wezterm",
+    "cli",
+    "get-text",
+    "--pane-id",
+    tostring(pane_id),
+    "--start-line",
+    "-5",
+  })
+  if not success or not stdout then
+    return nil
+  end
+  local lines = {}
+  for line in stdout:gmatch("[^\r\n]+") do
+    if line:match("%S") then
+      table.insert(lines, line)
+    end
+  end
+  for i = #lines, 1, -1 do
+    local line = lines[i]
+    local cmd = line:match("[%$#>]%s+(.+)$")
+    if cmd then
+      return cmd:gsub("^%s+", ""):sub(1, 40)
+    end
+    if not line:match("^%s*$") and not line:match("^[>%$#]") then
+      return line:gsub("^%s+", ""):sub(1, 40)
+    end
+  end
+  return nil
+end
+
 local function show_move_pane_selector(window, pane, direction)
-	wezterm.log_info("show_move_pane_selector called with direction: " .. direction)
+  wezterm.log_info("show_move_pane_selector called with direction: " .. direction)
 
-	-- Map direction names to CLI arguments
-	local direction_map = {
-		Left = "left",
-		Right = "right",
-		Up = "top",
-		Down = "bottom",
-	}
-	local cli_direction = direction_map[direction] or direction:lower()
+  local direction_map = {
+    Left = "left",
+    Right = "right",
+    Up = "top",
+    Down = "bottom",
+  }
+  local cli_direction = direction_map[direction] or direction:lower()
 
-	local success, stdout, stderr = wezterm.run_child_process({
-		"wezterm",
-		"cli",
-		"list",
-		"--format",
-		"json",
-	})
+  local success, stdout, stderr = wezterm.run_child_process({
+    "wezterm",
+    "cli",
+    "list",
+    "--format",
+    "json",
+  })
 
-	wezterm.log_info("list panes success: " .. tostring(success))
-	wezterm.log_info("list panes stdout: " .. stdout)
+  wezterm.log_info("list panes success: " .. tostring(success))
+  wezterm.log_info("list panes stdout: " .. stdout)
 
-	if not success then
-		window:toast_notification("Failed to list panes: " .. (stderr or "unknown error"))
-		return
-	end
+  if not success then
+    window:toast_notification("Failed to list panes: " .. (stderr or "unknown error"))
+    return
+  end
 
-	local panes = wezterm.json_parse(stdout) or {}
-	wezterm.log_info("parsed panes count: " .. #panes)
-	local choices = {}
+  local panes = wezterm.json_parse(stdout) or {}
+  wezterm.log_info("parsed panes count: " .. #panes)
+  local choices = {}
 
-	for _, p in ipairs(panes) do
-		if p.pane_id ~= pane:pane_id() then
-			local _, cwd = utils.split_from_url(p.cwd or "file://")
-			local dir_display = utils.convert_useful_path(cwd)
-			local label = string.format(
-				"[Tab %d] [%s] %s - %s",
-				p.tab_id,
-				p.workspace or "unknown",
-				dir_display,
-				p.title or "No title"
-			)
-			table.insert(choices, {
-				id = tostring(p.pane_id),
-				label = label,
-			})
-		end
-	end
+  for _, p in ipairs(panes) do
+    if p.pane_id ~= pane:pane_id() then
+      local _, cwd = utils.split_from_url(p.cwd or "file://")
+      local dir_display = utils.convert_home_dir(cwd)
+      local size_str = string.format("%dx%d", p.size.cols, p.size.rows)
+      local tab_title = p.tab_title or ("Tab " .. p.tab_id)
+      local last_cmd = get_pane_last_command(p.pane_id)
+      local label
+      if last_cmd and last_cmd ~= "" then
+        label = string.format(
+          "#%d | %s | %s | %s | %s",
+          p.pane_id,
+          tab_title,
+          dir_display,
+          size_str,
+          last_cmd
+        )
+      else
+        label = string.format(
+          "#%d | %s | %s | %s | %s",
+          p.pane_id,
+          tab_title,
+          dir_display,
+          size_str,
+          p.title or "shell"
+        )
+      end
+      table.insert(choices, {
+        id = tostring(p.pane_id),
+        label = label,
+      })
+    end
+  end
 
-	if #choices == 0 then
-		window:toast_notification("No other panes available to move")
-		return
-	end
+  if #choices == 0 then
+    window:toast_notification("No other panes available to move")
+    return
+  end
 
-	wezterm.log_info("Calling InputSelector with " .. #choices .. " choices")
-	window:perform_action(
-		act.InputSelector({
-			title = "Move Pane - Split " .. direction,
-			choices = choices,
-			fuzzy = true,
-			action = wezterm.action_callback(function(inner_window, inner_pane, pane_id)
-				if not pane_id then
-					return
-				end
+  table.sort(choices, function(a, b)
+    return tonumber(a.id) < tonumber(b.id)
+  end)
 
-				local cli_direction = ({
-					Up = "top",
-					Down = "bottom",
-					Left = "left",
-					Right = "right",
-				})[direction]
+  wezterm.log_info("Calling InputSelector with " .. #choices .. " choices")
+  window:perform_action(
+    act.InputSelector({
+      title = "Move Pane - Split " .. direction,
+      choices = choices,
+      fuzzy = true,
+      action = wezterm.action_callback(function(inner_window, inner_pane, pane_id)
+        if not pane_id then
+          return
+        end
 
-				local move_success, move_stdout, move_stderr = wezterm.run_child_process({
-					"wezterm",
-					"cli",
-					"split-pane",
-					"--move-pane-id",
-					pane_id,
-					"--" .. cli_direction,
-					"--percent",
-					"50",
-				})
+        local cli_direction = ({
+          Up = "top",
+          Down = "bottom",
+          Left = "left",
+          Right = "right",
+        })[direction]
 
-				if not move_success then
-					window:toast_notification("Failed to move pane: " .. (move_stderr or "unknown error"))
-				end
-			end),
-		}),
-		pane
-	)
+        local move_success, move_stdout, move_stderr = wezterm.run_child_process({
+          "wezterm",
+          "cli",
+          "split-pane",
+          "--move-pane-id",
+          pane_id,
+          "--" .. cli_direction,
+          "--percent",
+          "50",
+        })
+
+        if not move_success then
+          window:toast_notification("Failed to move pane: " .. (move_stderr or "unknown error"))
+        end
+      end),
+    }),
+    pane
+  )
 end
 
 -- Move pane events
