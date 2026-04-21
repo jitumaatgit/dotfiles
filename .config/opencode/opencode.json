@@ -38,5 +38,5 @@
       }
     }
   },
-  "model": "nvidia/moonshotai/kimi-k2.5"
+  "model": "nvidia/z-ai/glm5"
 }
