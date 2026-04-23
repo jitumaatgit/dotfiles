@@ -113,8 +113,19 @@ return {
   },
   config = function(_, opts)
     require("obsidian").setup(opts)
-    require("custom.weekly-note")
-    vim.api.nvim_create_autocmd("FileType", {
+  require("custom.weekly-note")
+  vim.api.nvim_create_user_command("ObsidianFollowLink", function(data)
+    if require("custom.weekly-note").follow_weekly_link() then
+      return
+    end
+    local client = require("obsidian").get_client()
+    local opts = {}
+    if data.args and string.len(data.args) > 0 then
+      opts.open_strategy = data.args
+    end
+    client:follow_link_async(nil, opts)
+  end, { nargs = "?", desc = "Follow link (with weekly note support)" })
+  vim.api.nvim_create_autocmd("FileType", {
       pattern = "markdown",
       callback = function(ev)
         vim.keymap.set("n", "<CR>", function()

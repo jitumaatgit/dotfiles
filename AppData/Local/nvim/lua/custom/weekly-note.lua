@@ -28,33 +28,31 @@ return { year = d.year, month = d.month, day = d.day }
 end
 
 local function get_iso_week_data(date)
-local jd = julian_day(date.year, date.month, date.day)
+  local jd = julian_day(date.year, date.month, date.day)
+  local weekday = (jd + 1) % 7
+  local sunday = jd - weekday
+  local sunday_year = jd_to_date(sunday).year
+  local jan1 = julian_day(sunday_year, 1, 1)
+  local jan1_wd = (jan1 + 1) % 7
+  local first_sunday = jan1 + ((7 - jan1_wd) % 7)
 
-local function get_iso_year_week(jd)
-local jan1 = julian_day(jd_to_date(jd).year, 1, 1)
-local jan1_weekday = (jan1 + 1) % 7
-local days_since_jan1 = jd - jan1
-local week_num = math.floor((days_since_jan1 + jan1_weekday) / 7) + 1
-if week_num < 1 then
-week_num = 52
-elseif week_num > 52 then
-local next_jan1 = julian_day(jd_to_date(jd).year + 1, 1, 1)
-local next_jan1_weekday = (next_jan1 + 1) % 7
-if (jd - next_jan1 + next_jan1_weekday) >= 0 then
-week_num = 1
-end
-end
-return jd_to_date(jd).year, week_num
-end
+  local yr, week
+  if sunday < first_sunday then
+    yr = sunday_year - 1
+    week = 52
+  else
+    yr = sunday_year
+    week = math.floor((sunday - first_sunday) / 7) + 1
+    if week > 52 then
+      week = 52
+    end
+  end
 
-local yr, week = get_iso_year_week(jd)
-local sunday_jd = jd - ((jd + 1) % 7)
-
-return {
-year = yr,
-week = week,
-sunday_jd = sunday_jd,
-}
+  return {
+    year = yr,
+    week = week,
+    sunday_jd = sunday,
+  }
 end
 
 local function format_date(d)
@@ -362,14 +360,56 @@ local function generate_weekly_note_content(iso_data, week_dates)
 	return table.concat(lines, "\n")
 end
 
+local WEEKLY_NOTE_PATTERN = "^%d%d%d%d%-W%d%d$"
+
+function M.follow_weekly_link()
+  local ok, util = pcall(require, "obsidian.util")
+  if not ok then
+    return false
+  end
+
+  local location, _, link_type = util.parse_cursor_link()
+  if not location then
+    return false
+  end
+
+  local is_wiki_link = false
+  if type(link_type) == "table" then
+    is_wiki_link = link_type.value == "Wiki" or link_type.value == "WikiWithAlias"
+  elseif type(link_type) == "string" then
+    is_wiki_link = link_type == "Wiki" or link_type == "WikiWithAlias"
+  end
+
+  if is_wiki_link and location:match(WEEKLY_NOTE_PATTERN) then
+    local year, week = location:match("^(%d%d%d%d)%-W(%d%d)$")
+    if year and week then
+      M.create_weekly_note({ week = tonumber(week), year = tonumber(year) })
+      return true
+    end
+  end
+
+  return false
+end
+
+local function get_iso_data_from_week(year, week)
+  local jan1_jd = julian_day(year, 1, 1)
+  local jan1_wd = (jan1_jd + 1) % 7
+  local first_sunday = jan1_jd + ((7 - jan1_wd) % 7)
+  local sunday_jd = first_sunday + (week - 1) * 7
+  return {
+    year = year,
+    week = week,
+    sunday_jd = sunday_jd,
+  }
+end
+
 function M.create_weekly_note(opts)
 	local today = os.date("*t")
 	local iso_data = get_iso_week_data(today)
 
-	if opts and opts.week and opts.year then
-		iso_data.week = tonumber(opts.week)
-		iso_data.year = tonumber(opts.year)
-	end
+  if opts and opts.week and opts.year then
+    iso_data = get_iso_data_from_week(tonumber(opts.year), tonumber(opts.week))
+  end
 
 	local year_dir = string.format("%s/%04d", WEEKLY_NOTES_PATH, iso_data.year)
 	ensure_dir(year_dir)
