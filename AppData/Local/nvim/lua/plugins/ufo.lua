@@ -43,7 +43,7 @@ return {
       return newVirtText
     end,
 
-    -- Preview window config
+    -- Preview window config (preview/peek is 'K' in normal mode)
     preview = {
       win_config = {
         border = "rounded",
