@@ -1,3 +1,4 @@
+-- 2026-04-26 added to disabled plugins as it was spamming errors and hanging neovim when `g o` keymap was pressed
 return {
   {
     "NickvanDyke/opencode.nvim",

@@ -280,8 +280,7 @@ local function generate_weekly_note_content(iso_data, week_dates)
 	table.insert(lines, "---")
 	table.insert(lines, "## Health dashboard")
 	table.insert(lines, "")
-	table.insert(lines, "```")
-	table.insert(lines, string.format("Week of %d-W%02d", iso_data.year, iso_data.week))
+table.insert(lines, string.format("Week of %d-W%02d", iso_data.year, iso_data.week))
 	if sleep_avg then
 		table.insert(lines, string.format("- Sleep avg: %.1f/7 hours", sleep_avg))
 	else
@@ -300,9 +299,8 @@ local function generate_weekly_note_content(iso_data, week_dates)
 		table.insert(lines, "- Energy avg: _/10")
 	end
 	table.insert(lines, "- Health issues: [Y/N]")
-	table.insert(lines, "- Week rating: _/10")
-	table.insert(lines, "```")
-	table.insert(lines, "")
+table.insert(lines, "- Week rating: _/10")
+table.insert(lines, "")
 
 	table.insert(lines, "---")
 	table.insert(lines, "## Week at a Glance")
@@ -340,8 +338,13 @@ local function generate_weekly_note_content(iso_data, week_dates)
 	end
 	table.insert(lines, "")
 
-	table.insert(lines, "---")
-	table.insert(lines, "## End Of Week Review")
+table.insert(lines, "---")
+table.insert(lines, "## Summary Digest")
+table.insert(lines, "")
+add_section_digest(lines, daily_cache, week_dates, "Summary")
+
+table.insert(lines, "---")
+table.insert(lines, "## End Of Week Review")
 	table.insert(lines, "- What did I get done this week versus what I planned to get done?")
 	table.insert(lines, "- What unexpectedly arose this week that blocked my productivity?")
 	table.insert(lines, "- What worked well?")

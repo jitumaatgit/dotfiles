@@ -1,8 +1,10 @@
 return {
   "rareitems/anki.nvim",
   -- anki.nvim needs to load on startup to register the .anki filetype association
-  opts = {
-    {
+  -- opts removed: config is passed directly to setup() in the config function below
+  -- to avoid issues with lazy.nvim's opts resolution and double-nesting
+  config = function()
+    require("anki").setup({
       -- tex_support = false: keeps filetype as "anki" instead of "tex.anki"
       tex_support = false,
       -- move_cursor_after_creation: jumps cursor to first field after creating a form
@@ -25,12 +27,7 @@ return {
         ["Image Occlusion"] = "Comptia Sec+",
         ["Multiple Choice"] = "Comptia Sec+",
       },
-    },
-  },
-  -- custom config function: replaces lazy.nvim's default opts handler
-  -- so we can both call setup() AND register custom commands
-  config = function(_, opts)
-    require("anki").setup(opts[1])
+    })
 
     -- :AnkiSec <notetype> — explicitly sends to the Comptia Sec+ deck
     -- e.g. :AnkiSec Basic, :AnkiSec Cloze
