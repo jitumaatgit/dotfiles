@@ -72,17 +72,221 @@ return {
       vim.fn.chdir(vim.fs.dirname(path))
     end
 
-    local map_split = function(buf_id, lhs, direction)
-      local rhs = function()
-        local cur_target = MiniFiles.get_explorer_state().target_window
-        local new_target = vim.api.nvim_win_call(cur_target, function()
-          vim.cmd(direction .. " split")
-          return vim.api.nvim_get_current_win()
-        end)
-        MiniFiles.set_target_window(new_target)
-      end
-      vim.keymap.set("n", lhs, rhs, { buffer = buf_id, desc = "Split " .. direction })
+  local map_split = function(buf_id, lhs, direction)
+    local rhs = function()
+      local cur_target = MiniFiles.get_explorer_state().target_window
+      local new_target = vim.api.nvim_win_call(cur_target, function()
+        vim.cmd(direction .. " split")
+        return vim.api.nvim_get_current_win()
+      end)
+      MiniFiles.set_target_window(new_target)
     end
+    vim.keymap.set("n", lhs, rhs, { buffer = buf_id, desc = "Split " .. direction })
+  end
+
+  local flatten = function(t)
+    local result = {}
+    for _, v in ipairs(t) do
+      if type(v) == "table" then
+        for _, sv in ipairs(v) do
+          result[#result + 1] = sv
+        end
+      else
+        result[#result + 1] = v
+      end
+    end
+    return result
+  end
+
+  local string_replace = function(s, pattern, replacement)
+    local result = s
+    local count = 0
+    local offset = 1
+    while true do
+      local start = string.find(result, pattern, offset, true)
+      if not start then
+        break
+      end
+      local before = string.sub(result, 1, start - 1)
+      local after = string.sub(result, start + #pattern)
+      result = before .. replacement .. after
+      count = count + 1
+      offset = start + #replacement
+    end
+    return result, count
+  end
+
+  local get_obsidian_vault = function()
+    local ok, client = pcall(function()
+      return require("obsidian").get_client()
+    end)
+    if not ok or not client then
+      return nil, nil
+    end
+    return tostring(client.dir), client
+  end
+
+  local get_ref_forms = function(ref)
+    return {
+      "[[" .. ref .. "]]",
+      "[[" .. ref .. "|",
+      "[[" .. ref .. "\\|",
+      "[[" .. ref .. "#",
+      "](" .. ref .. ")",
+      "](" .. ref .. "#",
+    }
+  end
+
+  local count_obsidian_refs = function(vault, old_forms)
+    local rg_args = { "rg", "--no-config", "--type=md", "--fixed-strings", "--count-matches" }
+    for _, form in ipairs(old_forms) do
+      rg_args[#rg_args + 1] = "-e"
+      rg_args[#rg_args + 1] = form
+    end
+    rg_args[#rg_args + 1] = vault
+    local ok, result = pcall(vim.fn.systemlist, rg_args)
+    if not ok or vim.v.shell_error ~= 0 then
+      return 0
+    end
+    local total = 0
+    for _, line in ipairs(result) do
+      local count = tonumber(line:match(":(%d+)$"))
+      if count then
+        total = total + count
+      end
+    end
+    return total
+  end
+
+  local replace_obsidian_refs_in_file = function(path, old_forms, new_forms)
+    local f = io.open(path, "r")
+    if not f then
+      return 0
+    end
+    local lines = {}
+    local total_count = 0
+    for line in f:lines() do
+      local modified = line
+      for i = 1, #old_forms do
+        local n
+        modified, n = string_replace(modified, old_forms[i], new_forms[i])
+        total_count = total_count + n
+      end
+      lines[#lines + 1] = modified
+    end
+    f:close()
+    if total_count > 0 then
+      f = io.open(path, "w")
+      if f then
+        for _, l in ipairs(lines) do
+          f:write(l .. "\n")
+        end
+        f:close()
+      end
+    end
+    return total_count
+  end
+
+  local update_obsidian_refs = function(old_path, new_path)
+    if not (type(old_path) == "string" and type(new_path) == "string") then
+      return
+    end
+    if not (old_path:match("%.md$") and new_path:match("%.md$")) then
+      return
+    end
+    local vault, client = get_obsidian_vault()
+    if not vault then
+      return
+    end
+    local norm_vault = vim.fs.normalize(vault)
+    local norm_old = vim.fs.normalize(old_path)
+    local norm_new = vim.fs.normalize(new_path)
+    if not (norm_old:sub(1, #norm_vault) == norm_vault and norm_new:sub(1, #norm_vault) == norm_vault) then
+      return
+    end
+    local old_id = vim.fs.basename(norm_old):gsub("%.md$", "")
+    local new_id = vim.fs.basename(norm_new):gsub("%.md$", "")
+    local old_rel = tostring(client:vault_relative_path(norm_old, { strict = true }))
+    local new_rel = tostring(client:vault_relative_path(norm_new, { strict = true }))
+    local old_rel_noext = old_rel:gsub("%.md$", "")
+    local new_rel_noext = new_rel:gsub("%.md$", "")
+
+    local old_forms = flatten({
+      get_ref_forms(old_id),
+      get_ref_forms(old_rel),
+      get_ref_forms(old_rel_noext),
+    })
+    local new_forms = flatten({
+      get_ref_forms(new_id),
+      get_ref_forms(new_rel),
+      get_ref_forms(new_rel_noext),
+    })
+
+    local ref_count = count_obsidian_refs(norm_vault, old_forms)
+    if ref_count == 0 then
+      return
+    end
+
+    local msg = string.format(
+      "Update %d wiki-link reference(s) from '%s' to '%s'?",
+      ref_count, old_id, new_id
+    )
+    local choice = vim.fn.confirm(msg, "&Yes\n&No", 1)
+    if choice ~= 1 then
+      return
+    end
+
+    local rg_args = { "rg", "--no-config", "--type=md", "--fixed-strings", "-l" }
+    for _, form in ipairs(old_forms) do
+      rg_args[#rg_args + 1] = "-e"
+      rg_args[#rg_args + 1] = form
+    end
+    rg_args[#rg_args + 1] = norm_vault
+    local ok, files = pcall(vim.fn.systemlist, rg_args)
+    if not ok or vim.v.shell_error ~= 0 then
+      return
+    end
+
+    local total_replaced = 0
+    local file_count = 0
+    for _, file_path in ipairs(files) do
+      if file_path ~= norm_new then
+        local n = replace_obsidian_refs_in_file(file_path, old_forms, new_forms)
+        if n > 0 then
+          total_replaced = total_replaced + n
+          file_count = file_count + 1
+        end
+      end
+    end
+
+    vim.cmd.checktime()
+    vim.notify(
+      string.format("Updated %d reference(s) across %d file(s)", total_replaced, file_count),
+      vim.log.levels.INFO
+    )
+  end
+
+  local manual_obsidian_ref_update = function()
+    local entry = MiniFiles.get_fs_entry()
+    if not entry or not entry.path then
+      return vim.notify("Cursor is not on a valid entry", vim.log.levels.WARN)
+    end
+    local path = entry.path
+    if not path:match("%.md$") then
+      return vim.notify("Not a markdown file", vim.log.levels.WARN)
+    end
+    local vault, client = get_obsidian_vault()
+    if not vault then
+      return vim.notify("Obsidian not available", vim.log.levels.WARN)
+    end
+    local cur_id = vim.fs.basename(path):gsub("%.md$", "")
+    local new_name = vim.fn.input("Update references from '" .. cur_id .. "' to: ", cur_id)
+    if new_name == "" or new_name == cur_id then
+      return
+    end
+    local new_path = vim.fs.dirname(path) .. "/" .. new_name .. ".md"
+    update_obsidian_refs(path, new_path)
+  end
 
     local git_sign_map = {
       ["A "] = { text = "++", hl = "MiniFilesGitAdded" },
@@ -149,7 +353,7 @@ return {
           if s then
             vim.api.nvim_buf_set_extmark(buf_id, git_ns, i - 1, 0, {
               virt_text = { { " " .. s.text, s.hl } },
-              virt_text_pos = "eol_right",
+              virt_text_pos = "right_align",
               hl_mode = "combine",
             })
           end
@@ -178,6 +382,7 @@ return {
         vim.keymap.set("n", "gy", yank_path, { buffer = buf_id, desc = "Yank path" })
         vim.keymap.set("n", "gX", ui_open, { buffer = buf_id, desc = "OS open" })
         vim.keymap.set("n", "g~", set_cwd, { buffer = buf_id, desc = "Set cwd" })
+        vim.keymap.set("n", "gr", manual_obsidian_ref_update, { buffer = buf_id, desc = "Update obsidian refs" })
         map_split(buf_id, "<C-s>", "belowright horizontal")
         map_split(buf_id, "<C-v>", "belowright vertical")
       end,
@@ -204,6 +409,24 @@ return {
       callback = function(args)
         vim.schedule(function()
           set_git_extmarks(args.data.buf_id)
+        end)
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "MiniFilesActionRename",
+      callback = function(args)
+        vim.schedule(function()
+          update_obsidian_refs(args.data.from, args.data.to)
+        end)
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "MiniFilesActionMove",
+      callback = function(args)
+        vim.schedule(function()
+          update_obsidian_refs(args.data.from, args.data.to)
         end)
       end,
     })
