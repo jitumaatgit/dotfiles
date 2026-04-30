@@ -6,6 +6,9 @@
 winpath() {
   /usr/bin/cygpath -u "$1"
 }
+# bash.exe path
+export PATH="$PATH:$(winpath "$USERPROFILE/scoop/apps/git/current/usr/bin/bash.exe")"
+
 # google cloud CLI path
 export PATH="$PATH:$(winpath 'C:\google-cloud-sdk\bin')"
 
