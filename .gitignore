@@ -4,7 +4,6 @@
 !/git
 !/README.md
 !/setup.ps1
-!/setup.ps1.bak
 
 !/AppData/Local
 AppData/Local/*
@@ -14,3 +13,5 @@ AppData/Local/*
 AppData/LocalLow/*
 AppData/Roaming/*
 !scoop/persist/btop/btop.conf
+
+projects/*
