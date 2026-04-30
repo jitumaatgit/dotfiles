@@ -1,0 +1,12 @@
+{
+  "lastChangelogVersion": "0.69.0",
+  "defaultProvider": "nvidia",
+  "defaultModel": "deepseek-ai/deepseek-v3.2",
+  "defaultThinkingLevel": "medium",
+  "packages": [
+    "git:github.com/apmantza/pi-free",
+    "npm:@ifi/oh-pi-themes",
+    "npm:pi-vim"
+  ],
+  "theme": "catppuccin-mocha"
+}
