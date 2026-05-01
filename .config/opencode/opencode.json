@@ -34,9 +34,12 @@
         },
         "qwen/qwen3-next-80b-a3b-thinking": {
           "name": "Qwen3 80B Thinking"
+        },
+        "minimaxai/minimax-m2.5": {
+          "name": "MiniMax M2.5"
         }
       }
     }
   },
-  "model": "nvidia/z-ai/glm5"
+  "model": "nvidia/z-ai/glm4.7"
 }
