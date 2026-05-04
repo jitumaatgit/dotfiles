@@ -41,5 +41,5 @@
       }
     }
   },
-  "model": "nvidia/z-ai/glm4.7"
+  "model": "nvidia/z-ai/glm5"
 }
