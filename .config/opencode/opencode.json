@@ -37,9 +37,12 @@
         },
         "minimaxai/minimax-m2.5": {
           "name": "MiniMax M2.5"
+        },
+        "minimaxai/minimax-m2.7": {
+          "name": "MiniMax M2.7"
         }
       }
     }
   },
-  "model": "nvidia/z-ai/glm5"
+  "model": "nvidia/minimaxai/minimax-m2.5"
 }
