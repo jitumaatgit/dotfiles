@@ -5,6 +5,9 @@
 !/README.md
 !/setup.ps1
 
+!/.config
+!/.config/**
+
 !/AppData/Local
 AppData/Local/*
 !AppData/Local/nvim
