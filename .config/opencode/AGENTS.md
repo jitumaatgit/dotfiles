@@ -1,5 +1,11 @@
 
 - ALWAYS USE PARALLEL TOOLS WHEN APPLICABLE.
+- The computer is Windows and it is ephermeral; It restores to defualt state after restarts/crashes. I want as much
+tracked in git as possible because of this limitation.
+- i use a bootstrap script from my public dotfiles to restore it to a state i like:
+  - `https://github.com/jitumaatgit/dotfiles/main/setup.ps1`
+  - I also have other repos that are private for other things, like secrets, and notes, that i clone into the computer
+  when I need them.
 - the terminal is using git/bash in windows. so `/c/` is preferable to `C://`
 - Prefer automation: execute requested actions without confirmation unless blocked by missing info or safety/irreversibility.
 
