@@ -116,6 +116,26 @@ local function extract_task_group(lines, start_line)
   return task_group, end_line
 end
 
+-- Find the nearest heading above a line
+local function find_nearest_heading(lines, line_num)
+  for i = line_num - 1, 1, -1 do
+    local heading = lines[i]:match("^#+%s+(.+)$")
+    if heading then
+      return heading
+    end
+  end
+  return nil
+end
+
+-- Add heading context to the task line
+local function add_heading_context(task_line, heading)
+  local prefix, text = task_line:match("^(%s*%-%s*%[[xX]%]%s*)(.*)$")
+  if prefix and text then
+    return prefix .. heading .. " > " .. text
+  end
+  return task_line
+end
+
 -- Add timestamp inline to the task line
 local function add_timestamp_inline(task_line)
   local timestamp = os.date(M.config.timestamp_format)
@@ -169,7 +189,11 @@ function M.process_checkbox_completion()
       -- Extract the entire task group
       local task_group, end_line = extract_task_group(lines, i)
 
-      -- Add timestamp inline to first line (the task line)
+      -- Add heading context and timestamp to first line
+      local heading = find_nearest_heading(lines, i)
+      if heading then
+        task_group[1] = add_heading_context(task_group[1], heading)
+      end
       task_group[1] = add_timestamp_inline(task_group[1])
 
       -- Store task group and mark lines for removal

@@ -44,7 +44,7 @@
       }
     }
   },
-  "model": "nvidia/minimaxai/minimax-m2.5",
+  "model": "nvidia/qwen/qwen3-next-80b-a3b-thinking",
   "mcp": {
     "exa": {
       "type": "remote",

@@ -209,17 +209,60 @@ local function generate_week_navigation(iso_data)
   return string.format("%s · %s · %s", prev_link, current, next_link)
 end
 
+local function get_goals_from_last_week(iso_data)
+  local prev = get_adjacent_week(iso_data, -1)
+  local path = string.format("%s/%04d/%04d-W%02d.md", WEEKLY_NOTES_PATH, prev.year, prev.year, prev.week)
+  local file = io.open(path, "r")
+  if not file then return {} end
+  local content = file:read("*a")
+  file:close()
+
+  local planned = content:match("## Planned Tasks\n(.-)\n## ")
+  if not planned then
+    planned = content:match("## Planned Tasks\n(.*)$")
+  end
+  if not planned then return {} end
+
+  local goals = {}
+  for line in planned:gmatch("([^\n]+)") do
+    local goal = line:match("^### Goal:%s*(.-)%s*$")
+    if goal and goal ~= "" then table.insert(goals, goal) end
+  end
+  return goals
+end
+
 local function get_inbox_notes(week_dates)
-  local inbox_notes = {}
+  local this_week = {}
+  local older = {}
   local start_time = os.time(week_dates[1].date)
-  local end_time = os.time(week_dates[#week_dates].date) + SECONDS_PER_DAY
+  local end_time = os.time()
 
   local glob_result = vim.fn.glob(VAULT_PATH .. "/*.md", false, true)
   for _, filepath in ipairs(glob_result) do
-    local mtime = vim.fn.getftime(filepath)
-    if mtime >= start_time and mtime <= end_time then
+    local stat = vim.loop.fs_stat(filepath)
+    if stat then
+      local ctime = stat.ctime.sec
       local name = vim.fn.fnamemodify(filepath, ":t:r")
-      table.insert(inbox_notes, name)
+      if ctime >= start_time and ctime <= end_time then
+        table.insert(this_week, name)
+      elseif ctime < start_time then
+        table.insert(older, { name = name, ctime = ctime })
+      end
+    end
+  end
+
+  table.sort(this_week)
+  table.sort(older, function(a, b) return a.ctime < b.ctime end)
+
+  local inbox_notes = {}
+  local seen = {}
+  for _, name in ipairs(this_week) do
+    table.insert(inbox_notes, name)
+    seen[name] = true
+  end
+  for i = 1, math.min(5, #older) do
+    if not seen[older[i].name] then
+      table.insert(inbox_notes, older[i].name)
     end
   end
 
@@ -249,6 +292,26 @@ local function add_section_digest(lines, cache, week_dates, section_name)
   end
 end
 
+local function add_log_metadata(lines, cache, week_dates)
+  for _, d in ipairs(week_dates) do
+    local content = cache[d.date_str]
+    local link = string.format("[[30-DailyNotes/%04d/%02d/%s|%s %s]]", d.date.year, d.date.month, d.date_str, d.day_name, d.date_str)
+    if content then
+      local sleep = extract_sleep(content)
+      local energy = extract_energy_avg(content)
+      local mood = extract_mood_avg(content)
+      local parts = {}
+      table.insert(parts, link)
+      if sleep then table.insert(parts, string.format("sleep: %.1f", sleep)) end
+      if energy then table.insert(parts, string.format("focus: %.1f", energy)) end
+      if mood then table.insert(parts, string.format("mood: %.1f", mood)) end
+      table.insert(lines, "- " .. table.concat(parts, " · "))
+    else
+      table.insert(lines, "- " .. link)
+    end
+  end
+end
+
 local function generate_weekly_note_content(iso_data, week_dates)
   local lines = {}
   local sleep_avg, energy_avg, mood_avg = calculate_week_stats(week_dates)
@@ -266,99 +329,103 @@ local function generate_weekly_note_content(iso_data, week_dates)
   table.insert(lines, string.format("# Weekly Note Week %d", iso_data.week))
 	table.insert(lines, "")
 
-	table.insert(lines, "## Startup")
-	table.insert(lines, "")
-	table.insert(lines, "- [ ] move files to appropriate PARA folders.")
-	table.insert(lines, "- [ ] add time sensitive tasks to calendar")
-	table.insert(lines, "- [ ] clear email inbox")
-	table.insert(lines, "- [ ] look ahead and behind 1 week on calendar, edit as needed")
-	table.insert(lines, "- [ ] go through this weeks daily notes.")
-	table.insert(lines, "- [ ] Set Goals")
-	table.insert(lines, "- [ ] Move Items from backlog into todo that will help accomplish goals")
-	table.insert(lines, "")
-
-	table.insert(lines, "---")
-	table.insert(lines, "## Health dashboard")
-	table.insert(lines, "")
-table.insert(lines, string.format("Week of %d-W%02d", iso_data.year, iso_data.week))
-	if sleep_avg then
-		table.insert(lines, string.format("- Sleep avg: %.1f/7 hours", sleep_avg))
-	else
-		table.insert(lines, "- Sleep avg: _/7 hours")
-	end
-	table.insert(lines, "- Top 3 completion: _/7 days")
-	table.insert(lines, "- Housing applications: _")
-	if mood_avg then
-		table.insert(lines, string.format("- Mood avg: %.1f/5", mood_avg))
-	else
-		table.insert(lines, "- Mood avg: _/5")
-	end
-	if energy_avg then
-		table.insert(lines, string.format("- Energy avg: %.1f/10", energy_avg))
-	else
-		table.insert(lines, "- Energy avg: _/10")
-	end
-	table.insert(lines, "- Health issues: [Y/N]")
-table.insert(lines, "- Week rating: _/10")
-table.insert(lines, "")
-
-	table.insert(lines, "---")
-	table.insert(lines, "## Week at a Glance")
-	table.insert(lines, "")
-
-	for _, d in ipairs(week_dates) do
-		local link_path = string.format("30-DailyNotes/%04d/%02d/%s", d.date.year, d.date.month, d.date_str)
-		local link_text = string.format("- [[%s|%s %s]]", link_path, d.day_name, d.date_str)
-		table.insert(lines, link_text)
-	end
-
-	table.insert(lines, "")
+table.insert(lines, "## Health dashboard")
+  table.insert(lines, "")
+  table.insert(lines, string.format("Week of %d-W%02d", iso_data.year, iso_data.week))
+  if sleep_avg then
+    table.insert(lines, string.format("- Sleep avg: %.1f/7 hours", sleep_avg))
+  else
+    table.insert(lines, "- Sleep avg: _/7 hours")
+  end
+  table.insert(lines, "- Top 3 completion: _/7 days")
+  table.insert(lines, "- Housing applications: _")
+  if mood_avg then
+    table.insert(lines, string.format("- Mood avg: %.1f/5", mood_avg))
+  else
+    table.insert(lines, "- Mood avg: _/5")
+  end
+  if energy_avg then
+    table.insert(lines, string.format("- Energy avg: %.1f/10", energy_avg))
+  else
+    table.insert(lines, "- Energy avg: _/10")
+  end
+  table.insert(lines, "- Health issues: [Y/N]")
+  table.insert(lines, "- Week rating: _/10")
+  table.insert(lines, "")
 
   table.insert(lines, "---")
-  table.insert(lines, "## Log Digest")
+  table.insert(lines, "## Startup")
   table.insert(lines, "")
-  add_section_digest(lines, daily_cache, week_dates, "Log")
+  table.insert(lines, "- [ ] move files to appropriate PARA folders.")
+  table.insert(lines, "- [ ] add time sensitive tasks to calendar")
+  table.insert(lines, "- [ ] clear email inbox")
+  table.insert(lines, "- [ ] look ahead and behind 1 week on calendar, edit as needed")
+  table.insert(lines, "- [ ] go through this weeks daily notes.")
+  table.insert(lines, "- [ ] Set Goals")
+  table.insert(lines, "- [ ] Move Items from backlog into todo that will help accomplish goals")
+  table.insert(lines, "")
+
+  table.insert(lines, "---")
+  table.insert(lines, "## Week at a Glance")
+  table.insert(lines, "")
+
+  for _, d in ipairs(week_dates) do
+    local link_path = string.format("30-DailyNotes/%04d/%02d/%s", d.date.year, d.date.month, d.date_str)
+    local link_text = string.format("- [[%s|%s %s]]", link_path, d.day_name, d.date_str)
+    table.insert(lines, link_text)
+  end
+  table.insert(lines, "")
+
+  table.insert(lines, "---")
+  table.insert(lines, "## Inbox")
+  table.insert(lines, "")
+  table.insert(lines, "Notes created this week that need to be PARA filed:")
+  table.insert(lines, "")
+  if #inbox_notes > 0 then
+    for _, note in ipairs(inbox_notes) do
+      table.insert(lines, string.format("- [[%s]]", note))
+    end
+  else
+    table.insert(lines, "- (none)")
+  end
+  table.insert(lines, "")
 
   table.insert(lines, "---")
   table.insert(lines, "## Tangent Parking Lot")
   table.insert(lines, "")
   add_section_digest(lines, daily_cache, week_dates, "Tangent Parking Lot")
 
-	table.insert(lines, "---")
-	table.insert(lines, "## Inbox")
-	table.insert(lines, "")
-	table.insert(lines, "Notes created this week that need to be PARA filed:")
-	table.insert(lines, "")
-	if #inbox_notes > 0 then
-		for _, note in ipairs(inbox_notes) do
-			table.insert(lines, string.format("- [[%s]]", note))
-		end
-	else
-		table.insert(lines, "- (none)")
-	end
-	table.insert(lines, "")
+  table.insert(lines, "---")
+  table.insert(lines, "## Log")
+  table.insert(lines, "")
+  add_log_metadata(lines, daily_cache, week_dates)
 
-table.insert(lines, "---")
-table.insert(lines, "## Summary Digest")
-table.insert(lines, "")
-add_section_digest(lines, daily_cache, week_dates, "Summary")
+  table.insert(lines, "---")
+  table.insert(lines, "## Summary Digest")
+  table.insert(lines, "")
+  add_section_digest(lines, daily_cache, week_dates, "Summary")
 
-table.insert(lines, "---")
-table.insert(lines, "## End Of Week Review")
-	table.insert(lines, "- What did I get done this week versus what I planned to get done?")
-	table.insert(lines, "- What unexpectedly arose this week that blocked my productivity?")
-	table.insert(lines, "- What worked well?")
-	table.insert(lines, "- Where did I get stuck?")
-	table.insert(lines, "- What did I learn?")
-	table.insert(lines, "- Am I showing up for the key people in my life (spouses, boss, close friends, close family)?")
-	table.insert(lines, "- When did I feel most energized?")
-	table.insert(lines, "")
+  table.insert(lines, "---")
+  table.insert(lines, "## End Of Week Review")
+  table.insert(lines, "- What did I get done this week versus what I planned to get done?")
+  table.insert(lines, "- What unexpectedly arose this week that blocked my productivity?")
+  table.insert(lines, "- What worked well?")
+  table.insert(lines, "- Where did I get stuck?")
+  table.insert(lines, "- What did I learn?")
+  table.insert(lines, "- Am I showing up for the key people in my life (spouses, boss, close friends, close family)?")
+  table.insert(lines, "- When did I feel most energized?")
+  table.insert(lines, "")
 
-	table.insert(lines, "---")
-	table.insert(lines, "## Planned Tasks")
-	table.insert(lines, "Actions that will ensure I make progress on my goals")
-	table.insert(lines, "")
-	table.insert(lines, "- ")
+  table.insert(lines, "---")
+  table.insert(lines, "## Planned Tasks")
+  table.insert(lines, "Actions that will ensure I make progress on my goals")
+  table.insert(lines, "")
+  local prev_goals = get_goals_from_last_week(iso_data)
+  for _, goal in ipairs(prev_goals) do
+    table.insert(lines, string.format("### Goal: %s", goal))
+    table.insert(lines, "")
+  end
+  table.insert(lines, "- ")
 
 	return table.concat(lines, "\n")
 end
