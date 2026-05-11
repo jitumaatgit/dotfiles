@@ -126,5 +126,29 @@ const table = sqliteTable("session", {
 - Avoid mocks as much as possible
 - Test actual implementation, do not duplicate logic into tests
 
+## ADB on Windows (Git Bash)
+
+- ADB path: `/c/Users/student/AppData/Local/Microsoft/WinGet/Packages/Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe/platform-tools/adb.exe` — not on PATH by default, must prepend or export
+- `MSYS_NO_PATHCONV=1` is **mandatory** for `adb pull/push` in Git Bash — without it, MSYS converts `/sdcard/` paths to Windows paths and ADB fails with "No such file or directory"
+- `adb shell uiautomator dump` writes to device, then `adb pull` to local. Dump path like `/data/local/tmp/` is more reliable than `/sdcard/` (avoids permission issues)
+- `uiautomator dump` only captures the **visible viewport** and **truncates long TextViews** (~3000 chars). To capture scrollable content: rapid multi-swipe (`input swipe x1 y1 x2 y2 duration`) + dump per viewport, then deduplicate by content hash
+- UI dump XML is one massive line — parse with Python `xml.etree.ElementTree`, iterate nodes, extract `text`/`content-desc`/`bounds` attributes
+- `run-as <package>` only works for debuggable apps — Tasker (`net.dinglisch.android.taskerm`) is not debuggable, so internal data requires root or content providers
+- Tasker AI Chat activity: `net.dinglisch.android.taskerm/com.joaomgcd.oldtaskercompat.aigenerator.ui.ActivityAIChat` — conversation data stored in app-private storage, no accessible content provider, no export feature
+
+## Termux on Android
+
+- Fresh Termux installs need `termux-setup-storage` run once to create `~/storage/shared/` symlink. Without it, `cp` to `/sdcard/` fails and ADB can't pull files from Termux.
+- `am start -n com.termux/.app.TermuxActivity` brings Termux to foreground (needed before `input text` commands)
+- `input text` in adb shell: spaces must be `%s`, and you need `input keyevent ENTER` after. Not reliable for long strings.
+- `pkg install file` to get the `file` command for binary identification (not installed by default)
+
+## Tasker XML Import
+
+- "Bad packed data format" error → loose `<Task>` elements without `<Project>` wrapper. Always wrap in Project.
+- "Missing event type" error → profile has invalid/placeholder event code. Use a real built-in event code, then reconfigure in Tasker UI after import.
+- Plugin events (ntfy, etc.) cannot be represented in standard Tasker XML. Use placeholder event code, import, then manually reconfigure.
+- `Notify` (code 523) `arg12`-`arg15` are Intent-based action buttons, NOT task name references. Use Tasker HTTP Server + Command System for HTTP-based button callbacks.
+
 ## Type Checking
 
