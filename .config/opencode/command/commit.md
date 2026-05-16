@@ -1,6 +1,6 @@
 ---
 description: git commit and push
-model: nvidia/minimaxai/minimax-m2.5
+model: opencode-go/deepseek-v4-flash
 subtask: true
 ---
 

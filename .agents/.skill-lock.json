@@ -149,6 +149,33 @@
       "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
       "installedAt": "2026-05-15T01:29:13.743Z",
       "updatedAt": "2026-05-15T01:29:13.743Z"
+    },
+    "code-simplification": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/addyosmani/agent-skills.git",
+      "skillPath": "skills/code-simplification/SKILL.md",
+      "skillFolderHash": "15b6e21924188ee46402a8c91963162fd9056c7d",
+      "installedAt": "2026-05-16T04:10:40.464Z",
+      "updatedAt": "2026-05-16T04:10:40.464Z"
+    },
+    "code-review-and-quality": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/addyosmani/agent-skills.git",
+      "skillPath": "skills/code-review-and-quality/SKILL.md",
+      "skillFolderHash": "e1edec4a273dbc65b6f3d2d6e56858783047b705",
+      "installedAt": "2026-05-16T04:10:43.219Z",
+      "updatedAt": "2026-05-16T04:10:43.219Z"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/pbakaus/impeccable.git",
+      "skillPath": "skill/SKILL.md",
+      "skillFolderHash": "3c2e72a0cb17d73b5e2c4c7823cde75b9b490f92",
+      "installedAt": "2026-05-16T04:12:08.574Z",
+      "updatedAt": "2026-05-16T04:12:08.574Z"
     }
   },
   "dismissed": {
