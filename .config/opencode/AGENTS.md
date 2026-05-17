@@ -128,19 +128,26 @@ const table = sqliteTable("session", {
 
 ## ADB on Windows (Git Bash)
 
-- ADB path: `/c/Users/student/AppData/Local/Microsoft/WinGet/Packages/Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe/platform-tools/adb.exe` — not on PATH by default, must prepend or export
+- ADB path: install via `scoop install adb` (preferred) or `winget install Google.PlatformTools` — not on PATH by default, must prepend or export. On ephemeral machines the winget path often does not exist; scoop is more reliable.
 - `MSYS_NO_PATHCONV=1` is **mandatory** for `adb pull/push` in Git Bash — without it, MSYS converts `/sdcard/` paths to Windows paths and ADB fails with "No such file or directory"
 - `adb shell uiautomator dump` writes to device, then `adb pull` to local. Dump path like `/data/local/tmp/` is more reliable than `/sdcard/` (avoids permission issues)
 - `uiautomator dump` only captures the **visible viewport** and **truncates long TextViews** (~3000 chars). To capture scrollable content: rapid multi-swipe (`input swipe x1 y1 x2 y2 duration`) + dump per viewport, then deduplicate by content hash
 - UI dump XML is one massive line — parse with Python `xml.etree.ElementTree`, iterate nodes, extract `text`/`content-desc`/`bounds` attributes
 - `run-as <package>` only works for debuggable apps — Tasker (`net.dinglisch.android.taskerm`) is not debuggable, so internal data requires root or content providers
 - Tasker AI Chat activity: `net.dinglisch.android.taskerm/com.joaomgcd.oldtaskercompat.aigenerator.ui.ActivityAIChat` — conversation data stored in app-private storage, no accessible content provider, no export feature
+- `adb shell content query --projection` uses colons (`address:body:date`), not commas. `--sort` does NOT support `DESC` — only ascending sort by column name works.
+- `date` field in SMS content provider (`content://sms`) is epoch **milliseconds**, not seconds. Divide by 1000 before passing to `datetime.fromtimestamp()`.
+- `content query --where` only supports exact `=` matches. `LIKE` and other SQL operators throw `Unsupported argument` error.
+- `content://telephony/carriers` and `content://telephony/siminfo/` require phone/system UID and fail with `SecurityException` via ADB — can't query SIM phone numbers this way.
+- `getprop gsm.sim.operator.alpha` shows carrier names (e.g., Access Wireless, cricket) but not actual phone numbers. The `.numeric` codes map to carriers but require external lookup to identify which SIM is which.
 
 ## Termux on Android
 
 - Fresh Termux installs need `termux-setup-storage` run once to create `~/storage/shared/` symlink. Without it, `cp` to `/sdcard/` fails and ADB can't pull files from Termux.
 - `am start -n com.termux/.app.TermuxActivity` brings Termux to foreground (needed before `input text` commands)
 - `input text` in adb shell: spaces must be `%s`, and you need `input keyevent ENTER` after. Not reliable for long strings.
+- `adb push` to `/data/data/com.termux/files/home/` fails (Permission denied); `run-as com.termux` also fails (Termux is not debuggable). Only Termux itself can write to its private home. Deploy via `git pull` within Termux, not adb push.
+- `input text` shell metacharacters (`>`, `&`, `|`) get interpreted by the outer `adb shell` interpreter, not sent as keystrokes. Send tokens individually with explicit `keyevent 62` (space), or write a short script to `/sdcard/` first.
 - `pkg install file` to get the `file` command for binary identification (not installed by default)
 
 ## Tasker XML Import
