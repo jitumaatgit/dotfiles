@@ -209,7 +209,6 @@ return {
       local old_rel = tostring(client:vault_relative_path(norm_old, { strict = true }))
       local new_rel = tostring(client:vault_relative_path(norm_new, { strict = true }))
       local old_rel_noext = old_rel:gsub("%.md$", "")
-      local new_rel_noext = new_rel:gsub("%.md$", "")
 
       local old_forms = flatten({
         get_ref_forms(old_id),
@@ -219,7 +218,7 @@ return {
       local new_forms = flatten({
         get_ref_forms(new_id),
         get_ref_forms(new_rel),
-        get_ref_forms(new_rel_noext),
+        get_ref_forms(new_id),
       })
 
       local ref_count = count_obsidian_refs(norm_vault, old_forms)
