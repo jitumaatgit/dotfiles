@@ -39,6 +39,10 @@ Dotfiles repo with a LazyVim-based Neovim configuration under `AppData/Local/nvi
 - Weekly notes: `docs/30-DailyNotes/WeeklyNotes/YYYY/YYYY-Www.md`
 - Templates: `docs/50-Templates/`
 
+## Git & Repo Quirks
+
+- Root `.gitignore` uses `/*` (ignore everything) + selective `!` un-ignores. Any new file at root MUST be added to `.gitignore` as `!/filename` or it won't be tracked. This silently blocked `AGENTS.md` from being committed.
+
 ## Windows Gotchas
 
 - Git Bash is the shell. Use `/c/` paths in bash commands, not `C://`.
