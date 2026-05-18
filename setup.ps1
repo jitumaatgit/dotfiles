@@ -206,6 +206,34 @@ if ($python3Path)
   Write-Host "[OK] Python configured for node-gyp: $python3Path"
 }
 
+# Semble — code search for agents
+Write-Host "[INFO] Installing semble..."
+try {
+    $semblePath = (Get-Command semble -ErrorAction SilentlyContinue).Source
+    if (-not $semblePath) {
+        pip install semble 2>&1 | Out-Null
+        Write-Host "[OK] semble installed"
+    } else {
+        Write-Host "[OK] semble already installed"
+    }
+} catch {
+    Write-Host "[WARN] Failed to install semble: $_" -ForegroundColor Yellow
+}
+
+# Free coding models
+Write-Host "[INFO] Installing free-coding-models..."
+try {
+    $fcmPath = (Get-Command free-coding-models -ErrorAction SilentlyContinue).Source
+    if (-not $fcmPath) {
+        npm install -g free-coding-models 2>&1 | Out-Null
+        Write-Host "[OK] free-coding-models installed"
+    } else {
+        Write-Host "[OK] free-coding-models already installed"
+    }
+} catch {
+    Write-Host "[WARN] Failed to install free-coding-models: $_" -ForegroundColor Yellow
+}
+
 # Notes Repository
 $notesDir = "$env:USERPROFILE\notes"
 if (-not (Test-Path "$notesDir\.git"))
