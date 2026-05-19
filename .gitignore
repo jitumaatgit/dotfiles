@@ -4,6 +4,7 @@
 !/git
 !/README.md
 !/AGENTS.md
+!/.gitattributes
 !/setup.ps1
 
 !/.config
