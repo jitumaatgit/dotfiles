@@ -40,7 +40,7 @@ trap
 $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
-    'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'yazi',
+    'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
     'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform','depsguard')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
@@ -151,7 +151,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue))
 }
 scoop bucket add extras 2>$null
 scoop bucket add nerd-fonts 2>$null
-
+scoop bucket add depsguard https://github.com/arnica/depsguard 2>$null
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
 $installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }
@@ -179,22 +179,26 @@ $Config.ScoopPackages | ForEach-Object {
 
 if ($failedPackages.Count -gt 0)
 {
-    Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
-    Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
+  Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
+  Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
 }
 
 # Plannotator CLI for visual plan review
 Write-Host "[INFO] Installing plannotator CLI..."
-try {
-    $plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
-    if (-not $plannotatorPath) {
-        Invoke-Expression "& { $(Invoke-RestMethod https://plannotator.ai/install.ps1) }"
-        Write-Host "[OK] plannotator CLI installed"
-    } else {
-        Write-Host "[OK] plannotator CLI already installed"
-    }
-} catch {
-    Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
+try
+{
+  $plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
+  if (-not $plannotatorPath)
+  {
+    Invoke-Expression "& { $(Invoke-RestMethod https://plannotator.ai/install.ps1) }"
+    Write-Host "[OK] plannotator CLI installed"
+  } else
+  {
+    Write-Host "[OK] plannotator CLI already installed"
+  }
+} catch
+{
+  Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
 }
 
 # Configure Python for node-gyp native modules
@@ -208,30 +212,38 @@ if ($python3Path)
 
 # Semble — code search for agents
 Write-Host "[INFO] Installing semble..."
-try {
-    $semblePath = (Get-Command semble -ErrorAction SilentlyContinue).Source
-    if (-not $semblePath) {
-        pip install semble 2>&1 | Out-Null
-        Write-Host "[OK] semble installed"
-    } else {
-        Write-Host "[OK] semble already installed"
-    }
-} catch {
-    Write-Host "[WARN] Failed to install semble: $_" -ForegroundColor Yellow
+try
+{
+  $semblePath = (Get-Command semble -ErrorAction SilentlyContinue).Source
+  if (-not $semblePath)
+  {
+    pip install semble 2>&1 | Out-Null
+    Write-Host "[OK] semble installed"
+  } else
+  {
+    Write-Host "[OK] semble already installed"
+  }
+} catch
+{
+  Write-Host "[WARN] Failed to install semble: $_" -ForegroundColor Yellow
 }
 
 # Free coding models
 Write-Host "[INFO] Installing free-coding-models..."
-try {
-    $fcmPath = (Get-Command free-coding-models -ErrorAction SilentlyContinue).Source
-    if (-not $fcmPath) {
-        npm install -g free-coding-models 2>&1 | Out-Null
-        Write-Host "[OK] free-coding-models installed"
-    } else {
-        Write-Host "[OK] free-coding-models already installed"
-    }
-} catch {
-    Write-Host "[WARN] Failed to install free-coding-models: $_" -ForegroundColor Yellow
+try
+{
+  $fcmPath = (Get-Command free-coding-models -ErrorAction SilentlyContinue).Source
+  if (-not $fcmPath)
+  {
+    npm install -g free-coding-models 2>&1 | Out-Null
+    Write-Host "[OK] free-coding-models installed"
+  } else
+  {
+    Write-Host "[OK] free-coding-models already installed"
+  }
+} catch
+{
+  Write-Host "[WARN] Failed to install free-coding-models: $_" -ForegroundColor Yellow
 }
 
 # Notes Repository
@@ -257,26 +269,29 @@ if (-not (Test-Path "$notesDir\.git"))
   }
 } else
 {
-    Write-Host "[OK] Notes repository configured"
+  Write-Host "[OK] Notes repository configured"
 }
 
 # Update notes .opencode to use plannotator plugin
 $notesOpencodePackage = "$env:USERPROFILE\notes\.opencode\package.json"
-if (Test-Path $notesOpencodePackage) {
-    Write-Host "[INFO] Updating notes .opencode package.json for plannotator..."
-    $pkgContent = Get-Content $notesOpencodePackage -Raw | ConvertFrom-Json
-    $pkgContent.dependencies = @{ "@plannotator/opencode" = "latest" }
-    $pkgContent | ConvertTo-Json -Depth 4 | Set-Content $notesOpencodePackage
+if (Test-Path $notesOpencodePackage)
+{
+  Write-Host "[INFO] Updating notes .opencode package.json for plannotator..."
+  $pkgContent = Get-Content $notesOpencodePackage -Raw | ConvertFrom-Json
+  $pkgContent.dependencies = @{ "@plannotator/opencode" = "latest" }
+  $pkgContent | ConvertTo-Json -Depth 4 | Set-Content $notesOpencodePackage
 
-    # Install updated dependencies
-    Push-Location "$env:USERPROFILE\notes\.opencode"
-    try {
-        npm install 2>&1 | Out-Null
-        Write-Host "[OK] Notes .opencode updated with @plannotator/opencode"
-    } catch {
-        Write-Host "[WARN] npm install in notes/.opencode failed: $_" -ForegroundColor Yellow
-    }
-    Pop-Location
+  # Install updated dependencies
+  Push-Location "$env:USERPROFILE\notes\.opencode"
+  try
+  {
+    npm install 2>&1 | Out-Null
+    Write-Host "[OK] Notes .opencode updated with @plannotator/opencode"
+  } catch
+  {
+    Write-Host "[WARN] npm install in notes/.opencode failed: $_" -ForegroundColor Yellow
+  }
+  Pop-Location
 }
 
 # SQLite for Neovim
@@ -866,40 +881,46 @@ try
 {
   # Cleanup temp files
   Write-Host "[INFO] Cleaning up temporary files..."
-    Remove-Item $fontTempDir -Recurse -Force -ErrorAction SilentlyContinue
+  Remove-Item $fontTempDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 # Ensure opencode config has plannotator plugin
 $opencodeConfigDir = "$env:USERPROFILE\.config\opencode"
 $opencodeConfig = "$opencodeConfigDir\opencode.json"
-if (-not (Test-Path $opencodeConfigDir)) {
-    New-Item -ItemType Directory -Force -Path $opencodeConfigDir | Out-Null
+if (-not (Test-Path $opencodeConfigDir))
+{
+  New-Item -ItemType Directory -Force -Path $opencodeConfigDir | Out-Null
 }
-if (Test-Path $opencodeConfig) {
-    Write-Host "[INFO] Checking opencode config for plannotator..."
-    $config = Get-Content $opencodeConfig -Raw | ConvertFrom-Json
+if (Test-Path $opencodeConfig)
+{
+  Write-Host "[INFO] Checking opencode config for plannotator..."
+  $config = Get-Content $opencodeConfig -Raw | ConvertFrom-Json
 
-    # Add plannotator plugin if not present
-    if (-not $config.plugin -or $config.plugin -notcontains "@plannotator/opencode@latest") {
-        if (-not $config.plugin) {
-            $config.plugin = @()
-        }
-        $config.plugin += "@plannotator/opencode@latest"
-        $config | ConvertTo-Json -Depth 10 | Set-Content $opencodeConfig
-        Write-Host "[OK] Added @plannotator/opencode to opencode config"
-    } else {
-        Write-Host "[OK] opencode config already has plannotator"
+  # Add plannotator plugin if not present
+  if (-not $config.plugin -or $config.plugin -notcontains "@plannotator/opencode@latest")
+  {
+    if (-not $config.plugin)
+    {
+      $config.plugin = @()
     }
-} else {
-    Write-Host "[INFO] Creating opencode config with plannotator..."
-    $newConfig = @{
-        '$schema' = "https://opencode.ai/config.json"
-        autoupdate = $false
-        plugin = @("@plannotator/opencode@latest")
-        server = @{ port = 3000 }
-    }
-    $newConfig | ConvertTo-Json -Depth 4 | Set-Content $opencodeConfig
-    Write-Host "[OK] Created opencode config with plannotator"
+    $config.plugin += "@plannotator/opencode@latest"
+    $config | ConvertTo-Json -Depth 10 | Set-Content $opencodeConfig
+    Write-Host "[OK] Added @plannotator/opencode to opencode config"
+  } else
+  {
+    Write-Host "[OK] opencode config already has plannotator"
+  }
+} else
+{
+  Write-Host "[INFO] Creating opencode config with plannotator..."
+  $newConfig = @{
+    '$schema' = "https://opencode.ai/config.json"
+    autoupdate = $false
+    plugin = @("@plannotator/opencode@latest")
+    server = @{ port = 3000 }
+  }
+  $newConfig | ConvertTo-Json -Depth 4 | Set-Content $opencodeConfig
+  Write-Host "[OK] Created opencode config with plannotator"
 }
 
 Write-Host "===== bootstrap complete =====`n"
@@ -919,4 +940,26 @@ Write-Host "zen-browser-data: cd ~/zen-browser-data
 Write-Host "git status"
 Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
 Write-Host "============================================================"
+Stop-Transcript
+  Write-Host "[OK] Created opencode config with plannotator"
+}
+
+Write-Host "===== bootstrap complete =====`n"
+Write-Host "Key Bindings:
+  Desktop: Win+1-9 | Win+[ / ]
+  Window: Win+Shift+1-9 (follow) | Win+Alt+1-9 (stay) | Win+Shift+P (pin)
+  Other: CapsLock=Esc | RWin=LCtrl`n"
+Write-Host "Dotfiles setup:
+  gh auth login
+  git init -b main 
+  git remote add origin https://github.com/jitumaatgit/dotfiles
+  git fetch 
+  git checkout -f main`n"
+Write-Host "nvim-data: cd ~/vim-data-remote
+Write-Host "git status"
+Write-Host "zen-browser-data: cd ~/zen-browser-data
+Write-Host "git status"
+Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
+Write-Host "============================================================"
+Stop-Transcript
 Stop-Transcript
