@@ -185,6 +185,33 @@
       "skillFolderHash": "f65537a3461b663121fe195697979c17a8004ea5",
       "installedAt": "2026-05-20T15:10:19.600Z",
       "updatedAt": "2026-05-20T15:10:19.600Z"
+    },
+    "kotlin-coroutines-flows": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/affaan-m/everything-claude-code.git",
+      "skillPath": "skills/kotlin-coroutines-flows/SKILL.md",
+      "skillFolderHash": "2f99802b2847c2ac09fc1b8071f97bb952986893",
+      "installedAt": "2026-05-23T13:22:27.516Z",
+      "updatedAt": "2026-05-23T13:22:27.516Z"
+    },
+    "kotlin-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/affaan-m/everything-claude-code.git",
+      "skillPath": "skills/kotlin-patterns/SKILL.md",
+      "skillFolderHash": "22f7eda9353c5a2df5d10bd95ab23de1c5b49438",
+      "installedAt": "2026-05-23T13:22:39.287Z",
+      "updatedAt": "2026-05-23T13:22:39.287Z"
+    },
+    "kotlin-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/affaan-m/everything-claude-code.git",
+      "skillPath": "skills/kotlin-testing/SKILL.md",
+      "skillFolderHash": "93f88d0e11f5463f6378a076542f779007b5a104",
+      "installedAt": "2026-05-23T13:22:41.670Z",
+      "updatedAt": "2026-05-23T13:22:41.670Z"
     }
   },
   "dismissed": {
