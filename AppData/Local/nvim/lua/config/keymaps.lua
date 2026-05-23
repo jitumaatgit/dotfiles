@@ -4,6 +4,21 @@
 -- shorthand for mapping keys
 local map = vim.keymap.set
 
+-- gj/gk for wrapped lines; add to jumplist when jumping >= 3 lines
+vim.keymap.set(
+  { "n", "x" },
+  "j",
+  [[v:count ? (v:count >= 3 ? "m'" . v:count : v:count) . 'j' : 'gj']],
+  { noremap = true, expr = true, silent = true }
+)
+
+vim.keymap.set(
+  { "n", "x" },
+  "k",
+  [[v:count ? (v:count >= 3 ? "m'" . v:count : v:count) . 'k' : 'gk']],
+  { noremap = true, expr = true, silent = true }
+)
+
 vim.keymap.set("i", "jj", "<Esc>")
 vim.keymap.set("i", "kk", "<Esc>")
 vim.keymap.set("i", "jk", "<Esc>")
