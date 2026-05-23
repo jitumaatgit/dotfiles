@@ -9,37 +9,7 @@
     "port": 3000
   },
   "model": "opencode-go/deepseek-v4-flash",
-  "small_model": "nvidia/minimaxai/minimax-m2.7",
-  "provider": {
-    "nvidia": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "NVIDIA NIM",
-      "options": {
-        "baseURL": "https://integrate.api.nvidia.com/v1",
-        "apiKey": "{env:NVIDIA_API_KEY}"
-      },
-      "models": {
-        "deepseek-ai/deepseek-v3.2": {
-          "name": "DeepSeek V3.2"
-        },
-        "moonshotai/kimi-k2.6": {
-          "name": "Kimi K2.6"
-        },
-        "minimaxai/minimax-m2.7": {
-          "name": "MiniMax M2.7"
-        },
-        "qwen/qwen3-next-80b-a3b-thinking": {
-          "name": "Qwen3 80B Thinking"
-        },
-        "z-ai/glm5": {
-          "name": "GLM 5"
-        },
-        "mistralai/devstral-2-123b-instruct-2512": {
-          "name": "Devstral 2 123B"
-        }
-      }
-    }
-  },
+  "small_model": "opencode-go/deepseek-v4-flash",
   "mcp": {
     "exa": {
       "type": "remote",
