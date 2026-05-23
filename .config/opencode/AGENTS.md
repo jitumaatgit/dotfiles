@@ -157,5 +157,10 @@ const table = sqliteTable("session", {
 - Plugin events (ntfy, etc.) cannot be represented in standard Tasker XML. Use placeholder event code, import, then manually reconfigure.
 - `Notify` (code 523) `arg12`-`arg15` are Intent-based action buttons, NOT task name references. Use Tasker HTTP Server + Command System for HTTP-based button callbacks.
 
+## OpenCode Server Auth
+
+- Adding a `"server": { "port": <N> }` block to `opencode.json` starts an HTTP server — the TUI terminal connects through it. Without `OPENCODE_SERVER_PASSWORD`, terminal commands fail with "header authorization is missing". The error is misleading: it's not about the `cd` command, it's about the server requiring auth for its own internal TUI client.
+- `OPENCODE_SERVER_PASSWORD` must be set at server startup. Username defaults to `opencode`; override with `OPENCODE_SERVER_USERNAME`.
+
 ## Type Checking
 

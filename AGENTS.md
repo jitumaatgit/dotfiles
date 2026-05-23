@@ -39,6 +39,11 @@ Dotfiles repo with a LazyVim-based Neovim configuration under `AppData/Local/nvi
 - Weekly notes: `docs/30-DailyNotes/WeeklyNotes/YYYY/YYYY-Www.md`
 - Templates: `docs/50-Templates/`
 
+## Secrets & Env Files
+
+- Sensitive env vars (API keys, passwords) belong in the private `~/notes/` repo, not in dotfiles. Create `~/notes/<name>.env` with `export KEY="value"`, commit to notes, then source from `.bashrc` via `[ -f ~/notes/<name>.env ] && . ~/notes/<name>.env`.
+- The sourcing line in `.bashrc` is tracked in dotfiles; the `.env` file itself stays in the private notes repo where it's gitignored from dotfiles by the `/*` denylist rule.
+
 ## Git & Repo Quirks
 
 - Root `.gitignore` uses `/*` (ignore everything) + selective `!` un-ignores. Any new file at root MUST be added to `.gitignore` as `!/filename` or it won't be tracked. This silently blocked `AGENTS.md` from being committed.

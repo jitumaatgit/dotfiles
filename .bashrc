@@ -86,4 +86,6 @@ eval "$(starship init bash)"
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
+[ -f ~/notes/opencode-server.env ] && . ~/notes/opencode-server.env # opencode-server-env
+
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
