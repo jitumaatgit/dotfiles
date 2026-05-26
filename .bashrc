@@ -86,6 +86,11 @@ eval "$(starship init bash)"
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
+
+###############################################
+# Secrets (tracked in ~/notes repo)
+###############################################
 [ -f ~/notes/opencode-server.env ] && . ~/notes/opencode-server.env # opencode-server-env
+[ -f ~/notes/deepseek.env ] && . ~/notes/deepseek.env # deepseek-api-key
 
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
