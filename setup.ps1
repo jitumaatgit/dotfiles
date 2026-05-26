@@ -41,7 +41,7 @@ $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
-    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform','depsguard')
+    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform','depsguard, jq, jid')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
 
@@ -941,7 +941,7 @@ Write-Host "git status"
 Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
 Write-Host "============================================================"
 Stop-Transcript
-  Write-Host "[OK] Created opencode config with plannotator"
+Write-Host "[OK] Created opencode config with plannotator"
 }
 
 Write-Host "===== bootstrap complete =====`n"
