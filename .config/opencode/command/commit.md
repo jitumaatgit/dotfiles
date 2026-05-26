@@ -1,6 +1,6 @@
 ---
 description: git commit and push
-model: opencode-go/deepseek-v4-flash
+model: opencode/big-pickle
 subtask: true
 ---
 
