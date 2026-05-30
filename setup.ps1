@@ -942,7 +942,7 @@ Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /p
 Write-Host "============================================================"
 Stop-Transcript
 Write-Host "[OK] Created opencode config with plannotator"
-}
+
 
 Write-Host "===== bootstrap complete =====`n"
 Write-Host "Key Bindings:
