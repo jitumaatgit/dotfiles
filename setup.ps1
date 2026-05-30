@@ -922,28 +922,6 @@ if (Test-Path $opencodeConfig)
   $newConfig | ConvertTo-Json -Depth 4 | Set-Content $opencodeConfig
   Write-Host "[OK] Created opencode config with plannotator"
 }
-
-Write-Host "===== bootstrap complete =====`n"
-Write-Host "Key Bindings:
-  Desktop: Win+1-9 | Win+[ / ]
-  Window: Win+Shift+1-9 (follow) | Win+Alt+1-9 (stay) | Win+Shift+P (pin)
-  Other: CapsLock=Esc | RWin=LCtrl`n"
-Write-Host "Dotfiles setup:
-  gh auth login
-  git init -b main 
-  git remote add origin https://github.com/jitumaatgit/dotfiles
-  git fetch 
-  git checkout -f main`n"
-Write-Host "nvim-data: cd ~/vim-data-remote
-Write-Host "git status"
-Write-Host "zen-browser-data: cd ~/zen-browser-data
-Write-Host "git status"
-Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
-Write-Host "============================================================"
-Stop-Transcript
-Write-Host "[OK] Created opencode config with plannotator"
-
-
 Write-Host "===== bootstrap complete =====`n"
 Write-Host "Key Bindings:
   Desktop: Win+1-9 | Win+[ / ]
