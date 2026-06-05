@@ -34,7 +34,7 @@ $Config = @{
   # Scoop handles depsguard/jq/jid as separate entries (handoff: were one string, split)
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
-    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform','depsguard','jq','jid')
+    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','terraform','depsguard','jq','jid')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
 
