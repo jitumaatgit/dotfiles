@@ -10,7 +10,7 @@ New-Item -ItemType Directory -Force -Path $Downloads, $Logs | Out-Null
 Start-Transcript -Path "$Logs\setup-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
 
 # Global error handling
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue' # btop installer crashes under Stop
 $script:ExitCode = 0
 
 trap
@@ -24,24 +24,17 @@ trap
   Write-Host "[INFO] Check the transcript log for full details: $Logs\setup-*.log" -ForegroundColor Cyan
   $script:ExitCode = 1
   Stop-Transcript
-  if (-not [string]::IsNullOrEmpty($global:scriptFailed))
-  {
-    # Continue if this is a non-fatal package installation error
-    Write-Host "[INFO] Continuing despite error..." -ForegroundColor Yellow
-  } else
-  {
-    exit $script:ExitCode
-  }
+  exit $script:ExitCode
 }
 
 # Configuration
-# python is for pip
-# zstd is for compressing qemu disk images
+# python is for pip, zstd for compressing qemu disk images
 $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
+  # Scoop handles depsguard/jq/jid as separate entries (handoff: were one string, split)
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
-    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform','depsguard, jq, jid')
+    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','gcloud','terraform','depsguard','jq','jid')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
 }
 
@@ -116,7 +109,7 @@ function New-JunctionCheck
   return $true
 }
 
-# Check domain trust before proceeding
+# Check domain trust — side-effect only; warns if broken (blocks font auto-install)
 Test-DomainTrust
 
 # Install Scoop
@@ -149,38 +142,49 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue))
 {
   Write-Host "[OK] git already installed"
 }
-scoop bucket add extras 2>$null
+scoop bucket add extras 2>$null  # 2>$null: bucket may already exist
 scoop bucket add nerd-fonts 2>$null
 scoop bucket add depsguard https://github.com/arnica/depsguard 2>$null
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
-$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }
-$failedPackages = @()
+$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }  # pre-batch snapshot for diff
+$missing = $Config.ScoopPackages | Where-Object { $installedPackages -notcontains $_ }
 
-$Config.ScoopPackages | ForEach-Object {
-  $pkg = $_
-  if ($installedPackages -contains $pkg)
+if ($missing.Count -gt 0)
+{
+  Write-Host "[INFO] Installing $($missing.Count) packages in batch..."
+  scoop install @missing
+  $after = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }
+  $failed = $missing | Where-Object { $after -notcontains $_ }
+  if ($failed.Count -gt 0)
   {
-    Write-Host "[OK] ${pkg} already installed"
+    Write-Host "[WARN] Failed to install: $($failed -join ', ')" -ForegroundColor Yellow
   } else
   {
-    Write-Host "[INFO] Installing ${pkg}..."
-    try
-    {
-      scoop install $pkg 2>&1 | Out-Null
-      Write-Host "[OK] ${pkg} installed"
-    } catch
-    {
-      Write-Host "[WARN] Failed to install ${pkg}: $_" -ForegroundColor Yellow
-      $failedPackages += $pkg
-    }
+    Write-Host "[OK] All $($missing.Count) packages installed"
   }
+} else
+{
+  Write-Host "[OK] All packages already installed"
 }
 
-if ($failedPackages.Count -gt 0)
+# GitHub auth — early so partial runs still have auth if script crashes mid-way
+Write-Host "[INFO] Checking GitHub authentication..."
+try
 {
-  Write-Host "[WARN] The following packages failed to install: $($failedPackages -join ', ')" -ForegroundColor Yellow
-  Write-Host "[INFO] You may need to fix domain trust issues or run as administrator" -ForegroundColor Yellow
+  $ghPath = Get-Command gh -ErrorAction Stop | Select-Object -ExpandProperty Source
+  $authStatus = & $ghPath auth status 2>&1
+  if ($LASTEXITCODE -ne 0)
+  {
+    Write-Host "[INFO] Not authenticated with GitHub. Starting auth flow..." -ForegroundColor Cyan
+    & $ghPath auth login --web
+  } else
+  {
+    Write-Host "[OK] GitHub authenticated"
+  }
+} catch
+{
+  Write-Host "[WARN] gh not available yet, will auth later: $_" -ForegroundColor Yellow
 }
 
 # Plannotator CLI for visual plan review
@@ -190,7 +194,7 @@ try
   $plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
   if (-not $plannotatorPath)
   {
-    Invoke-Expression "& { $(Invoke-RestMethod https://plannotator.ai/install.ps1) }"
+    Invoke-Expression "& { $(Invoke-RestMethod https://plannotator.ai/install.ps1) }"  # documented install pattern (not pipe-style like scoop above — just inconsistency)
     Write-Host "[OK] plannotator CLI installed"
   } else
   {
@@ -208,42 +212,6 @@ if ($python3Path)
   $env:PYTHON = $python3Path
   [Environment]::SetEnvironmentVariable("PYTHON", $python3Path, "User")
   Write-Host "[OK] Python configured for node-gyp: $python3Path"
-}
-
-# Semble — code search for agents
-Write-Host "[INFO] Installing semble..."
-try
-{
-  $semblePath = (Get-Command semble -ErrorAction SilentlyContinue).Source
-  if (-not $semblePath)
-  {
-    pip install semble 2>&1 | Out-Null
-    Write-Host "[OK] semble installed"
-  } else
-  {
-    Write-Host "[OK] semble already installed"
-  }
-} catch
-{
-  Write-Host "[WARN] Failed to install semble: $_" -ForegroundColor Yellow
-}
-
-# Free coding models
-Write-Host "[INFO] Installing free-coding-models..."
-try
-{
-  $fcmPath = (Get-Command free-coding-models -ErrorAction SilentlyContinue).Source
-  if (-not $fcmPath)
-  {
-    npm install -g free-coding-models 2>&1 | Out-Null
-    Write-Host "[OK] free-coding-models installed"
-  } else
-  {
-    Write-Host "[OK] free-coding-models already installed"
-  }
-} catch
-{
-  Write-Host "[WARN] Failed to install free-coding-models: $_" -ForegroundColor Yellow
 }
 
 # Notes Repository
@@ -345,64 +313,6 @@ if (-not (Test-Path "$env:USERPROFILE\nvim-data-remote\.git") -or -not (New-Junc
   Write-Host "[OK] nvim-data backup configured"
 }
 
-# PowerShell Editor Services (manual install, Mason symlink broken on Windows)
-$pesDir = "$env:LOCALAPPDATA\nvim-data\mason\packages\powershell-editor-services"
-$pesScript = "$pesDir\PowerShellEditorServices\Start-EditorServices.ps1"
-if (Test-Path $pesScript)
-{
-  Write-Host "[OK] PowerShell Editor Services already installed"
-} else
-{
-  Write-Host "[INFO] Installing PowerShell Editor Services..."
-  $pesZip = "$Downloads\PowerShellEditorServices.zip"
-  New-Item -ItemType Directory -Force -Path $pesDir | Out-Null
-  Invoke-SafeDownload "https://github.com/PowerShell/PowerShellEditorServices/releases/download/v4.4.0/PowerShellEditorServices.zip" $pesZip
-  if (-not (Test-Path $pesZip))
-  {
-    Write-Host "[WARN] PowerShell Editor Services download failed" -ForegroundColor Yellow
-  } else
-  {
-    Expand-Archive -Path $pesZip -DestinationPath $pesDir -Force
-    Remove-Item $pesZip -ErrorAction SilentlyContinue
-    if (Test-Path $pesScript)
-    {
-      Write-Host "[OK] PowerShell Editor Services installed"
-    } else
-    {
-      Write-Host "[WARN] PowerShell Editor Services extraction may have failed" -ForegroundColor Yellow
-    }
-  }
-}
-
-# Neovim Plugin Dependencies
-$mkdpPath = "$env:LOCALAPPDATA\nvim-data\lazy\markdown-preview.nvim"
-if (Test-Path "$mkdpPath\app")
-{
-  if (-not (Get-Command npm -ErrorAction SilentlyContinue))
-  {
-    Write-Host "[WARN] npm not found, skipping markdown-preview.nvim setup"
-  } else
-  {
-    Push-Location "$mkdpPath\app"
-    try
-    {
-      npm install
-      Write-Host "[OK] markdown-preview.nvim installed"
-    } catch
-    {
-      powershell.exe -ExecutionPolicy Bypass -File ".\install.cmd" v0.0.10
-      if (-not (Test-Path "bin\markdown-preview-win.exe"))
-      {
-        Write-Host "[WARN] markdown-preview.nvim install incomplete"
-      }
-    }
-    Pop-Location
-  }
-} else
-{
-  Write-Host "[INFO] markdown-preview.nvim will be handled by lazy.nvim"
-}
-
 # AutoHotkey Portable
 $ahkDir = "$Base\autohotkey-portable"
 $ahkZip = "$Downloads\autohotkey.zip"
@@ -438,33 +348,39 @@ if ($needsAhkInstall -or $needsVdDownload)
     Stop-Process -Name "AutoHotkey64" -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
   }
-}
 
-if ($needsAhkInstall)
-{
-  Write-Host "[INFO] Downloading AutoHotkey..."
-  Invoke-SafeDownload $Config.AhkDownloadUrl $ahkZip
-  if (-not (Test-Path $ahkZip))
-  {
-    throw "[ERROR] Failed to download AutoHotkey"
+  $dlScript = {  # inline for Start-Job; retries 3x with 2s backoff
+    param($Url, $OutFile, $Name)
+    $retryCount = 0
+    while ($retryCount -lt 3)
+    {
+      try {
+        Invoke-WebRequest -Uri $Url -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
+        if (Test-Path $OutFile) { return }
+      } catch {
+        $retryCount++
+        if ($retryCount -ge 3) { throw }
+        Start-Sleep -Seconds 2
+      }
+    }
   }
+
+  Write-Host "[INFO] Downloading AutoHotkey + VD.ah2 (parallel)..."
+  $ahkJob = Start-Job -ScriptBlock $dlScript -ArgumentList $Config.AhkDownloadUrl, $ahkZip, "AutoHotkey"
+  $vdJob = Start-Job -ScriptBlock $dlScript -ArgumentList 'https://raw.githubusercontent.com/FuPeiJiang/VD.ahk/v2_port/VD.ah2', $vdAhkPath, "VD.ah2"
+  $ahkJob, $vdJob | Wait-Job | Receive-Job
+
+  if (-not (Test-Path $ahkZip)) { throw "[ERROR] Failed to download AutoHotkey" }
+  if (-not (Test-Path $vdAhkPath)) { throw "[ERROR] Failed to download VD.ah2" }
+
   Write-Host "[INFO] Extracting AutoHotkey..."
   Expand-Archive -Path $ahkZip -DestinationPath $ahkDir -Force
   Remove-Item $ahkZip -ErrorAction SilentlyContinue
 }
 
-if ($needsVdDownload)
-{
-  Write-Host "[INFO] Downloading VD.ah2..."
-  Invoke-SafeDownload 'https://raw.githubusercontent.com/FuPeiJiang/VD.ahk/v2_port/VD.ah2' $vdAhkPath
-  if (-not (Test-Path $vdAhkPath))
-  { throw "[ERROR] Failed to download VD.ah2" 
-  }
-}
-
 # Cleanup WindowsVirtualDesktopHelper
 Write-Host "[INFO] Removing WindowsVirtualDesktopHelper..."
-scoop uninstall windows-virtualdesktop-helper 2>$null
+if (scoop list windows-virtualdesktop-helper 2>$null) { scoop uninstall windows-virtualdesktop-helper 2>$null }  # guard: uninstall fails if not installed
 Remove-Item "$env:APPDATA\WindowsVirtualDesktopHelper" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\windows-virtualdesktop-helper.lnk" -ErrorAction SilentlyContinue
 Write-Host "[OK] WindowsVirtualDesktopHelper cleanup complete"
@@ -586,7 +502,7 @@ if (Test-Path $remapAhk)
   $tempFile = [System.IO.Path]::GetTempFileName()
   $ahkScript | Out-File $tempFile -Encoding UTF8
   $existingHash = (Get-FileHash $remapAhk -Algorithm SHA256).Hash
-  $newHash = (Get-FileHash $tempFile -Algorithm SHA256).Hash
+  $newHash = (Get-FileHash $tempFile -Algorithm SHA256).Hash  # avoid unnecessary writes (triggers watchers)
     
   if ($existingHash -eq $newHash)
   {
@@ -623,82 +539,6 @@ Start-Process "$ahkDir\AutoHotkey64.exe" $remapAhk
 
 # Windows Settings
 Write-Host "[INFO] Applying Windows settings..."
-
-# Check if zen-browser needs installation
-if ($installedPackages -contains "zen-browser")
-{
-  Write-Host "[OK] zen-browser already installed"
-} else
-{
-  scoop install zen-browser
-}
-
-# zen-browser Data Backup
-Write-Host "[INFO] Checking zen-browser data backup..."
-$zenBackupRepo = "$env:USERPROFILE\zen-browser-data"
-$zenProfileBase = "$env:APPDATA\zen\Profiles"
-
-# Check if zen-browser profile exists and junction is set up
-$needsSetup = $false
-
-# Check if repo exists
-if (-not (Test-Path "$zenBackupRepo\.git"))
-{
-  $needsSetup = $true
-} else
-{
-  # Verify junction exists
-  $profileDirs = Get-ChildItem $zenBackupRepo -Directory | 
-    Where-Object { $_.LinkType -eq "Junction" }
-    
-  if (-not $profileDirs -or $profileDirs.Count -eq 0)
-  {
-    $needsSetup = $true
-  } else
-  {
-    # Verify all items are actually junctions and targets exist
-    $junctionValid = $true
-    foreach ($dir in $profileDirs)
-    {
-      $item = Get-Item $dir.FullName -ErrorAction SilentlyContinue
-      if (-not $item -or $item.LinkType -ne "Junction")
-      {
-        $junctionValid = $false
-        break
-      }
-      if (-not (Test-Path $dir.FullName))
-      {
-        $junctionValid = $false
-        break
-      }
-    }
-    if (-not $junctionValid)
-    {
-      $needsSetup = $true
-    }
-  }
-}
-
-if ($needsSetup)
-{
-  Write-Host "[INFO] Running zen-browser data backup setup..."
-  if (-not (Test-Path $zenProfileBase))
-  {
-    Write-Host "[WARN] Zen-browser profile not found. Please launch zen-browser and re-run setup."
-    Write-Host "[INFO] Skipping zen-browser backup setup."
-  } else
-  {
-    Invoke-SafeDownload "$($Config.BaseUrl)/setup-zen-data-backup.ps1" "$env:TEMP\setup-zen-data-backup.ps1"
-    if (-not (Test-Path "$env:TEMP\setup-zen-data-backup.ps1"))
-    {
-      throw "[ERROR] Failed to download zen-browser backup script"
-    }
-    & "$env:TEMP\setup-zen-data-backup.ps1"
-  }
-} else
-{
-  Write-Host "[OK] zen-browser data backup configured"
-}
 
 # Dark mode
 try
@@ -760,7 +600,7 @@ Start-Process explorer
 
 # Font Installation (manual, no admin required)
 Write-Host "[INFO] Installing fonts manually..."
-$fontDir = "$env:USERPROFILE\Desktop\DownloadedFonts"
+$fontDir = "$env:USERPROFILE\Desktop\DownloadedFonts"  # staging — no admin for system-wide install
 $fontTempDir = "$env:TEMP\fonts-install"
 New-Item -ItemType Directory -Force -Path $fontDir, $fontTempDir | Out-Null
 
@@ -769,21 +609,39 @@ $jetbrainsCopied = 0
 
 try
 {
-  # Download Cascadia Code
   $cascadiaUrl = "https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip"
   $cascadiaZip = "$fontTempDir\CascadiaCode.zip"
+  $jetbrainsUrl = "https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip"
+  $jetbrainsZip = "$fontTempDir\JetBrainsMono.zip"
 
-  Write-Host "[INFO] Downloading Cascadia Code..."
-  Invoke-SafeDownload $cascadiaUrl $cascadiaZip
-    
+  $dlFont = {  # duplicate of $dlScript; needed for Start-Job isolation
+    param($Url, $OutFile)
+    $retry = 0
+    while ($retry -lt 3)
+    {
+      try {
+        Invoke-WebRequest -Uri $Url -OutFile $OutFile -UseBasicParsing -ErrorAction Stop
+        if (Test-Path $OutFile) { return }
+      } catch {
+        $retry++
+        if ($retry -ge 3) { throw }
+        Start-Sleep -Seconds 2
+      }
+    }
+  }
+
+  Write-Host "[INFO] Downloading fonts (parallel)..."
+  $cascadiaJob = Start-Job -ScriptBlock $dlFont -ArgumentList $cascadiaUrl, $cascadiaZip
+  $jetbrainsJob = Start-Job -ScriptBlock $dlFont -ArgumentList $jetbrainsUrl, $jetbrainsZip
+  $cascadiaJob, $jetbrainsJob | Wait-Job | Receive-Job | Out-Null
+
+  # Extract Cascadia Code
   if (Test-Path $cascadiaZip)
   {
     Write-Host "[INFO] Extracting Cascadia Code..."
     Expand-Archive -Path $cascadiaZip -DestinationPath $fontTempDir -Force
-        
     $staticTtfPath = Join-Path $fontTempDir "ttf\static"
     $ttfPath = Join-Path $fontTempDir "ttf"
-        
     if (-not (Test-Path $staticTtfPath) -and -not (Test-Path $ttfPath))
     {
       $extractedDir = Get-ChildItem $fontTempDir -Directory | Where-Object { Test-Path (Join-Path $_.FullName "ttf") } | Select-Object -First 1
@@ -793,7 +651,6 @@ try
         $ttfPath = Join-Path $extractedDir.FullName "ttf"
       }
     }
-        
     if (Test-Path $staticTtfPath)
     {
       Write-Host "[INFO] Found static TTF files, copying..."
@@ -814,20 +671,12 @@ try
   {
     Write-Host "[WARN] Cascadia Code download failed" -ForegroundColor Yellow
   }
-    
-  # Download JetBrains Mono
-  $jetbrainsUrl = "https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip"
-  $jetbrainsZip = "$fontTempDir\JetBrainsMono.zip"
-    
-  Write-Host "[INFO] Downloading JetBrains Mono..."
-  Invoke-SafeDownload $jetbrainsUrl $jetbrainsZip
-    
+
+  # Extract JetBrains Mono
   if (Test-Path $jetbrainsZip)
   {
     Write-Host "[INFO] Extracting JetBrains Mono..."
     Expand-Archive -Path $jetbrainsZip -DestinationPath $fontTempDir -Force
-        
-    # Find all TTF files in extracted directory
     $allTtfFiles = Get-ChildItem $fontTempDir -Filter *.ttf -Recurse -ErrorAction SilentlyContinue
     if ($allTtfFiles)
     {
@@ -933,11 +782,10 @@ Write-Host "Dotfiles setup:
   git remote add origin https://github.com/jitumaatgit/dotfiles
   git fetch 
   git checkout -f main`n"
-Write-Host "nvim-data: cd ~/vim-data-remote
+Write-Host "nvim-data: cd ~/vim-data-remote"
 Write-Host "git status"
-Write-Host "zen-browser-data: cd ~/zen-browser-data
+Write-Host "zen-browser-data: cd ~/zen-browser-data"
 Write-Host "git status"
 Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
 Write-Host "============================================================"
-Stop-Transcript
 Stop-Transcript
