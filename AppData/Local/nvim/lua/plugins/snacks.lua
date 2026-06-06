@@ -54,7 +54,15 @@ return {
             live = false,
             -- restrict search to the current working directory
             dirs = { vim.fn.getcwd() },
-            args = { "--no-ignore", "--glob", "!docs/90-Archives/**" },
+            args = {
+              "--no-ignore",
+              "--glob",
+              "!docs/90-Archives/**",
+              "--glob",
+              "!docs/50-Templates/**",
+              "--glob",
+              "!docs/plannotator/plans/**",
+            },
             on_show = function()
               vim.cmd.stopinsert()
             end,
