@@ -40,7 +40,6 @@ config.inactive_pane_hsb = {
 }
 config.colors = {
 	compose_cursor = "#45475a",
-	visual_bell = "#1e1e2e",
 	tab_bar = {
 		background = "#1e1e2e",
 
@@ -72,10 +71,6 @@ config.colors = {
 			italic = true,
 		},
 	},
-}
-config.visual_bell = {
-	fade_in_duration_ms = 75,
-	fade_out_duration_ms = 75,
 }
 config.hyperlink_rules = {
 	-- Matches: a URL in parens: (URL)
