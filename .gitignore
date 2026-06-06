@@ -6,6 +6,8 @@
 !/AGENTS.md
 !/.gitattributes
 !/setup.ps1
+!/.keynavrc
+!/bin
 
 !/.config
 !/.config/**

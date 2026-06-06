@@ -772,10 +772,18 @@ if (Test-Path $opencodeConfig)
   Write-Host "[OK] Created opencode config with plannotator"
 }
 Write-Host "===== bootstrap complete =====`n"
+# keynavish auto-start
+$keynavishExe = "$env:USERPROFILE\bin\keynavish.exe"
+if (Test-Path $keynavishExe) {
+  Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "keynavish" -Value $keynavishExe
+  Write-Host "[OK] keynavish auto-start registered"
+}
+
 Write-Host "Key Bindings:
   Desktop: Win+1-9 | Win+[ / ]
   Window: Win+Shift+1-9 (follow) | Win+Alt+1-9 (stay) | Win+Shift+P (pin)
-  Other: CapsLock=Esc | RWin=LCtrl`n"
+  Other: CapsLock=Esc | RWin=LCtrl`n
+  keynavish: Ctrl+; activate | hjkl cuts | 1-9 grid | Space click`n"
 Write-Host "Dotfiles setup:
   gh auth login
   git init -b main 

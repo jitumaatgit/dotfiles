@@ -1,55 +1,64 @@
-# Neovim Config (LazyVim)
+# Dotfiles
 
-Dotfiles repo with a LazyVim-based Neovim configuration under `AppData/Local/nvim/`.
+Windows dev env. Git Bash shell. Track everything important for ephemeral machine.
 
-## Structure
+## Gitignore trap
 
-| Directory | Purpose |
-|-----------|---------|
-| `lua/plugins/` | 46 lazy.nvim plugin specs — each returns a table. Override LazyVim defaults here. |
-| `lua/config/` | Core config: `lazy.lua` (bootstrap), `options.lua`, `keymaps.lua`, `autocmds.lua` |
-| `lua/custom/` | Hand-written modules: `weekly-note.lua`, `task-auto-complete.lua`, `obsidian-task-filter/` |
-| `ftplugin/` | Filetype-specific settings (markdown, lua, powershell, etc.) |
+`/*` deny-by-default. Each new root file/dir needs `!/name` in `.gitignore` or agent changes go untracked. `projects/*` excluded entirely.
 
-## Custom Modules
+## Shell (.bashrc)
 
-- **`weekly-note.lua`** — Generates `YYYY-Www.md` weekly notes for obsidian vault. Hardcoded vault path: `C:/Users/student/notes`. Weekly notes go to `docs/30-DailyNotes/WeeklyNotes/<YYYY>/`. Daily note links use `[[30-DailyNotes/YYYY/MM/YYYY-MM-DD|DayName Date]]` format.
-- **`task-auto-complete.lua`** — On `BufWritePost` for `*.md`, moves completed `- [x]` tasks (with heading context and timestamp) into a `## Completed` section, placing it above `## Log` for daily notes.
-- **`obsidian-task-filter/`** — `:ObsidianTasksByTag [tags]` — searches vault for tasks in files matching all specified tags. Uses telescope picker if available.
+- `oc` alias → `free-coding-models` + `opencode`
+- Secrets sourced from `~/notes/*.env` (private repo, not dotfiles). Sourcing lines in `.bashrc`, env files stay in notes.
+- `OPENCODE_DISABLE_AUTOUPDATE=true` (fix plugin re-download bug #8729)
 
-## Plugin Conventions
+## Bootstrap
 
-- Plugin specs return a table with `keys`, `opts`, `config`, etc. See `lazy.nvim` docs.
-- `enabled = false` to disable a LazyVim default plugin (see `lua/plugins/disabled.lua`).
-- Extend-pattern: `extend-*.lua` files override specific LazyVim plugins (e.g., `extend-mini-files.lua` adds obsidian reference updating on file move/rename).
-- `99.lua` loads last (numbered prefix ensures sort order in `lua/plugins/`).
+`setup.ps1` — scoop packages, AHK portable, sqlite for nvim, nvim-data backup, fonts, opencode config. Run via `irm raw.githubusercontent.com/jitumaatgit/dotfiles/main/setup.ps1 | iex`.
 
-## Key Custom Commands
+## Tracked components
 
-| Command | Source |
-|---------|--------|
-| `:ObsidianWeekly [date]` | `weekly-note.lua` |
-| `:ObsidianWeeklyPrev` / `:ObsidianWeeklyNext` | `weekly-note.lua` |
-| `:ObsidianTasksByTag [tags]` | `obsidian-task-filter/init.lua` |
+| Path | What |
+|------|------|
+| `AppData/Local/nvim/` | LazyVim neovim config (~46 plugins) |
+| `.config/opencode/` | opencode.json + commands + modes + skills |
+| `.config/wezterm/` | Git Bash default, Catppuccin Mocha, leader=Ctrl+Space |
+| `.config/scoop/` | Scoop config |
+| `.config/cagent/` | First-run marker + UUID |
+| `bin/` | Portable executables (keynavish) |
+| `.keynavrc` | Keynavish config |
+| `mg65.layout.json` | 65% keyboard, 4 layers, numpad on layer 3 |
+| `scripts/` | AHK scripts (`toggle_always_on_top.ahk`) |
+| `portable-dev/autohotkey-portable/remap-v2.ahk` | CapsLock→Esc, RWin→LCtrl, virtual desktop mgmt |
+| `git/` | Git config |
+| `.pi/` | Agent settings (excludes everything except `agent/settings.json` + `auth.json`) |
+| `setup*.ps1*` | Bootstrap + data backup scripts |
+| `scoop/persist/btop/btop.conf` | Btop config |
 
-## Vault & Paths
+## Neovim (LazyVim)
 
-- Vault root: `C:/Users/student/notes`
-- Daily notes: `docs/30-DailyNotes/YYYY/MM/YYYY-MM-DD.md`
-- Weekly notes: `docs/30-DailyNotes/WeeklyNotes/YYYY/YYYY-Www.md`
-- Templates: `docs/50-Templates/`
+Entry: `AppData/Local/nvim/init.lua`. Plugins in `lua/plugins/*.lua` (numbered for load order, `99.lua` last). `extend-*.lua` patches LazyVim defaults.
 
-## Secrets & Env Files
+Custom modules:
+- `weekly-note.lua` — `:ObsidianWeekly [date]`. Vault `C:/Users/student/notes`. Daily notes `docs/30-DailyNotes/YYYY/MM/YYYY-MM-DD.md`
+- `task-auto-complete.lua` — On BufWritePost `*.md`, moves `- [x]` tasks to `## Completed` above `## Log`
+- `obsidian-task-filter/` — `:ObsidianTasksByTag [tags]`
 
-- Sensitive env vars (API keys, passwords) belong in the private `~/notes/` repo, not in dotfiles. Create `~/notes/<name>.env` with `export KEY="value"`, commit to notes, then source from `.bashrc` via `[ -f ~/notes/<name>.env ] && . ~/notes/<name>.env`.
-- The sourcing line in `.bashrc` is tracked in dotfiles; the `.env` file itself stays in the private notes repo where it's gitignored from dotfiles by the `/*` denylist rule.
+SQLite DLL at `AppData/Local/nvim/bin/sqlite3.dll` (yanky).
 
-## Git & Repo Quirks
+## Keynavish
 
-- Root `.gitignore` uses `/*` (ignore everything) + selective `!` un-ignores. Any new file at root MUST be added to `.gitignore` as `!/filename` or it won't be tracked. This silently blocked `AGENTS.md` from being committed.
+Exe at `bin/keynavish.exe`. Config at `~/.keynavrc`. Layer on defaults (no `clear`). Activation: Ctrl+;. Grid: 1-9 for 3x3 cell-select, 0 for history-back. Auto-start via `HKCU\...\Run` (setup.ps1 sets it).
 
-## Windows Gotchas
+## WezTerm
 
-- Git Bash is the shell. Use `/c/` paths in bash commands, not `C://`.
-- SQLite DLL for yanky.nvim: `AppData/Local/nvim/bin/sqlite3.dll`
-- The `init.lua` has a shell path escaping fix for Git Bash on Windows.
+Default shell: Git Bash. Catppuccin Mocha. Cascadia Code / JetBrains Mono. Leader key: Ctrl+Space. Vim-style pane nav. `utils.lua` for shared helpers.
+
+## AHK Remaps
+
+`remap-v2.ahk` portable. CapsLock→Esc, RWin→LCtrl. Virtual desktop: Win+1-9 switch, Win+Shift+1-9 move+follow, Win+Alt+1-9 move only, Win+Shift+P pin. Startup shortcut via setup.ps1.
+
+## Windows gotchas
+
+- Git Bash root: `/c/Users/student`. Use `/c/` paths, not `C://`.
+- `.bashrc` fixes `init.lua` shell path escaping for Git Bash
