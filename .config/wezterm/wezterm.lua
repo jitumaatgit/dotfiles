@@ -39,6 +39,8 @@ config.inactive_pane_hsb = {
 	brightness = 1,
 }
 config.colors = {
+	compose_cursor = "#45475a",
+	visual_bell = "#1e1e2e",
 	tab_bar = {
 		background = "#1e1e2e",
 
@@ -70,6 +72,10 @@ config.colors = {
 			italic = true,
 		},
 	},
+}
+config.visual_bell = {
+	fade_in_duration_ms = 75,
+	fade_out_duration_ms = 75,
 }
 config.hyperlink_rules = {
 	-- Matches: a URL in parens: (URL)
@@ -125,6 +131,8 @@ wezterm.on("update-right-status", function(window, pane)
 	local name = window:active_key_table()
 	if name then
 		name = "TABLE: " .. name
+	elseif window:leader_is_active() then
+		name = "LEADER"
 	end
 	window:set_right_status(name or "")
 end)
