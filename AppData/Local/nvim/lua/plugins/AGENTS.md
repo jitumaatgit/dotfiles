@@ -7,3 +7,11 @@
 ### `get_ref_forms` generates 6 link variants
 
 `get_ref_forms(ref)` returns: `[[ref]]`, `[[ref|`, `[[ref\\|`, `[[ref#`, `](ref)`, `](ref#`. The `\\|` form handles escaped pipes in wiki link titles (e.g., titles containing literal `|` characters).
+
+### Snacks picker grep: excluding dirs with `--no-ignore`
+
+`Snacks.picker.grep({ args = { "--no-ignore" } })` bypasses `.gitignore`, so gitignored dirs are not auto-excluded. Add `--glob "!<path>/**"` to `args` for explicit exclusion.
+
+### `leader tt` / `leader tc` share grep args structure
+
+Both pickers in `snacks.lua` use identical `args`, `dirs`, and `regex` patterns. Changes to one likely apply to the other — keep in sync.
