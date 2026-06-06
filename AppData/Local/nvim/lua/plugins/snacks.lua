@@ -46,17 +46,11 @@ return {
         function()
           Snacks.picker.grep({
             prompt = " ",
-            -- pass your desired search as a static pattern
             search = "^\\s*- \\[ \\]",
-            -- we enable regex so the pattern is interpreted as a regex
             regex = true,
-            -- no "live grep" needed here since we have a fixed pattern
             live = false,
-            -- restrict search to the current working directory
             dirs = { vim.fn.getcwd() },
-            -- include files ignored by .gitignore
-            args = { "--no-ignore" },
-            -- Start in normal mode
+            args = { "--no-ignore", "--glob", "!docs/90-Archives/**" },
             on_show = function()
               vim.cmd.stopinsert()
             end,
