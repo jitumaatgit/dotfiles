@@ -10,8 +10,11 @@
 9 grid 3x3,cell-select 3x1
 0 history-back
 
+# letter grid navigation — g to toggle on, shift+g to toggle off
+g grid-nav on,grid 6x6
+shift+g grid-nav off
+
 # Future: macro recording
 # q record ~/.keynav_macros
 # shift+at playback
-# Future: grid letter mode (asd/zxc/vbn)
 # Future: dedicated click keys, cursorzoom, windowzoom remaps
