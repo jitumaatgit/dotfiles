@@ -1,3 +1,19 @@
+# vim mode if in interactive shell
+
+if [[ $- == *i* ]]; then # in interactive session
+  set -o vi
+fi
+# Enable mode indicator in prompt
+bind 'set show-mode-in-prompt on'
+
+# Insert mode: steady bar cursor (│)
+bind 'set vi-ins-mode-string \1\e[6 q\2'
+
+# Normal mode: steady block cursor (█)
+bind 'set vi-cmd-mode-string \1\e[2 q\2'
+
+# start new terminals in insert mode
+PROMPT_COMMAND='bind "set vi-ins-mode-string \1\e[6 q\2"; bind -m vi-insert'
 ###############################################
 # WINDOWS DEV PATHS FOR GIT BASH (MINGW64)
 ###############################################
