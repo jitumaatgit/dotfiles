@@ -1,4 +1,4 @@
-export USER=$(id -un)
+export USER=$USERNAME
 
 [[ $- == *i* ]] && source -- ~/scripts/blesh/ble.sh --attach=none
 
