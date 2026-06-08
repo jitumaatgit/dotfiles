@@ -113,10 +113,14 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
 
-# starship — lazy-loaded via ble.sh precmd hook
-__starship_lazy() {
-  unset -f __starship_lazy
+# starship — lazy-loaded via ble.sh precmd hook, fallback if ble.sh missing
+if [[ ${BLE_VERSION-} ]]; then
+  __starship_lazy() {
+    blehook PRECMD-='__starship_lazy'
+    eval "$(starship init bash)"
+  }
+  blehook PRECMD+='__starship_lazy'
+else
   eval "$(starship init bash)"
-}
-blehook PRECMD+=__starship_lazy
+fi
 [[ ! ${BLE_VERSION-} ]] || ble-attach

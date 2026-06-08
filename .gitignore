@@ -10,6 +10,9 @@
 !/.inputrc
 !/bin
 
+!/scripts
+!/scripts/**
+
 !/.config
 !/.config/**
 !/.agents
@@ -32,3 +35,6 @@ projects/*
 /.pi/agent/*
 !/.pi/agent/settings.json
 !/.pi/agent/auth.json
+
+!/ralph
+!/ralph/**
