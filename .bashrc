@@ -16,8 +16,6 @@ bind 'set vi-ins-mode-string \1\e[6 q\2'
 # Normal mode: steady block cursor (█)
 bind 'set vi-cmd-mode-string \1\e[2 q\2'
 
-# start new terminals in insert mode
-PROMPT_COMMAND='bind "set vi-ins-mode-string \1\e[6 q\2"; bind -m vi-insert'
 ###############################################
 # WINDOWS DEV PATHS FOR GIT BASH (MINGW64)
 ###############################################
@@ -76,9 +74,6 @@ export COLORTERM=truecolor
 
 # Set COLUMNS for proper ls formatting in Git Bash + WezTerm
 export COLUMNS=80
-
-# Make bash less noisy when running shells inside shells
-export PROMPT_COMMAND=''
 
 ###############################################
 # OPTIONAL QUALITY OF LIFE
