@@ -11,7 +11,7 @@ config.default_prog = {
 }
 -- appearance settings
 config.font = wezterm.font_with_fallback({
-	"Cascadia Code",
+	"Cascadia Code NF",
 	"JetBrains Mono",
 })
 config.animation_fps = 1
@@ -72,6 +72,10 @@ config.colors = {
 			italic = true,
 		},
 	},
+}
+config.visual_bell = {
+	fade_in_duration_ms = 0,
+	fade_out_duration_ms = 0,
 }
 config.hyperlink_rules = {
 	-- Matches: a URL in parens: (URL)

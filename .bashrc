@@ -71,12 +71,25 @@ alias ls='eza -a'
 alias grep='rg --color=auto'
 # make lg = lazygit
 alias lg='lazygit'
+# zoxide (smart cd)
+eval "$(zoxide init bash)"
+alias cd='z'
+alias zi='z -i'
+alias i='z -i'
+# bat (cat with syntax highlighting)
+alias cat='bat'
+alias preview='bat --style=plain --paging=always'
 # Make vim = nvim
 command -v nvim >/dev/null && alias vim='nvim'
 # make neovim default editor (use wrapper for opencode integration)
 export EDITOR="nvim"
 export VISUAL="wezterm start -- nvim"
-# initialize starship in bash
+# initialize starship in bash and set window title
+function set_win_title() {
+  echo -ne "\033]0; $(basename "$PWD") \007"
+}
+starship_precmd_user_func="set_win_title"
+
 eval "$(starship init bash)"
 
 ###############################################
@@ -86,11 +99,10 @@ eval "$(starship init bash)"
 ###############################################
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
-
 ###############################################
 # Secrets (tracked in ~/notes repo)
 ###############################################
 [ -f ~/notes/opencode-server.env ] && . ~/notes/opencode-server.env # opencode-server-env
-[ -f ~/notes/deepseek.env ] && . ~/notes/deepseek.env # deepseek-api-key
+[ -f ~/notes/deepseek.env ] && . ~/notes/deepseek.env               # deepseek-api-key
 
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
