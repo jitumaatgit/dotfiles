@@ -1,3 +1,9 @@
+# Keynavish
+# https://github.com/jordansissel/keynav/blob/master/keynav.pod
+
+# Set startup grid
+ctrl+semicolon start, grid 3x3
+
 # grid navigation — 3x3 grid via number keys
 1 grid 3x3,cell-select 1x3
 2 grid 3x3,cell-select 2x3
@@ -10,10 +16,10 @@
 9 grid 3x3,cell-select 3x1
 0 history-back
 
-# letter grid navigation — g to toggle on, shift+g to toggle off
-g grid-nav on,grid 6x6
-shift+g grid-nav off
+# letter grid navigation — g to toggle on/off
+g grid-nav toggle,grid 6x6
 
+# TODO use clear cmd then efine all buildings, even if using defaults, best for quick reference.
 # Future: macro recording
 # q record ~/.keynav_macros
 # shift+at playback

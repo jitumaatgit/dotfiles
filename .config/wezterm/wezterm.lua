@@ -2,9 +2,10 @@ local wezterm = require("wezterm")
 local act = wezterm.action
 local utils = require("utils")
 local config = wezterm.config_builder()
+local home = wezterm.home_dir:gsub("\\", "/")
 -- make git bash the default shell (via Scoop)
 config.default_prog = {
-	"C:/Users/student/scoop/apps/git/current/bin/bash.exe",
+	home .. "/scoop/apps/git/current/bin/bash.exe",
 	"--login",
 	"-i",
 }
@@ -39,7 +40,7 @@ config.inactive_pane_hsb = {
 	brightness = 1,
 }
 config.colors = {
-	compose_cursor = "#45475a",
+	compose_cursor = "#94e2d5",
 	tab_bar = {
 		background = "#1e1e2e",
 
@@ -114,7 +115,7 @@ config.hyperlink_rules = {
 	},
 }
 table.insert(config.hyperlink_rules, {
-	regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
+	regex = [[["]?([\w][-\w\d]+)(/)([-\w\d\.]+)["]?]],
 	format = "https://github.com/$1/$3",
 })
 
@@ -133,6 +134,10 @@ wezterm.on("update-right-status", function(window, pane)
 end)
 
 -- Helper function to move panes between tabs
+-- Heuristic: fetches the last 5 lines of pane output and scans backward
+-- for a shell prompt line (lines ending with $, #, or > followed by a command).
+-- If no prompt marker is found, returns the last non-empty, non-prompt line.
+-- Returns the first 40 chars of the identified command.
 local function get_pane_last_command(pane_id)
 	local success, stdout = wezterm.run_child_process({
 		"wezterm",
@@ -299,7 +304,7 @@ config.keys = {
 	-- Panes
 	{
 		key = "!",
-		mods = "LEADER | SHIFT",
+		mods = "LEADER|SHIFT",
 		---@diagnostic disable-next-line: unused-local
 		action = wezterm.action_callback(function(win, pane)
 			---@diagnostic disable-next-line: unused-local
@@ -322,7 +327,7 @@ config.keys = {
 	{ key = "t", mods = "LEADER", action = act.ShowTabNavigator },
 	-- Copy mode
 	{ key = "[", mods = "LEADER", action = act.ActivateCopyMode },
-	{ key = "]", mods = "LEADER", action = act({ CopyTo = "ClipboardAndPrimarySelection" }) },
+	{ key = "]", mods = "LEADER", action = act.CopyTo("ClipboardAndPrimarySelection") },
 	-- Zoom
 	{ key = "f", mods = "LEADER", action = act.TogglePaneZoomState },
 	-- edit tab name
