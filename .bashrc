@@ -75,7 +75,12 @@ alias ls='eza -a'
 alias grep='rg --color=auto'
 # make lg = lazygit
 alias lg='lazygit'
-# zoxide (smart cd)
+# zoxide (smart cd) — lazy-loaded on first use
+z() {
+  unset -f z
+  eval "$(zoxide init bash)"
+  z "$@"
+}
 alias cd='z'
 alias zi='z -i'
 alias i='z -i'
@@ -109,6 +114,4 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
 
 eval "$(starship init bash)"
-eval "$(zoxide init bash)"
-
 [[ ! ${BLE_VERSION-} ]] || ble-attach
