@@ -73,10 +73,6 @@ config.colors = {
 		},
 	},
 }
-config.visual_bell = {
-	fade_in_duration_ms = 0,
-	fade_out_duration_ms = 0,
-}
 config.hyperlink_rules = {
 	-- Matches: a URL in parens: (URL)
 	{

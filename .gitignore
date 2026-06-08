@@ -7,6 +7,7 @@
 !/.gitattributes
 !/setup.ps1
 !/.keynavrc
+!/.inputrc
 !/bin
 
 !/.config

@@ -104,5 +104,5 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
 
-eval "$(zoxide init bash)"
 eval "$(starship init bash)"
+eval "$(zoxide init bash)"
