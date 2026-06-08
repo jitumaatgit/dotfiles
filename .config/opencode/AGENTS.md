@@ -164,3 +164,17 @@ const table = sqliteTable("session", {
 
 ## Type Checking
 
+## Agent skills
+
+### Issue tracker
+
+GitHub issues on `jitumaatgit/dotfiles`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical roles using default names (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo. `CONTEXT.md` at root. See `docs/agents/domain.md`.
+
