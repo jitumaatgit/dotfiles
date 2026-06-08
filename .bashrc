@@ -1,3 +1,7 @@
+export USER=$(id -un)
+
+[[ $- == *i* ]] && source -- ~/scripts/blesh/ble.sh --attach=none
+
 # vim mode if in interactive shell
 
 if [[ $- == *i* ]]; then # in interactive session
@@ -122,3 +126,5 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 
 eval "$(starship init bash)"
 eval "$(zoxide init bash)"
+
+[[ ! ${BLE_VERSION-} ]] || ble-attach

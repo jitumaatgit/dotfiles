@@ -167,6 +167,53 @@ if ($missing.Count -gt 0)
   Write-Host "[OK] All packages already installed"
 }
 
+# ble.sh - Bash Line Editor
+Write-Host "[INFO] Installing ble.sh..."
+$bleshDir = "$env:USERPROFILE\scripts\blesh"
+if (-not (Test-Path "$bleshDir\ble.sh"))
+{
+  bash -c @'
+    wget -O - https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz | tar xJf -
+    bash ble-nightly/ble.sh --install ~/scripts
+    rm -rf ble-nightly
+'@
+  Write-Host "[OK] ble.sh installed to ~/scripts/blesh"
+} else
+{
+  Write-Host "[OK] ble.sh already installed"
+}
+
+# Add ble.sh to .bashrc using recommended two-part pattern
+$bashrc = "$env:USERPROFILE\.bashrc"
+$attachNoneLine = '[[ $- == *i* ]] && source -- ~/scripts/blesh/ble.sh --attach=none'
+$bleAttachLine = '[[ ! ${BLE_VERSION-} ]] || ble-attach'
+
+if (Test-Path $bashrc)
+{
+  $content = Get-Content $bashrc -Raw
+  if ($content -notmatch [regex]::Escape('blesh/ble.sh'))
+  {
+    $newContent = "$attachNoneLine`n`n" + $content
+    $newContent = $newContent.TrimEnd() + "`n`n$bleAttachLine`n"
+    Set-Content $bashrc $newContent
+    Write-Host "[OK] Added ble.sh to .bashrc (two-part pattern)"
+  } else
+  {
+    Write-Host "[OK] ble.sh already in .bashrc"
+  }
+} else
+{
+$newBashrc = @"
+$attachNoneLine
+
+# Your bashrc settings come here...
+
+$bleAttachLine
+"@
+  Set-Content $bashrc $newBashrc
+  Write-Host "[OK] Created .bashrc with ble.sh"
+}
+
 # GitHub auth — early so partial runs still have auth if script crashes mid-way
 Write-Host "[INFO] Checking GitHub authentication..."
 try
