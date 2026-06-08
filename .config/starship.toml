@@ -1,13 +1,7 @@
-# Timeout: prevent python/git timing out on Windows (default 500ms is too low)
 command_timeout = 1500
-
-# Get editor completions based on the config schema
-"$schema" = 'https://starship.rs/config-schema.json'
-
-# Inserts a blank line between shell prompts
-add_newline = false
-
+add_newline = true
 palette = "catppuccin_mocha"
+follow_symlinks = true
 
 format = """
 $os\
@@ -19,13 +13,22 @@ $nodejs\
 $rust\
 $golang\
 $java\
+$kotlin\
+$lua\
+$terraform\
+$gcloud\
+$env_var\
 $fill\
 $time\
+battery\
 $cmd_duration\
 $jobs\
+$memory_usage\
 $line_break\
-$status\
 $character"""
+
+# TODO configure memory usage, battery, jobs, and I think env_var modules
+# I disabled them all for now.
 
 # ── Catppuccin Mocha palette (matches WezTerm) ──
 [palettes.catppuccin_mocha]
@@ -57,104 +60,118 @@ mantle = "#1e2030"
 crust = "#181926"
 
 # ── Modules ──
-[battery]
-full_symbol = "󰁹 "
-charging_symbol = "󰂄 "
-discharging_symbol = "󰂃 "
-unknown_symbol = "󰂑 "
-empty_symbol = "󰂎 "
 
 [character]
-success_symbol = "[▶](bold fg:green)"
-error_symbol = "[▶](bold fg:red)"
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
 
 [os]
 format = "[$symbol](bold fg:blue)"
-disabled = false
+disabled = true
 
 [os.symbols]
 Windows = " "
 
 [directory]
-format = "[$path]($style)"
-style = "bold fg:lavender"
-truncation_length = 3
-truncate_to_repo = true
-truncation_symbol = "…/"
+format = "[$path]($style) "
+style = "fg:bold sky"
+truncation_length = 4
+fish_style_pwd_dir_length = 3
 home_symbol = "~"
 
 [git_branch]
-symbol = " "
-format = "[$symbol$branch]($style)"
-style = "bold fg:green"
+symbol = "($style) "
+format = "on [$symbol$branch]($style) "
+style = "fg:bold pink"
 truncation_length = 20
 
 [git_status]
-format = '([$all_status$ahead_behind]($style))'
-style = "bold fg:yellow"
+format = "([$all_status$ahead_behind]($style))"
+style = "bold red"
 conflicted = "= "
-ahead = "⇡ "
-behind = "⇣ "
-diverged = "⇕ "
-untracked = "? "
+ahead = "⇡${count} "
+behind = "⇣${count} "
+diverged = "⇕⇡${ahead_count}⇣${behind_count} "
+untracked = "?${count} "
 stashed = "◆ "
-modified = "! "
-staged = "+ "
-renamed = "» "
-deleted = "✘ "
+modified = "!${count} "
+staged = "+${count} "
+renamed = "»${count} "
+deleted = "✘${count} "
 
 [python]
 symbol = " "
-format = "[$symbol]($style)"
-style = "fg:yellow"
+format = "via [$symbol]($style) "
+style = "bold yellow"
 detect_extensions = ["py"]
-detect_files = [".python-version", "pyproject.toml", "requirements.txt", "setup.py", "Pipfile"]
+detect_files = [
+  ".python-version",
+  "pyproject.toml",
+  "requirements.txt",
+  "setup.py",
+  "Pipfile"
+]
 
 [nodejs]
 symbol = " "
-format = "[$symbol]($style)"
-style = "fg:green"
+format = "via [$symbol]($style) "
+style = "bold green"
 detect_files = ["package.json", ".nvmrc", ".node-version"]
 
 [rust]
 symbol = " "
-format = "[$symbol]($style)"
-style = "fg:peach"
+format = "via [$symbol]($style) "
+style = "bold red"
 detect_files = ["Cargo.toml"]
 
 [golang]
 symbol = " "
-format = "[$symbol]($style)"
-style = "fg:sky"
+format = "via [$symbol]($style) "
+style = "bold cyan"
 detect_files = ["go.mod", "go.sum"]
 
 [java]
 symbol = " "
-format = "[$symbol]($style)"
-style = "fg:peach"
-detect_files = ["pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle"]
+format = "via [$symbol]($style) "
+style = "bold dimmed red"
+detect_files = [
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+  "settings.gradle"
+]
 
 [cmd_duration]
 min_time = 2000
-format = "[⚡$duration]($style)"
-style = "bold fg:peach"
+format = "[⚡$duration]($style) "
+style = "bold yellow"
 
 [time]
 disabled = false
-format = "[$time]($style)"
+format = "[$time]($style) "
 time_format = "%H:%M"
 style = "fg:overlay1"
 
 [status]
 format = "[✖ $status]($style)"
-style = "bold fg:red"
-disabled = false
+style = "bold red"
+disabled = true
 
 [jobs]
+disabled = true
 symbol = "⚙ "
-format = "[$symbol$number]($style)"
+format = "[$symbol$number]($style) "
 style = "bold fg:overlay1"
 threshold = 1
 
 [fill]
 symbol = " "
+
+[battery]
+disabled = true
+full_symbol = "󰁹 "
+charging_symbol = "󰂄 "
+discharging_symbol = "󰂃 "
+unknown_symbol = "󰂑 "
+empty_symbol = "󰂎 "

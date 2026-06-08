@@ -72,7 +72,6 @@ alias grep='rg --color=auto'
 # make lg = lazygit
 alias lg='lazygit'
 # zoxide (smart cd)
-eval "$(zoxide init bash)"
 alias cd='z'
 alias zi='z -i'
 alias i='z -i'
@@ -84,13 +83,11 @@ command -v nvim >/dev/null && alias vim='nvim'
 # make neovim default editor (use wrapper for opencode integration)
 export EDITOR="nvim"
 export VISUAL="wezterm start -- nvim"
-# initialize starship in bash and set window title
+# have starship set window title
 function set_win_title() {
   echo -ne "\033]0; $(basename "$PWD") \007"
 }
 starship_precmd_user_func="set_win_title"
-
-eval "$(starship init bash)"
 
 ###############################################
 # OPENCODE PLUGIN PERFORMANCE FIX
@@ -106,3 +103,6 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 [ -f ~/notes/deepseek.env ] && . ~/notes/deepseek.env               # deepseek-api-key
 
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
+
+eval "$(zoxide init bash)"
+eval "$(starship init bash)"
