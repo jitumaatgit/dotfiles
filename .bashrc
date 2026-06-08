@@ -24,44 +24,33 @@ bind 'set vi-cmd-mode-string \1\e[2 q\2'
 winpath() {
   /usr/bin/cygpath -u "$1"
 }
-# bash.exe path
-export PATH="$PATH:$(winpath "$USERPROFILE/scoop/apps/git/current/usr/bin/bash.exe")"
 
-# google cloud CLI path
-export PATH="$PATH:$(winpath 'C:\google-cloud-sdk\bin')"
+# Pre-convert USERPROFILE once to avoid subshells in PATH construction
+win_up=$(/usr/bin/cygpath -u "$USERPROFILE")
 
-# ⭐ Scoop shims (wezterm, nvim, rg, bat, etc.)
-export PATH="$PATH:$(winpath "$USERPROFILE/scoop/shims")"
-
-# QEMU path
+export PATH="$PATH:$win_up/scoop/apps/git/current/usr/bin/bash.exe"
+export PATH="$PATH:/c/google-cloud-sdk/bin"
+export PATH="$PATH:$win_up/scoop/shims"
 export PATH="$PATH:/c/Users/student/portable-dev/qemu/"
-
-# ⭐ Git's own binaries (just in case)
 export PATH="$PATH:/usr/bin"
 
-# ⭐ Go (if installed via Scoop)
-if [ -d "$(winpath "$USERPROFILE/scoop/apps/go/current/bin")" ]; then
-  export PATH="$PATH:$(winpath "$USERPROFILE/scoop/apps/go/current/bin")"
+if [ -d "$win_up/scoop/apps/go/current/bin" ]; then
+  export PATH="$PATH:$win_up/scoop/apps/go/current/bin"
 fi
 
-# ⭐ Rust (Cargo)
 if [ -d "$HOME/.cargo/bin" ]; then
   export PATH="$PATH:$HOME/.cargo/bin"
 fi
 
-# ⭐ Python (uv/pipx)
-# In Git Bash, uv + pipx still use Windows paths
-if [ -d "$(winpath "$USERPROFILE/.local/bin")" ]; then
-  export PATH="$PATH:$(winpath "$USERPROFILE/.local/bin")"
+if [ -d "$win_up/.local/bin" ]; then
+  export PATH="$PATH:$win_up/.local/bin"
 fi
 
-# ⭐ Node (npm global tools)
 if [ -d "$HOME/AppData/Roaming/npm" ]; then
-  export PATH="$PATH:$(winpath "$HOME/AppData/Roaming/npm")"
+  export PATH="$PATH:$HOME/AppData/Roaming/npm"
 fi
 
-# Add ~/bin to PATH for custom scripts
-export PATH="$PATH:$(winpath "$HOME/bin")"
+export PATH="$PATH:$HOME/bin"
 ###############################################
 # TERMINAL + NEOVIM FIXES
 ###############################################
