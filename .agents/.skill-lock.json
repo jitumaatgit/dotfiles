@@ -212,6 +212,15 @@
       "skillFolderHash": "93f88d0e11f5463f6378a076542f779007b5a104",
       "installedAt": "2026-05-23T13:22:41.670Z",
       "updatedAt": "2026-05-23T13:22:41.670Z"
+    },
+    "repo-cleanup": {
+      "source": "nickcrew/claude-cortex",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/nickcrew/claude-cortex.git",
+      "skillPath": "skills/repo-cleanup/SKILL.md",
+      "skillFolderHash": "b91ea079635d3f3030bf84a7973d4f83ed76791d",
+      "installedAt": "2026-06-08T22:39:08.829Z",
+      "updatedAt": "2026-06-08T22:39:08.829Z"
     }
   },
   "dismissed": {
