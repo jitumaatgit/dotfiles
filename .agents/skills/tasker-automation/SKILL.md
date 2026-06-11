@@ -33,9 +33,14 @@ See [REFERENCE.md](REFERENCE.md) for:
 | 4 | Tasker XML Schema Definition |
 | 5-7 | Structure descriptions for Profile, Standalone Task, Project |
 | 8 | Complete XML examples |
+| 9 | Clarification JSON Schema (for asking user follow-up questions) |
+| 10 | Tasker Input Dialog Types Catalog |
 | 11 | Built-in Variable Catalog |
 | 12 | Variable Arrays & Structured Variable access syntax |
+| 13 | Example success scenarios (complete XML patterns) |
+| 14 | Example clarification scenarios |
 | 15 | Widget v2 Custom Layout JSON Schema |
+| 16 | Widget v2 Custom Layout JSON Examples |
 | 17 | Pattern matching rules & operator codes |
 | 18 | Command System |
 | 19 | Handling modification requests |
