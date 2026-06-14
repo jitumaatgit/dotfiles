@@ -30,6 +30,26 @@
   "provider": {
     "opencode-go": {
       "models": {
+        "kimi-k2.6": {
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "variants": {
+            "high": {
+              "thinking": {
+                "type": "enabled",
+                "budgetTokens": 8192
+              }
+            },
+            "max": {
+              "thinking": {
+                "type": "enabled",
+                "budgetTokens": 32000
+              }
+            }
+          }
+        },
         "deepseek-v4-flash": {
           "variants": {
             "high": {

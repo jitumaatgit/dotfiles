@@ -16,6 +16,7 @@ prompt=$(cat "$script_dir/prompt.md")
 
 opencode run \
   --dangerously-skip-permissions \
+  --model opencode-go/kimi-k2.6 \
   "Previous commits: $commits
 
 Issues: $issues

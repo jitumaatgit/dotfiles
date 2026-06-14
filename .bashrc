@@ -2,19 +2,9 @@ export USER=$USERNAME
 
 [[ $- == *i* ]] && source -- ~/scripts/blesh/ble.sh --attach=none
 
-# vim mode if in interactive shell
-
-if [[ $- == *i* ]]; then # in interactive session
-  set -o vi
-fi
-# Enable mode indicator in prompt
-bind 'set show-mode-in-prompt on'
-
-# Insert mode: steady bar cursor (│)
-bind 'set vi-ins-mode-string \1\e[6 q\2'
-
-# Normal mode: steady block cursor (█)
-bind 'set vi-cmd-mode-string \1\e[2 q\2'
+# ble.sh reminders (no vim mode — emacs mode)
+echo "  C-x C-e  → edit current command in $EDITOR"
+echo "  C-r      → search history"
 
 ###############################################
 # WINDOWS DEV PATHS FOR GIT BASH (MINGW64)
@@ -51,6 +41,14 @@ if [ -d "$HOME/AppData/Roaming/npm" ]; then
 fi
 
 export PATH="$PATH:$HOME/bin"
+
+###############################################
+# ANDROID DEV (Bandito)
+###############################################
+export JAVA_HOME="$HOME/scoop/apps/temurin-lts-jdk/current"
+export ANDROID_HOME="$HOME/scoop/apps/android-clt/current"
+export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/scoop/apps/gradle/current/bin:$PATH"
+
 ###############################################
 # TERMINAL + NEOVIM FIXES
 ###############################################

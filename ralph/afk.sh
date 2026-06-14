@@ -25,6 +25,7 @@ for ((i=1; i<=$1; i++)); do
 
   result=$(opencode run \
     --dangerously-skip-permissions \
+    --model opencode-go/kimi-k2.6 \
     "Previous commits: $commits Issues: $issues $prompt" 2>&1)
 
   echo "$result"
