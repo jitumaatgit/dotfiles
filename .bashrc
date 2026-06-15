@@ -32,6 +32,10 @@ if [ -d "$HOME/.cargo/bin" ]; then
   export PATH="$PATH:$HOME/.cargo/bin"
 fi
 
+if [ -d "$HOME/scoop/persist/rustup/.cargo/bin" ]; then
+  export PATH="$PATH:$HOME/scoop/persist/rustup/.cargo/bin"
+fi
+
 if [ -d "$win_up/.local/bin" ]; then
   export PATH="$PATH:$win_up/.local/bin"
 fi
