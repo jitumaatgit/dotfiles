@@ -28,12 +28,11 @@ if [ -d "$win_up/scoop/apps/go/current/bin" ]; then
   export PATH="$PATH:$win_up/scoop/apps/go/current/bin"
 fi
 
-if [ -d "$HOME/.cargo/bin" ]; then
-  export PATH="$PATH:$HOME/.cargo/bin"
-fi
+export CARGO_HOME="$HOME/scoop/persist/rustup/.cargo"
+export RUSTUP_HOME="$HOME/scoop/persist/rustup/.rustup"
 
-if [ -d "$HOME/scoop/persist/rustup/.cargo/bin" ]; then
-  export PATH="$PATH:$HOME/scoop/persist/rustup/.cargo/bin"
+if [ -d "$CARGO_HOME/bin" ]; then
+  export PATH="$PATH:$CARGO_HOME/bin"
 fi
 
 if [ -d "$win_up/.local/bin" ]; then
