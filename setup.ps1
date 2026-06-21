@@ -268,20 +268,24 @@ try
 
 # Plannotator CLI for visual plan review
 Write-Host "[INFO] Installing plannotator CLI..."
-try
+$plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
+if (-not $plannotatorPath)
 {
-  $plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
-  if (-not $plannotatorPath)
+  try
   {
-    Invoke-Expression "& { $(Invoke-RestMethod https://plannotator.ai/install.ps1) }"  # documented install pattern (not pipe-style like scoop above — just inconsistency)
-    Write-Host "[OK] plannotator CLI installed"
-  } else
+    $installer = "$env:TEMP\plannotator-install.ps1"
+    Invoke-RestMethod https://plannotator.ai/install.ps1 -OutFile $installer
+    # Run in a subprocess so any exit/crash inside the installer can't kill setup.ps1
+    powershell -NoProfile -File $installer -NonInteractive -NoExtras
+    if ($LASTEXITCODE -eq 0) { Write-Host "[OK] plannotator CLI installed" }
+    else { Write-Host "[WARN] plannotator installer exited with code $LASTEXITCODE" -ForegroundColor Yellow }
+  } catch
   {
-    Write-Host "[OK] plannotator CLI already installed"
+    Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
   }
-} catch
+} else
 {
-  Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
+  Write-Host "[OK] plannotator CLI already installed"
 }
 
 # Configure Python for node-gyp native modules
