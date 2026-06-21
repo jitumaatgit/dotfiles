@@ -181,6 +181,22 @@ if ($missing.Count -gt 0)
 
 Refresh-Path
 
+# uv ships only uv.exe; create uvx.exe/uvw.exe copies for scoop shims
+$uvDir = "$env:USERPROFILE\scoop\apps\uv\current"
+if (Test-Path "$uvDir\uv.exe")
+{
+  if (-not (Test-Path "$uvDir\uvx.exe"))
+  {
+    Copy-Item "$uvDir\uv.exe" "$uvDir\uvx.exe" -Force
+    Write-Host "[OK] Created uvx.exe (copy of uv.exe)"
+  }
+  if (-not (Test-Path "$uvDir\uvw.exe"))
+  {
+    Copy-Item "$uvDir\uv.exe" "$uvDir\uvw.exe" -Force
+    Write-Host "[OK] Created uvw.exe (copy of uv.exe)"
+  }
+}
+
 # ble.sh - Bash Line Editor
 Write-Host "[INFO] Installing ble.sh..."
 $bleshDir = "$env:USERPROFILE\scripts\blesh"
