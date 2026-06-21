@@ -450,6 +450,7 @@ if ($needsAhkInstall -or $needsVdDownload)
     }
   }
 
+  New-Item -ItemType Directory -Force -Path $ahkDir | Out-Null
   Write-Host "[INFO] Downloading AutoHotkey + VD.ah2 (parallel)..."
   $ahkJob = Start-Job -ScriptBlock $dlScript -ArgumentList $Config.AhkDownloadUrl, $ahkZip, "AutoHotkey"
   $vdJob = Start-Job -ScriptBlock $dlScript -ArgumentList 'https://raw.githubusercontent.com/FuPeiJiang/VD.ahk/v2_port/VD.ah2', $vdAhkPath, "VD.ah2"
