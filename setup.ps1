@@ -35,6 +35,7 @@ $Config = @{
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
     'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','terraform','depsguard','jq','jid','zoxide','bat','yq','rustup')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
+  KeynavishUrl = "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/bin/keynavish.exe"
 }
 
 # Helper functions
@@ -818,8 +819,20 @@ if (Test-Path $opencodeConfig)
   Write-Host "[OK] Created opencode config with plannotator"
 }
 Write-Host "===== bootstrap complete =====`n"
-# keynavish auto-start
+# keynavish download + auto-start
 $keynavishExe = "$env:USERPROFILE\bin\keynavish.exe"
+if (-not (Test-Path $keynavishExe)) {
+  Write-Host "[INFO] Downloading keynavish..."
+  New-Item -ItemType Directory -Force -Path (Split-Path $keynavishExe) | Out-Null
+  Invoke-SafeDownload $Config.KeynavishUrl $keynavishExe
+  if (Test-Path $keynavishExe) {
+    Write-Host "[OK] keynavish downloaded"
+  } else {
+    Write-Host "[WARN] keynavish download failed" -ForegroundColor Yellow
+  }
+} else {
+  Write-Host "[OK] keynavish already installed"
+}
 if (Test-Path $keynavishExe) {
   Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "keynavish" -Value $keynavishExe
   Write-Host "[OK] keynavish auto-start registered"
