@@ -158,16 +158,15 @@ scoop bucket add nerd-fonts 2>$null
 scoop bucket add depsguard https://github.com/arnica/depsguard 2>$null
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
-# Reliable package list: scoop list format can vary (headers, dashes, blank lines)
-# Filter to only lines whose first column looks like a package name
-$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] } | Where-Object { $_ -match '^[a-zA-Z][a-zA-Z0-9._-]+$' }
+# scoop list returns objects with .Name; extract names directly
+$installedPackages = @(scoop list 2>$null | ForEach-Object { $_.Name })
 $missing = @($Config.ScoopPackages | Where-Object { $installedPackages -notcontains $_ })
 
 if ($missing.Count -gt 0)
 {
   Write-Host "[INFO] Installing $($missing.Count) packages in batch..."
   scoop install @missing
-  $after = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] } | Where-Object { $_ -match '^[a-zA-Z][a-zA-Z0-9._-]+$' }
+  $after = @(scoop list 2>$null | ForEach-Object { $_.Name })
   $failed = $missing | Where-Object { $after -notcontains $_ }
   if ($failed.Count -gt 0)
   {
