@@ -9,6 +9,8 @@
 !/.keynavrc
 !/.bash_aliases
 !/.inputrc
+!/.free-coding-models.json
+!/CONTEXT.md
 !/bin
 
 !/scripts
@@ -34,6 +36,10 @@ AppData/Roaming/*
 !scoop/persist/rustup/.rustup/settings.toml
 
 projects/*
+
+# ble.sh runtime dirs (regenerated on attach)
+/scripts/blesh/cache.d/
+/scripts/blesh/run/
 
 !/.pi
 /.pi/*

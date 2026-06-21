@@ -1,0 +1,26 @@
+{
+  "apiKeys": {},
+  "providers": {},
+  "settings": {
+    "tierFilter": null,
+    "sortColumn": "avg",
+    "sortAsc": true,
+    "pingInterval": 10000,
+    "hideUnconfiguredModels": true,
+    "favoritesPinnedAndSticky": false,
+    "runAiSpeedTestOnStartup": false,
+    "preferredToolMode": "opencode",
+    "theme": "auto",
+    "updateInstallFailures": 2,
+    "updateInstallFailureVersion": "0.5.37",
+    "updateLastFailureAt": "2026-06-21T17:39:10.020Z",
+    "updateLastFailureMessage": "spawnSync npm ENOENT"
+  },
+  "favorites": [],
+  "telemetry": {
+    "enabled": true,
+    "consentVersion": 0,
+    "anonymousId": null
+  },
+  "endpointInstalls": []
+}
