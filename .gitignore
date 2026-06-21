@@ -23,6 +23,10 @@ AppData/Local/*
 !AppData/Local/nvim
 !AppData/Local/nvim/**
 
+!AppData/Local/lazygit
+AppData/Local/lazygit/*
+!AppData/Local/lazygit/config.yml
+
 AppData/LocalLow/*
 AppData/Roaming/*
 !scoop/persist/btop/btop.conf

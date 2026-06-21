@@ -5,9 +5,23 @@
 [core]
 	autocrlf = false
 
+	editor = nvim
 [init]
 	defaultBranch = main
 [credential "helperselector"]
 	selected = manager
 [pull]
 	rebase = true
+[diff]
+	tool = nvim
+[difftool "nvim"]
+	cmd = nvim -d $LOCAL $REMOTE
+[difftool]
+	prompt = false
+[merge]
+	tool = nvim
+	conflictStyle = zdiff3
+[mergetool "nvim"]
+	cmd = nvim -d $LOCAL $REMOTE $MERGED -c \"wincmd J\"
+[mergetool]
+	prompt = false
