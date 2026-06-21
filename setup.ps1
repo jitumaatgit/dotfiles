@@ -27,6 +27,17 @@ trap
   exit $script:ExitCode
 }
 
+# Ensure TLS 1.2 for older Windows builds
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+function Refresh-Path
+{
+  $env:Path = @(
+    [Environment]::GetEnvironmentVariable('Path', 'User')
+    [Environment]::GetEnvironmentVariable('Path', 'Machine')
+  ) -join ';'
+}
+
 # Configuration
 # python is for pip, zstd for compressing qemu disk images
 $Config = @{
@@ -147,8 +158,8 @@ scoop bucket add nerd-fonts 2>$null
 scoop bucket add depsguard https://github.com/arnica/depsguard 2>$null
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
-$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }  # pre-batch snapshot for diff
-$missing = $Config.ScoopPackages | Where-Object { $installedPackages -notcontains $_ }
+$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] } | Where-Object { $_ -and $_ -ne 'Name' }
+$missing = @($Config.ScoopPackages | Where-Object { $installedPackages -notcontains $_ })
 
 if ($missing.Count -gt 0)
 {
@@ -167,6 +178,8 @@ if ($missing.Count -gt 0)
 {
   Write-Host "[OK] All packages already installed"
 }
+
+Refresh-Path
 
 # ble.sh - Bash Line Editor
 Write-Host "[INFO] Installing ble.sh..."
@@ -329,6 +342,7 @@ if (Test-Path $sqliteDllPath)
   {
     throw "[ERROR] Failed to download SQLite install script"
   }
+  Unblock-File "$env:TEMP\install-sqlite-for-neovim.ps1" -ErrorAction SilentlyContinue
   try
   {
     & "$env:TEMP\install-sqlite-for-neovim.ps1"
@@ -354,6 +368,7 @@ if (-not (Test-Path "$env:USERPROFILE\nvim-data-remote\.git") -or -not (New-Junc
   {
     throw "[ERROR] Failed to download nvim-data backup script"
   }
+  Unblock-File "$env:TEMP\setup-nvim-data-backup.ps1" -ErrorAction SilentlyContinue
   & "$env:TEMP\setup-nvim-data-backup.ps1"
 } else
 {
@@ -851,8 +866,9 @@ Write-Host "Dotfiles setup:
   git checkout -f main`n"
 Write-Host "nvim-data: cd ~/vim-data-remote"
 Write-Host "git status"
-Write-Host "zen-browser-data: cd ~/zen-browser-data"
-Write-Host "git status"
 Write-Host "Plannotator: /plannotator-review | /plannotator-annotate <file> | /plannotator-last"
+
+# NOTE: zen-browser and opencode data backups are intentionally not configured here.
+# A different restore approach will be figured out later.
 Write-Host "============================================================"
 Stop-Transcript
