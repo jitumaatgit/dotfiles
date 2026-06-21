@@ -68,28 +68,17 @@ export COLUMNS=80
 ###############################################
 # OPTIONAL QUALITY OF LIFE
 ###############################################
-# start free-coding-models to pick default model for plan mode before opencode starts
-alias oc='opencode'
-# use eza instead of ls
-alias ls='eza -a'
-# Colorize grep, use rg, etc.
-alias grep='rg --color=auto'
-# make lg = lazygit
-alias lg='lazygit'
+# Aliases — bash-doc pattern (see /usr/share/doc/bash/examples/startup-files/Bash_aliases)
+if [ -f ~/.bash_aliases ]; then
+  . ~/.bash_aliases
+fi
+
 # zoxide (smart cd) — lazy-loaded on first use
 z() {
   unset -f z
   eval "$(zoxide init bash)"
   z "$@"
 }
-alias cd='z'
-alias zi='z -i'
-alias i='z -i'
-# bat (cat with syntax highlighting)
-alias cat='bat'
-alias preview='bat --style=plain --paging=always'
-# Make vim = nvim
-command -v nvim >/dev/null && alias vim='nvim'
 # make neovim default editor (use wrapper for opencode integration)
 export EDITOR="nvim"
 export VISUAL="wezterm start -- nvim"
