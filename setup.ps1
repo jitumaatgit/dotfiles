@@ -158,14 +158,16 @@ scoop bucket add nerd-fonts 2>$null
 scoop bucket add depsguard https://github.com/arnica/depsguard 2>$null
 # Install packages
 Write-Host "[INFO] Installing scoop packages..."
-$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] } | Where-Object { $_ -and $_ -ne 'Name' }
+# Reliable package list: scoop list format can vary (headers, dashes, blank lines)
+# Filter to only lines whose first column looks like a package name
+$installedPackages = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] } | Where-Object { $_ -match '^[a-zA-Z][a-zA-Z0-9._-]+$' }
 $missing = @($Config.ScoopPackages | Where-Object { $installedPackages -notcontains $_ })
 
 if ($missing.Count -gt 0)
 {
   Write-Host "[INFO] Installing $($missing.Count) packages in batch..."
   scoop install @missing
-  $after = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] }
+  $after = scoop list 2>$null | ForEach-Object { ($_ -split '\s+')[0] } | Where-Object { $_ -match '^[a-zA-Z][a-zA-Z0-9._-]+$' }
   $failed = $missing | Where-Object { $after -notcontains $_ }
   if ($failed.Count -gt 0)
   {
@@ -198,9 +200,11 @@ if (Test-Path "$uvDir\uv.exe")
 }
 
 # ble.sh - Bash Line Editor
-Write-Host "[INFO] Installing ble.sh..."
 $bleshDir = "$env:USERPROFILE\scripts\blesh"
-if (-not (Test-Path "$bleshDir\ble.sh"))
+if (-not (Get-Command bash -ErrorAction SilentlyContinue))
+{
+  Write-Host "[WARN] bash not found (git not installed), skipping ble.sh" -ForegroundColor Yellow
+} elseif (-not (Test-Path "$bleshDir\ble.sh"))
 {
   bash -c @'
     wget -O - https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz | tar xJf -
