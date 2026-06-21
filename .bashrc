@@ -69,7 +69,7 @@ export COLUMNS=80
 # OPTIONAL QUALITY OF LIFE
 ###############################################
 # start free-coding-models to pick default model for plan mode before opencode starts
-alias oc='free-coding-models --opencode --premium'
+alias oc='opencode'
 # use eza instead of ls
 alias ls='eza -a'
 # Colorize grep, use rg, etc.

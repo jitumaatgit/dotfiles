@@ -71,6 +71,12 @@ Default shell: Git Bash. Catppuccin Mocha. Cascadia Code / JetBrains Mono. Leade
 - `edit-and-execute-command` (edit current line in `$EDITOR`) works in emacs mode via `C-x C-e` — no vim mode required. The native `set -o vi` + `show-mode-in-prompt` + cursor bindings in `.bashrc` are a separate layer that ble.sh duplicates.
 - `complete_auto_delay` / `complete_auto_menu` and `complete_limit_auto` are the primary tunables for completion latency. `complete_menu_style=dense` is the cheapest layout.
 
+## Rust (scoop)
+
+- No-admin path: `rustup default stable-x86_64-pc-windows-gnu` uses the `gcc` Scoop package instead of VS Build Tools.
+- Scoop `rustup` installs `rustup-init.exe` to `apps/rustup/current/` but creates no shim. The `rustup.exe` proxy lives in `scoop/persist/rustup/.cargo/bin/` — add that to PATH, not `~/.cargo/bin`.
+- Prefer `CARGO_HOME`/`RUSTUP_HOME` env vars over symlinks to point rustup at Scoop persist dirs. Git Bash symlinks on Windows are unreliable (may need admin).
+
 ## Windows gotchas
 
 - Git Bash root: `/c/Users/student`. Use `/c/` paths, not `C://`.
