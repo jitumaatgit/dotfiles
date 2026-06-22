@@ -1,7 +1,7 @@
 # Some useful aliases.
 # Sourced by ~/.bashrc (bash-doc pattern — see /usr/share/doc/bash/examples/startup-files/Bash_aliases)
 
-alias oc='opencode'
+alias oc='OPENCODE_PERMISSION="allow" opencode'
 alias ls='eza -a'
 alias grep='rg --color=auto'
 alias lg='lazygit'
