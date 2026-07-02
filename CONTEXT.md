@@ -8,8 +8,7 @@ This repo configures a Windows ephemeral dev environment. The machine restores t
 
 - **Terminal:** Git Bash (MINGW64) via WezTerm
 - **Bash version:** 5.3.9(1)-release (on Git for Windows)
-- **Prompt enhancement:** ble.sh (Bash Line Editor) — attached at session end via `ble-attach`
-- **Prompt:** Starship
+- **Prompt:** Starship + fzf (deferred to first prompt)
 - **Navigation:** zoxide (replaces `cd`)
 - **Environment secrets:** sourced from `~/notes/*.env` (private repo)
 
@@ -20,7 +19,8 @@ This repo configures a Windows ephemeral dev environment. The machine restores t
 | WezTerm | `.config/wezterm/` | Terminal emulator, leader=Ctrl+Space |
 | Neovim | `AppData/Local/nvim/` | LazyVim-based editor (~46 plugins) |
 | opencode | `.config/opencode/` | CLI coding agent |
-| ble.sh | `~/scripts/blesh/` | Bash line editor (Readline replacement) |
+| fzf/Starship | `.bashrc` | Prompt + history search (deferred to first prompt) |
+| zoxide | `.bashrc` | Smart cd (lazy-loaded) |
 | Scoop | `.config/scoop/` | Windows package manager |
 | AHK | `portable-dev/autohotkey-portable/remap-v2.ahk` | CapsLock→Esc, RWin→LCtrl, virtual desktops |
 | Keynavish | `bin/keynavish.exe` | Keyboard-driven mouse (Ctrl+;) |
@@ -34,9 +34,9 @@ This repo configures a Windows ephemeral dev environment. The machine restores t
 - **Secrets:** Never commit secrets; stored in `~/notes/` (private repo), sourced in `.bashrc`
 - **Ephemeral machine:** If it's not in git, it's lost on restart
 
-## ble.sh specifics
+## Shell performance
 
-- Loaded via `source -- ~/scripts/blesh/ble.sh --attach=none` early in `.bashrc`
-- Attached at session end via `[[ ! ${BLE_VERSION-} ]] || ble-attach`
-- No `.blerc` exists yet; blerc settings would go in `.bashrc` or `~/.blerc`
-- Git Bash/MSYS2 is classified as a "slow system" by ble.sh docs — subshells and external commands are costly
+- Starship and fzf init deferred to first `PROMPT_COMMAND` (~0.25s savings)
+- `zoxide` lazy-loaded on first `z` invocation
+- Git Bash/MSYS2 is slow at filesystem operations — avoid subshells (`$(...)`) and external commands in hot paths
+- Minibuf shell init: 0.07s; full login startup: ~0.35s (warm)

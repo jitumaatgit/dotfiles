@@ -1,11 +1,5 @@
 export USER=$USERNAME
 
-[[ $- == *i* ]] && source -- ~/scripts/blesh/ble.sh --attach=none
-
-# ble.sh reminders (no vim mode — emacs mode)
-echo "  C-x C-e  → edit current command in $EDITOR"
-echo "  C-r      → search history"
-
 ###############################################
 # WINDOWS DEV PATHS FOR GIT BASH (MINGW64)
 ###############################################
@@ -103,14 +97,11 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 
 [ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
 
-# starship — lazy-loaded via ble.sh precmd hook, fallback if ble.sh missing
-if [[ ${BLE_VERSION-} ]]; then
-  __starship_lazy() {
-    blehook PRECMD-='__starship_lazy'
+# starship + fzf deferred to first prompt (saves ~0.25s startup)
+if [[ $- == *i* ]]; then
+  __init() {
     eval "$(starship init bash)"
+    eval "$(fzf --bash)"
   }
-  blehook PRECMD+='__starship_lazy'
-else
-  eval "$(starship init bash)"
+  PROMPT_COMMAND=__init
 fi
-[[ ! ${BLE_VERSION-} ]] || ble-attach

@@ -25,7 +25,7 @@ Windows dev env. Git Bash shell. Track everything important for ephemeral machin
 | `.config/wezterm/` | Git Bash default, Catppuccin Mocha, leader=Ctrl+Space |
 | `.config/scoop/` | Scoop config |
 | `.config/cagent/` | First-run marker + UUID |
-| `.config/blesh/` | ble.sh config (`init.sh`) |
+| `.config/blesh/` | ble.sh config (`init.sh`) — **not loaded anymore** |
 | `bin/` | Portable executables (keynavish) |
 | `.keynavrc` | Keynavish config |
 | `mg65.layout.json` | 65% keyboard, 4 layers, numpad on layer 3 |
@@ -64,12 +64,14 @@ Default shell: Git Bash. Catppuccin Mocha. Cascadia Code / JetBrains Mono. Leade
 - **`opencode run` fails "Session not found" when `OPENCODE_SERVER_PASSWORD` is set** (bug #24747). Desktop exports this env var for its sidecar server; child shells inherit it. The local run path enables auth but doesn't authenticate, breaking session creation. Must `unset OPENCODE_SERVER_PASSWORD` — setting to empty string doesn't work.
 - `OPENCODE_DISABLE_AUTOUPDATE=true` (fix plugin re-download bug #8729)
 
-## ble.sh
+## ble.sh — REMOVED from shell init (2026-07-01)
 
-- Config file is at `.config/blesh/init.sh`, not `~/.blerc`. The `--attach=none` in `.bashrc` and `ble-attach` at end is the standard perf pattern.
-- Default ble.sh ships with **syntax highlighting, auto-suggestions, and history sharing all ON**. These are the largest latency sources and must be explicitly disabled (`highlight_syntax=`, `complete_auto_complete=0`, `history_share=0`).
-- `edit-and-execute-command` (edit current line in `$EDITOR`) works in emacs mode via `C-x C-e` — no vim mode required. The native `set -o vi` + `show-mode-in-prompt` + cursor bindings in `.bashrc` are a separate layer that ble.sh duplicates.
-- `complete_auto_delay` / `complete_auto_menu` and `complete_limit_auto` are the primary tunables for completion latency. `complete_menu_style=dense` is the cheapest layout.
+ble.sh was adding ~0.12s to bash startup and ~0.77s total init time (sourcing 29K lines / 1.1MB). Replaced with native bash readline + fzf keybindings + starship prompt, all deferred to first `PROMPT_COMMAND`. Shell startup dropped from 1.12s to ~0.35s.
+
+The ble.sh source at `~/scripts/blesh/` and config at `.config/blesh/init.sh` are still installed but no longer loaded. If reactivating, the perf config in `init.sh` (syntax highlighting off, auto-complete off, history sharing off) should be kept.
+
+- `edit-and-execute-command` (edit current line in `$EDITOR`) works in emacs mode via `C-x C-e` without ble.sh.
+- `C-r` for history search is provided by fzf keybindings (loaded on first prompt).
 
 ## Rust (scoop)
 
