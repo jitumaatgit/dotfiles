@@ -19,8 +19,10 @@
 [difftool]
 	prompt = false
 [merge]
-	tool = nvim
+	tool = diffview
 	conflictStyle = zdiff3
+[mergetool "diffview"]
+	cmd = nvim -c \"DiffviewOpen\"
 [mergetool "nvim"]
 	cmd = nvim -d $LOCAL $REMOTE $MERGED -c \"wincmd J\"
 [mergetool]
