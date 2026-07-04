@@ -23,3 +23,9 @@ require("custom.obsidian-task-filter").setup({
   show_completed = false,
   preview_context = 3,
 })
+
+-- Patch trouble.nvim's section.refresh so the throttle uv_check handler
+-- never gets pinned at ~78% CPU via a stuck `section.fetching = true`.
+-- See notes/docs/20-Resources/neovim/trouble-nvim-fetch-leak-2026-07-04.md
+-- (notes repo) for the full root-cause writeup.
+require("custom.trouble-fetch-fix").setup()
