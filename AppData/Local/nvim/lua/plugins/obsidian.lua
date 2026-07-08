@@ -21,11 +21,11 @@ return {
     },
     notes_subdir = "",
     daily_notes = {
-      folder = "docs/30-DailyNotes",
+      folder = "docs/30-dailynotes",
       date_format = "%Y/%m/%Y-%m-%d",
       alias_format = "%B %-d, %Y",
       default_tags = { "daily-notes" },
-      template = "docs/50-Templates/DailyNote Template.md",
+      template = "docs/50-templates/dailynote-template.md",
     },
     completion = {
       nvim_cmp = true,
@@ -58,7 +58,7 @@ return {
     -- end, -- kept for reference: this alternative caused broken wiki-links in practice
     preferred_link_style = "wiki",
     templates = {
-      folder = "docs/50-Templates",
+      folder = "docs/50-templates",
       date_format = "%Y-%m-%d",
       time_format = "%H:%M",
       substitutions = {},
