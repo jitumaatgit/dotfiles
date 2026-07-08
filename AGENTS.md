@@ -8,9 +8,13 @@ Windows dev env. Git Bash shell. Track everything important for ephemeral machin
 
 ## Shell (.bashrc)
 
-- `oc` alias → `free-coding-models` + `opencode`
 - Secrets sourced from `~/notes/*.env` (private repo, not dotfiles). Sourcing lines in `.bashrc`, env files stay in notes.
 - `OPENCODE_DISABLE_AUTOUPDATE=true` (fix plugin re-download bug #8729)
+- `ocp` function: opens `$EDITOR` to compose a prompt, saves timestamped markdown to `~/notes/90-archive/prompts/`, strips YAML frontmatter, pipes to `opencode --prompt`. Ported from tablet-dotfiles commit `e72867a`.
+
+## Naming
+
+- All new files and folders: lowercase-kebab-case (e.g. `90-archive`, `my-file.md`). No PascalCase, no camelCase, no UPPER_CASE unless the surrounding file already uses it.
 
 ## Bootstrap
 
@@ -83,3 +87,9 @@ The ble.sh source at `~/scripts/blesh/` and config at `.config/blesh/init.sh` ar
 
 - Git Bash root: `/c/Users/student`. Use `/c/` paths, not `C://`.
 - `.bashrc` fixes `init.lua` shell path escaping for Git Bash
+
+## GitHub CLI (`gh`) quirks
+
+- `gh search commits` only indexes commit **messages**, not file content within commits. Use `gh api repos/.../commits?per_page=N` and iterate patches instead.
+- `gh api repos/.../commits` defaults to `per_page=30`, not 100. The initial listing may miss commits. Use `per_page=100` or supply the SHA directly.
+- `gh search code` is case-sensitive. A repo may not be indexed immediately — commits may not show up in search results.

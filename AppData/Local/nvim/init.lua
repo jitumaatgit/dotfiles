@@ -1,9 +1,17 @@
 -- Fix for Git Bash on Windows - shell path escaping issue
-if vim.fn.has("win32") == 1 and vim.env.SHELL and vim.env.SHELL:match("bash") then
-  vim.opt.shell = vim.env.SHELL
-  vim.opt.shellcmdflag = "-c"
-  vim.opt.shellquote = '"'
-  vim.opt.shellxquote = '"'
+-- Prefer $SHELL (set when launched from Git Bash); fall back to a known
+-- bash.exe so `:!rm`, `:make`, etc. work even when launched from GUI.
+if vim.fn.has("win32") == 1 then
+  local bash = vim.env.SHELL and vim.env.SHELL:match("bash") and vim.env.SHELL
+    or vim.fn.executable("C:/Users/student/scoop/apps/git/current/usr/bin/bash.exe") == 1 and "C:/Users/student/scoop/apps/git/current/usr/bin/bash.exe"
+    or vim.fn.executable("C:/Program Files/Git/bin/bash.exe") == 1 and "C:/Program Files/Git/bin/bash.exe"
+    or nil
+  if bash then
+    vim.opt.shell = bash
+    vim.opt.shellcmdflag = "-c"
+    vim.opt.shellquote = '"'
+    vim.opt.shellxquote = '"'
+  end
 end
 
 -- Configure SQLite library path for sqlite.lua

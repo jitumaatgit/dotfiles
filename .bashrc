@@ -90,6 +90,19 @@ starship_precmd_user_func="set_win_title"
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
 ###############################################
+# OPENCODE ALIASES
+###############################################
+function ocp {
+  mkdir -p ~/notes/90-archive/prompts
+  local f="$HOME/notes/90-archive/prompts/$(date +%Y%m%d-%H%M%S).md"
+  ${EDITOR:-nvim} "$f"
+  [ -s "$f" ] || return
+  local p="$(command awk 'NR==1 && /^---$/ {f=1; next} f && /^---$/ {f=0; next} !f' "$f")"
+  [ -n "$p" ] || return
+  opencode --prompt "$p"
+}
+
+###############################################
 # PLANNOTATOR
 ###############################################
 export PLANNOTATOR_DATA_DIR="$HOME/notes/docs/plannotator"
@@ -100,7 +113,6 @@ export PLANNOTATOR_DATA_DIR="$HOME/notes/docs/plannotator"
 [ -f ~/notes/opencode-server.env ] && . ~/notes/opencode-server.env # opencode-server-env
 [ -f ~/notes/deepseek.env ] && . ~/notes/deepseek.env               # deepseek-api-key
 
-[ -f ~/.free-coding-models.env ] && . ~/.free-coding-models.env # free-coding-models-env
 
 # starship + fzf deferred to first prompt (saves ~0.25s startup)
 if [[ $- == *i* ]]; then
