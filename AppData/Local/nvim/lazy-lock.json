@@ -73,5 +73,5 @@
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" },
   "wrapped.nvim": { "branch": "master", "commit": "1f22d80f85113667efce93df84419dc63eabad48" },
   "yanky.nvim": { "branch": "main", "commit": "020c22d0cfa60358569e49d1d7b91630f175aef0" },
-  "yazi.nvim": { "branch": "main", "commit": "3c7229b0b86fe7a6fadcb89d66ea57423cc21904" }
+  "yazi.nvim": { "branch": "main", "commit": "668cd1f1045c4b929b6292bafc084d5c699770e6" }
 }
