@@ -2,6 +2,7 @@
 # Sourced by ~/.bashrc (bash-doc pattern — see /usr/share/doc/bash/examples/startup-files/Bash_aliases)
 
 alias oc='OPENCODE_PERMISSION="allow" opencode'
+alias occ='oc run --command commit'
 alias ls='eza -a'
 alias grep='rg --color=auto'
 alias lg='lazygit'
