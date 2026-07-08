@@ -293,7 +293,7 @@ wezterm.on("move-pane-split-right", function(window, pane)
 end)
 
 -- Keybinds
-config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 4000 }
+config.leader = { key = "Space", mods = "CTRL", timeout_milliseconds = 4294967295 }
 -- Main key assignments
 config.keys = {
 	-- Tabs
