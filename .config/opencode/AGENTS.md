@@ -162,6 +162,11 @@ const table = sqliteTable("session", {
 - Adding a `"server": { "port": <N> }` block to `opencode.json` starts an HTTP server — the TUI terminal connects through it. Without `OPENCODE_SERVER_PASSWORD`, terminal commands fail with "header authorization is missing". The error is misleading: it's not about the `cd` command, it's about the server requiring auth for its own internal TUI client.
 - `OPENCODE_SERVER_PASSWORD` must be set at server startup. Username defaults to `opencode`; override with `OPENCODE_SERVER_USERNAME`.
 
+## OpenCode File Tools (Write/Edit)
+
+- The `write`/`edit` tools require Windows-style paths (`C:\Users\...`), NOT Git Bash paths (`/c/Users/...`). Git Bash paths report "Wrote file successfully" but the file silently does not land where bash can see it. This contradicts the shell convention (`/c/` preferable in the terminal) — the file tools are the exception.
+- Skills installed via `npx skills add` mid-session are NOT discoverable by the `skill` tool until opencode restarts (skills load at startup). Workaround: read `~/.agents/skills/<name>/SKILL.md` directly with the `read` tool.
+
 ## Type Checking
 
 ## Agent skills

@@ -464,6 +464,15 @@
       "skillFolderHash": "77007511510c05b602835acdb91a88f435ce5a08a9dbf95ade148f02e4b09548",
       "installedAt": "2026-07-01T23:38:29.189Z",
       "updatedAt": "2026-07-01T23:38:29.189Z"
+    },
+    "plannotator-compound": {
+      "source": "backnotprop/plannotator",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/backnotprop/plannotator.git",
+      "skillPath": "apps/skills/extra/plannotator-compound/SKILL.md",
+      "skillFolderHash": "e7cb3bf5836705facedb2f94c6648f269d3f0748",
+      "installedAt": "2026-07-08T03:28:50.868Z",
+      "updatedAt": "2026-07-08T03:28:50.868Z"
     }
   },
   "dismissed": {

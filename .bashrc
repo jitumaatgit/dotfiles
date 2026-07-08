@@ -90,6 +90,11 @@ starship_precmd_user_func="set_win_title"
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
 ###############################################
+# PLANNOTATOR
+###############################################
+export PLANNOTATOR_DATA_DIR="$HOME/notes/docs/plannotator"
+
+###############################################
 # Secrets (tracked in ~/notes repo)
 ###############################################
 [ -f ~/notes/opencode-server.env ] && . ~/notes/opencode-server.env # opencode-server-env

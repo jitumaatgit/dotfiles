@@ -5,7 +5,7 @@ argument-hint: "What will the next session be used for?"
 disable-model-invocation: true
 ---
 
-Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the temporary directory of the user's OS - not the current workspace.
+Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the handoff folder in the notes repo at the absolute path `C:\Users\student\notes\handoff\` (Git Bash: `/c/Users/student/notes/handoff/`). Use this full path explicitly — other repos may invoke this skill, so do not use a relative path or the OS temp directory.
 
 Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.
 
