@@ -22,7 +22,7 @@ WHAT was done.
 do not do generic messages like "improved agent experience" be very specific
 about what user facing changes were made
 
-if there are conflicts DO NOT FIX THEM. notify me and I will fix them
+if there are conflicts DO NOT FIX THEM unless I explicitly ask you to merge/resolve conflicts. otherwise notify me and I will fix them
 
 ## GIT DIFF
 
