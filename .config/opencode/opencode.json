@@ -13,11 +13,16 @@
     "external_directory": "allow"
   },
   // "model": "deepseek/deepseek-v4-flash",
-  "model": "opencode-go/deepseek-v4-flash",
+  "model": "opencode-go/deepseek-v4-pro",
   "agent": {
+    "plan": {
+      "model": "opencode-go/glm-5.2"
+    },
     "build": {
-      // "model": "deepseek/deepseek-v4-flash"
-      "model": "opencode-go/deepseek-v4-flash"
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "docs": {
+      "model": "opencode-go/deepseek-v4-pro"
     }
   },
   // "small_model": "deepseek/deepseek-v4-flash",
@@ -54,6 +59,38 @@
           }
         },
         "deepseek-v4-flash": {
+          "variants": {
+            "high": {
+              "thinking": {
+                "type": "enabled",
+                "budgetTokens": 8192
+              }
+            },
+            "max": {
+              "thinking": {
+                "type": "enabled",
+                "budgetTokens": 32000
+              }
+            }
+          }
+        },
+        "deepseek-v4-pro": {
+          "variants": {
+            "high": {
+              "thinking": {
+                "type": "enabled",
+                "budgetTokens": 8192
+              }
+            },
+            "max": {
+              "thinking": {
+                "type": "enabled",
+                "budgetTokens": 32000
+              }
+            }
+          }
+        },
+        "glm-5.2": {
           "variants": {
             "high": {
               "thinking": {
