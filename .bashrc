@@ -93,6 +93,10 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 # OPENCODE ALIASES
 ###############################################
 function ocp {
+  if [ $# -gt 0 ]; then
+    opencode --prompt "$*"
+    return
+  fi
   mkdir -p ~/notes/90-archive/prompts
   local f="$HOME/notes/90-archive/prompts/$(date +%Y%m%d-%H%M%S).md"
   ${EDITOR:-nvim} "$f"
