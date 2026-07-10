@@ -83,6 +83,27 @@ The ble.sh source at `~/scripts/blesh/` and config at `.config/blesh/init.sh` ar
 - Scoop `rustup` installs `rustup-init.exe` to `apps/rustup/current/` but creates no shim. The `rustup.exe` proxy lives in `scoop/persist/rustup/.cargo/bin/` — add that to PATH, not `~/.cargo/bin`.
 - Prefer `CARGO_HOME`/`RUSTUP_HOME` env vars over symlinks to point rustup at Scoop persist dirs. Git Bash symlinks on Windows are unreliable (may need admin).
 
+## Scoop
+
+`scoop update` self-updates and pulls buckets via git. Two things break it under this setup:
+
+1. **Dotfiles repo dirty** — `~/.config/scoop/config.json` is tracked; scoop rewrites `last_update` on every run → dirty worktree → `git pull` (rebase) refused in the home repo. Fix: `git update-index --skip-worktree .config/scoop/config.json`.
+2. **`pull.rebase=true` leaks into scoop's internal repos** — global `~/.gitconfig` sets `pull.rebase = true`; scoop's `apps/*/current` and `buckets/*` repos inherit it, so any spurious diff (e.g. CRLF on a bucket file) blocks scoop's own `git pull` with "cannot pull with rebase: unstaged changes". Fix: path-scoped override.
+
+Path-scoped rebase override (files added to repo):
+- `~/scoop-gitconfig` — `[pull] rebase = false`
+- `~/.gitconfig` — appended:
+  ```
+  [includeIf "gitdir:C:/Users/student/scoop/"]
+      path = ~/scoop-gitconfig
+  ```
+- `.gitignore` — `!/scoop-gitconfig` (deny-by-default repo)
+- Effect: inside `~/scoop/**` → `pull.rebase = false`; everywhere else → `true` (verified via `git -C <dir> config --get pull.rebase`).
+
+Notes:
+- A phantom CRLF diff on a bucket file once blocked updates — `git -C ~/scoop/buckets/<name> checkout -- <file>` to discard. Recurs if the bucket has a `.gitattributes` mismatch; the rebase override above prevents it from blocking updates rather than fixing the root CRLF issue.
+- `--skip-worktree` keeps the file tracked but invisible to `git status`/`git pull`; `git diff` may still show the delta — that's harmless. Undo with `git update-index --no-skip-worktree <path>` (note git path is repo-relative).
+
 ## Windows gotchas
 
 - Git Bash root: `/c/Users/student`. Use `/c/` paths, not `C://`.

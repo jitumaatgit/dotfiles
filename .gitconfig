@@ -27,3 +27,5 @@
 	cmd = nvim -d $LOCAL $REMOTE $MERGED -c \"wincmd J\"
 [mergetool]
 	prompt = false
+[includeIf "gitdir:C:/Users/student/scoop/"]
+	path = ~/scoop-gitconfig
