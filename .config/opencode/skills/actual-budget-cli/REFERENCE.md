@@ -174,13 +174,9 @@ Dotted field "pokes through" to referenced table: `category.name`, `payee.name`,
 
 ## Common pitfalls
 
-- Split parents double-count in sums → filter `is_parent:false`.
-- `category.name` null for uncategorized.
-- No date sub-fields in AQL — use `$transform:$month`/`$year`.
-- Aggregates must be named in `select`.
-- Don't loop CLI per-month (rate limit/auth) — single query + date range, aggregate locally.
-- `transactions add` does NOT dedup or run rules; `import` does. `--dry-run` to preview. See add-vs-import table above.
-- `updateRule` needs full rule object (other `update` commands take partial fields).
+Hot foot-guns live in SKILL.md Gotchas (`is_parent:false`, null category, named aggregates, self-signed cert). The rarer ones:
+
+- `updateRule` needs the full rule object; other `update` commands take partial fields.
 - Never mutate `transfer_id` on existing transfer txns.
-- Attaching a tag to a transaction via CLI is undocumented — check `query fields transactions` for a `tags` field first; fall back to `#tag` in `notes`.
-- `server get-id --type payees` matches by name; it cannot find a transfer payee by `transfer_acct`. `actual payees list --format json` and locate the payee whose `transfer_acct` equals the destination account id.
+- No CLI bulk-delete surface — see [SCRIPTING.md](SCRIPTING.md) for the JS loop.
+- Tag-attach is undocumented — see the Tag schema note above.

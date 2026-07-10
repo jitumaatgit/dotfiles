@@ -1,22 +1,19 @@
 ---
 name: actual-budget-cli
 description: >
-  Drive the Actual Budget CLI (`@actual-app/cli`, the `actual` command) and/or
-  the JS API (`@actual-app/api`) against an Actual sync server — list/create/
-  update budgets, accounts, transactions, categories, payees, tags, rules, and
-  schedules; run filtered/grouped/aggregate ActualQL queries; back up, bulk
-  delete, set starting balances, and run the restart workflow. Use when the user
-  mentions Actual Budget, the `actual` CLI, `@actual-app/api`, budgets /
-  transactions / ActualQL, or asks to import/reconcile transactions, review
-  spending, restart a budget, or manage budget data from the terminal or a
-  Node script.
+  Drive Actual Budget from the terminal — the `actual` CLI (`@actual-app/cli`)
+  and JS API (`@actual-app/api`) against a sync server. Use when the user
+  mentions Actual Budget, `actual`, `@actual-app/api`, or ActualQL, or asks to
+  import or reconcile transactions, review spending, back up a budget, restart
+  a budget, or manage accounts, categories, payees, rules, or schedules from a
+  shell or Node script.
 ---
 
 # Actual Budget CLI
 
 ## Quick start
 
-Server is pre-configured (env vars or `.actualrc`). Amounts are **integer cents** (`5000` = $50.00).
+Server pre-configured (env vars or `.actualrc`). Amounts are integer cents — see Core conventions.
 
 ```bash
 # Inspect available tables/fields before querying
@@ -57,7 +54,7 @@ actual query run --table transactions \
   --filter '{"category":null,"date":{"$gte":"2026-06-09"}}' \
   --select "date,amount,payee.name,notes" --order-by "date:desc"
 
-# 4. Check for split parents polluting sums (exclude parents)
+# 4. Split parents polluting sums (see Gotchas)
 actual query run --table transactions \
   --filter '{"is_parent":false,"amount":{"$lt":0}}' \
   --select "date,amount,category.name" --limit 20

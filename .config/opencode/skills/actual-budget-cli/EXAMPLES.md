@@ -104,7 +104,7 @@ Per-category spend for the month:
 echo '{"table":"transactions","filter":{"account":"'"$acct"'","is_parent":false,"date":{"$gte":"2026-07-01","$lte":"2026-07-31"}},"groupBy":["category.name"],"orderBy":[{"amount":"desc"}],"select":["category.name",{"amount":{"$sum":"$amount"}}]}' \
   | actual query run --file - --format table
 ```
-`is_parent:false` is the key guard — otherwise split parents inflate totals.
+`is_parent:false` is the guard — see SKILL.md Gotchas.
 
 ## 6. Restart: delete all transactions + set starting balances
 
