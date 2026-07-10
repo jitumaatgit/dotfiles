@@ -224,12 +224,40 @@ if (-not $plannotatorPath)
 {
   try
   {
+    # GitHub API + release downloads require TLS 1.2; PS 5.1 may default lower.
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $installer = "$env:TEMP\plannotator-install.ps1"
     Invoke-RestMethod https://plannotator.ai/install.ps1 -OutFile $installer
-    # Run in a subprocess so any exit/crash inside the installer can't kill setup.ps1
-    powershell -NoProfile -File $installer -NonInteractive -NoExtras
-    if ($LASTEXITCODE -eq 0) { Write-Host "[OK] plannotator CLI installed" }
-    else { Write-Host "[WARN] plannotator installer exited with code $LASTEXITCODE" -ForegroundColor Yellow }
+    # SecurityProtocol is per-process, not inherited. Set it in the child via a
+    # wrapper so the installer's GitHub calls also force TLS 1.2.
+    $wrapper = "$env:TEMP\plannotator-wrap.ps1"
+    $codefile = "$env:TEMP\plannotator-exitcode.txt"
+    @"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+& '$installer' -NonInteractive -NoExtras
+Set-Content -Path '$codefile' -Value `$LASTEXITCODE -NoNewline
+"@ | Set-Content $wrapper -Encoding utf8
+    # Capture stdout+stderr so an installer failure (exit 1) is diagnosable in
+    # the transcript instead of silently swallowed.
+    $log = "$env:TEMP\plannotator-install.log"
+    $err = "$env:TEMP\plannotator-install.err"
+    Remove-Item $log, $err, $codefile -ErrorAction SilentlyContinue
+    $proc = Start-Process powershell -ArgumentList "-NoProfile -File `"$wrapper`"" -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError $err
+    # Bound the wait so the sem sidecar / git clone / agent-terminal runtime
+    # can't wedge the whole bootstrap forever.
+    if (-not $proc.WaitForExit(300000))
+    {
+      try { Stop-Process -Id $proc.Id -Force } catch {}
+      Write-Host "[WARN] plannotator installer timed out after 300s" -ForegroundColor Yellow
+    }
+    $code = if (Test-Path $codefile) { [int](Get-Content $codefile -Raw) } else { -1 }
+    if ($code -eq 0) { Write-Host "[OK] plannotator CLI installed" }
+    else
+    {
+      Write-Host "[WARN] plannotator installer exited with code $code" -ForegroundColor Yellow
+      if (Test-Path $log) { Write-Host "--- installer output ---"; Write-Host (Get-Content $log -Raw) }
+      if (Test-Path $err) { Write-Host "--- installer errors ---"; Write-Host (Get-Content $err -Raw) }
+    }
   } catch
   {
     Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
