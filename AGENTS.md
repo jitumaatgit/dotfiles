@@ -65,7 +65,6 @@ Default shell: Git Bash. Catppuccin Mocha. Cascadia Code / JetBrains Mono. Leade
 
 ## OpenCode
 
-- **`opencode run` fails "Session not found" when `OPENCODE_SERVER_PASSWORD` is set** (bug #24747). Desktop exports this env var for its sidecar server; child shells inherit it. The local run path enables auth but doesn't authenticate, breaking session creation. Must `unset OPENCODE_SERVER_PASSWORD` — setting to empty string doesn't work.
 - `OPENCODE_DISABLE_AUTOUPDATE=true` (fix plugin re-download bug #8729)
 
 ## ble.sh — REMOVED from shell init (2026-07-01)
