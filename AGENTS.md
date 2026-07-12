@@ -46,7 +46,7 @@ Entry: `AppData/Local/nvim/init.lua`. Plugins in `lua/plugins/*.lua` (numbered f
 
 Custom modules:
 - `weekly-note.lua` — `:ObsidianWeekly [date]`. Vault `C:/Users/student/notes`. Daily notes `docs/30-DailyNotes/YYYY/MM/YYYY-MM-DD.md`
-- `task-auto-complete.lua` — On BufWritePost `*.md`, moves `- [x]` tasks to `## Completed` above `## Log`
+- `task-auto-complete.lua` — On BufWritePost `*.md`, moves `- [x]` tasks to `## Completed` above `## Canceled`
 - `obsidian-task-filter/` — `:ObsidianTasksByTag [tags]`
 
 SQLite DLL at `AppData/Local/nvim/bin/sqlite3.dll` (yanky).
