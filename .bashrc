@@ -92,6 +92,15 @@ export OPENCODE_DISABLE_AUTOUPDATE=true
 ###############################################
 # OPENCODE ALIASES
 ###############################################
+alias oc='opencode'
+occ() {
+  local mode="commit" prompt=""
+  if [ $# -gt 0 ]; then
+    mode="prompt"
+    prompt="$*"
+  fi
+  oc run --command "$mode" ${prompt:+"$prompt"}
+}
 function ocp {
   if [ $# -gt 0 ]; then
     opencode --prompt "$*"
