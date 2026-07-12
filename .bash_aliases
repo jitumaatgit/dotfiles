@@ -2,7 +2,27 @@
 # Sourced by ~/.bashrc (bash-doc pattern — see /usr/share/doc/bash/examples/startup-files/Bash_aliases)
 
 alias oc='opencode'
-alias occ='opencode run --command commit'
+occ() {
+  local mode="commit" prompt=""
+  if [ $# -gt 0 ]; then
+    mode="prompt"
+    prompt="$*"
+  fi
+  oc run --command "$mode" ${prompt:+"$prompt"}
+}
+function ocp {
+  if [ $# -gt 0 ]; then
+    opencode --prompt "$*"
+    return
+  fi
+  mkdir -p ~/notes/90-archive/prompts
+  local f="$HOME/notes/90-archive/prompts/$(date +%Y%m%d-%H%M%S).md"
+  ${EDITOR:-nvim} "$f"
+  [ -s "$f" ] || return
+  local p="$(command awk 'NR==1 && /^---$/{f=1; next} f && /^---$/{f=0; next} !f' "$f")"
+  [ -n "$p" ] || return
+  opencode --prompt "$p"
+}
 alias ls='eza -a'
 alias grep='rg --color=auto'
 alias lg='lazygit'

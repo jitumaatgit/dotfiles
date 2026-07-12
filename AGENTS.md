@@ -6,11 +6,11 @@ Windows dev env. Git Bash shell. Track everything important for ephemeral machin
 
 `/*` deny-by-default. Each new root file/dir needs `!/name` in `.gitignore` or agent changes go untracked. `projects/*` excluded entirely.
 
-## Shell (.bashrc)
+## Shell
 
+- `.bashrc` = environment (PATH, exports, secrets sourcing, deferred init). `.bash_aliases` = aliases AND functions (`oc`, `occ`, `ocp`, etc). When cross-porting `.zshrc` content, aliases/functions always go to `.bash_aliases`.
 - Secrets sourced from `~/notes/*.env` (private repo, not dotfiles). Sourcing lines in `.bashrc`, env files stay in notes.
 - `OPENCODE_DISABLE_AUTOUPDATE=true` (fix plugin re-download bug #8729)
-- `ocp` function: opens `$EDITOR` to compose a prompt, saves timestamped markdown to `~/notes/90-archive/prompts/`, strips YAML frontmatter, pipes to `opencode --prompt`. Ported from tablet-dotfiles commit `e72867a`.
 
 ## Naming
 

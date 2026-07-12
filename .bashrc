@@ -90,32 +90,6 @@ starship_precmd_user_func="set_win_title"
 export OPENCODE_DISABLE_AUTOUPDATE=true
 
 ###############################################
-# OPENCODE ALIASES
-###############################################
-alias oc='opencode'
-occ() {
-  local mode="commit" prompt=""
-  if [ $# -gt 0 ]; then
-    mode="prompt"
-    prompt="$*"
-  fi
-  oc run --command "$mode" ${prompt:+"$prompt"}
-}
-function ocp {
-  if [ $# -gt 0 ]; then
-    opencode --prompt "$*"
-    return
-  fi
-  mkdir -p ~/notes/90-archive/prompts
-  local f="$HOME/notes/90-archive/prompts/$(date +%Y%m%d-%H%M%S).md"
-  ${EDITOR:-nvim} "$f"
-  [ -s "$f" ] || return
-  local p="$(command awk 'NR==1 && /^---$/ {f=1; next} f && /^---$/ {f=0; next} !f' "$f")"
-  [ -n "$p" ] || return
-  opencode --prompt "$p"
-}
-
-###############################################
 # PLANNOTATOR
 ###############################################
 export PLANNOTATOR_DATA_DIR="$HOME/notes/docs/plannotator"
