@@ -33,12 +33,13 @@ Windows dev env. Git Bash shell. Track everything important for ephemeral machin
 | `bin/` | Portable executables (keynavish) |
 | `.keynavrc` | Keynavish config |
 | `mg65.layout.json` | 65% keyboard, 4 layers, numpad on layer 3 |
-| `scripts/` | AHK scripts (`toggle_always_on_top.ahk`) |
+| `scripts/` | AHK scripts (`toggle_always_on_top.ahk`), `ntfy-client.vbs` hidden launcher |
 | `portable-dev/autohotkey-portable/remap-v2.ahk` | CapsLock→Esc, RWin→LCtrl, virtual desktop mgmt |
 | `git/` | Git config |
 | `.pi/` | Agent settings (excludes everything except `agent/settings.json` + `auth.json`) |
 | `setup*.ps1*` | Bootstrap + data backup scripts |
 | `scoop/persist/btop/btop.conf` | Btop config |
+| `AppData/Roaming/ntfy/client.yml` | ntfy client subscription config (Windows read path) |
 
 ## Neovim (LazyVim)
 
@@ -54,6 +55,28 @@ SQLite DLL at `AppData/Local/nvim/bin/sqlite3.dll` (yanky).
 ## Keynavish
 
 Exe at `bin/keynavish.exe`. Config at `~/.keynavrc`. Layer on defaults (no `clear`). Activation: Ctrl+;. Grid: 1-9 for 3x3 cell-select, 0 for history-back. Auto-start via `HKCU\...\Run` (setup.ps1 sets it).
+
+## ntfy (notification client, cross-port from tablet)
+
+Persistent subscriber to `ntfy.sh` topic `shift-automator-doomax`; shows Windows toast on each message. Ported from the tablet's setup (captured in `notes/handoff/ntfy-tablet-setup-2026-07-11.md` + `notes/docs/20-resources/ntfy-setup.md`). The tablet used apt + a systemd user service + `notify-send`; none of those exist on Windows, so the adaptation:
+
+| concern | tablet (Debian) | windows |
+|---|---|---|
+| install | apt from `archive.ntfy.sh` (NOT Debian's `dschep/ntfy` imposter) | `scoop install ntfy snoretoast` (extras bucket). Same upstream `binwiederhier/ntfy` v2.26.0. |
+| config path | `~/.config/ntfy/client.yml` | `%AppData%\ntfy\client.yml` (ntfy's Windows read path; tracked at `AppData/Roaming/ntfy/client.yml`) |
+| env-var syntax in `command:` | bash `$NTFY_TITLE` / `$m` | cmd `%NTFY_TITLE%` / `%NTFY_MESSAGE%` |
+| toast command | `notify-send "$title" "$message"` (libnotify) | `snoretoast -t "%NTFY_TITLE%" -m "%NTFY_MESSAGE%"` (scoop extras) |
+| exit-code normalization | notify-send exits 0 | snoretoast exits 3 on success (shown, no click) → ntfy logs `Command failed: exit status 3`. MUST append `exit /b 0` after snoretoast in the `command:` block (matches ntfy docs' Windows `notifu` example). |
+| auto-start | `systemctl --user enable --now ntfy-client` | `scripts/ntfy-client.vbs` (hidden launcher, window style 0) registered in `HKCU\...\Run` as `ntfy-client`. setup.ps1 sets it + starts the daemon if the VBS exists. |
+
+OS-specific (no Windows analog, knowledge note only): the apt repo signing key at `/etc/apt/keyrings/ntfy.gpg`, `/etc/apt/sources.list.d/ntfy.list`, the `dschep/ntfy` vs `binwiederhier/ntfy` apt-name collision warning, and the systemd unit file. These matter only when reinstalling on the tablet.
+
+Footguns:
+- snoretoast requires a registered AppID (Start Menu shortcut). First run auto-registers `Snore.DesktopToasts.0.9.0`; subsequent toasts use it. Omit `-appID` in the config to use the self-registered one (passing `-appID ntfy` without a registered `ntfy` shortcut still shows toasts but is inconsistent — prefer omit).
+- The daemon is a console app. Never launch via a bare `HKCU\...\Run` value pointing at `ntfy.exe` — it flashes a console window on login. Always go through the hidden VBS wrapper.
+- Config arrives via `git checkout` (it's in the repo), AFTER `setup.ps1` on a fresh bootstrap. setup.ps1 registers the Run key and starts the daemon only if `scripts/ntfy-client.vbs` already exists; otherwise it notes "starts on next login".
+- Verify: `ntfy pub --title="test" shift-automator-doomax "hi"` → toast should pop with no `Command failed` log. `ntfy subscribe --from-config --poll` fetches backlog without staying open.
+- Adding topics: edit `AppData/Roaming/ntfy/client.yml` under `subscribe:`, then restart the daemon (kill `ntfy.exe`, re-run the VBS).
 
 ## WezTerm
 

@@ -44,7 +44,8 @@ $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
-    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','terraform','depsguard','jq','jid','zoxide','bat','yq','rustup')
+    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','terraform','depsguard','jq','jid','zoxide','bat','yq','rustup',
+    'ntfy','snoretoast')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
   KeynavishUrl = "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/bin/keynavish.exe"
 }
@@ -854,6 +855,26 @@ if (-not (Test-Path $keynavishExe)) {
 if (Test-Path $keynavishExe) {
   Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "keynavish" -Value $keynavishExe
   Write-Host "[OK] keynavish auto-start registered"
+}
+
+# ntfy notification client — persistent subscriber daemon (cross-port from tablet)
+# Tablet uses a systemd user service; Windows has no per-user service manager, so a
+# hidden VBS launcher (scripts/ntfy-client.vbs) + HKCU Run key is the equivalent.
+# Config at AppData/Roaming/ntfy/client.yml (ntfy's Windows read path) is tracked in
+# the repo, so it arrives on `git checkout`. The VBS is also tracked.
+$ntfyVbs = "$env:USERPROFILE\scripts\ntfy-client.vbs"
+$ntfyShim = "$env:USERPROFILE\scoop\shims\ntfy.exe"
+if (Test-Path $ntfyShim) {
+  Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "ntfy-client" -Value "wscript.exe `"$ntfyVbs`""
+  Write-Host "[OK] ntfy-client auto-start registered (Run key -> $ntfyVbs)"
+  if (Test-Path $ntfyVbs) {
+    Start-Process wscript.exe -ArgumentList "`"$ntfyVbs`"" -WindowStyle Hidden
+    Write-Host "[OK] ntfy-client daemon started"
+  } else {
+    Write-Host "[INFO] scripts/ntfy-client.vbs not present yet (repo not checked out). Starts on next login."
+  }
+} else {
+  Write-Host "[WARN] ntfy shim not found; ntfy-client auto-start skipped" -ForegroundColor Yellow
 }
 
 Write-Host "Key Bindings:

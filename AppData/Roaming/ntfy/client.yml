@@ -1,0 +1,12 @@
+---
+# ntfy client config (Windows)
+# Ported from tablet (~/.config/ntfy/client.yml) via cross-port skill.
+# Windows reads %AppData%\ntfy\client.yml (docs), not ~/.config/ntfy/.
+# Env var expansion on Windows uses cmd syntax %VAR% (not bash $VAR).
+default-host: https://ntfy.sh
+
+subscribe:
+  - topic: shift-automator-doomax
+    command: |
+      snoretoast -t "%NTFY_TITLE%" -m "%NTFY_MESSAGE%"
+      exit /b 0

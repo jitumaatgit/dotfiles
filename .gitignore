@@ -34,6 +34,8 @@ AppData/Local/lazygit/*
 
 AppData/LocalLow/*
 AppData/Roaming/*
+!AppData/Roaming/ntfy
+!AppData/Roaming/ntfy/**
 !scoop/persist/btop/btop.conf
 !scoop/persist/rustup/.rustup/settings.toml
 
