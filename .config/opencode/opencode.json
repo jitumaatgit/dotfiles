@@ -12,24 +12,24 @@
   "permission": {
     "external_directory": "allow"
   },
-  // "model": "opencode-go/deepseek-v4-flash",
-  "model": "deepseek/deepseek-v4-pro",
+  "model": "opencode-go/deepseek-v4-pro",
+  // "model": "deepseek/deepseek-v4-pro",
   "agent": {
     "plan": {
-      "model": "deepseek/deepseek-v4-pro",
+      "model": "opencode-go/glm-5.2",
       "variant": "high"
     },
     "build": {
-      "model": "deepseek/deepseek-v4-pro",
+      "model": "opencode-go/glm-5.2",
       "variant": "high"
     },
     "docs": {
-      "model": "deepseek/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4-pro",
       "variant": "high"
     }
   },
-  // "small_model": "opencode-go/deepseek-v4-flash",
-  "small_model": "deepseek/deepseek-v4-flash",
+  "small_model": "opencode-go/deepseek-v4-flash",
+  // "small_model": "deepseek/deepseek-v4-flash",
   "mcp": {
     "exa": {
       "type": "remote",
@@ -39,7 +39,6 @@
     }
   },
   "provider": {
-/*
     "opencode-go": {
       "models": {
         "kimi-k2.6": {
@@ -112,7 +111,7 @@
         }
       }
     },
-*/
+/*
     "deepseek": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "DeepSeek",
@@ -165,5 +164,6 @@
         }
       }
     }
+*/
   }
 }
