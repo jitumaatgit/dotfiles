@@ -3,12 +3,11 @@
 
 alias oc='opencode'
 occ() {
-  local mode="commit" prompt=""
   if [ $# -gt 0 ]; then
-    mode="prompt"
-    prompt="$*"
+    opencode run "$@"
+    return
   fi
-  oc run --command "$mode" ${prompt:+"$prompt"}
+  opencode run --command commit
 }
 function ocp {
   if [ $# -gt 0 ]; then
