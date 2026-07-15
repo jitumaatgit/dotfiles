@@ -183,3 +183,15 @@ Five canonical roles using default names (`needs-triage`, `needs-info`, `ready-f
 
 Single-context repo. `CONTEXT.md` at root. See `docs/agents/domain.md`.
 
+### Upstream skills changelog (mattpocock/skills v1.1, Jul 2026)
+
+- `/to-prd` → `/to-spec` — name matches what we actually build
+- `/to-issues` → `/to-tickets` — unified, not GitHub-biased
+- `/wayfinder` — break plans into agent-sized chunks with blocking relationships
+- `/code-review` — uses Martin Fowler's refactoring smells
+- `/research` + `/prototype` — supporting skills for the Wayfinder workflow
+- Grilling fixes — no self-grilling, no skipping to implementation
+- Complete lifecycle flow: Grill → Spec → Tickets → Implement → Code Review
+
+Reinstall: `npx skills@latest add mattpocock/skills -g -y -s <name> ...` (skip `obsidian-vault` and `handoff` to protect user edits; delete orphans `to-issues`, `to-prd`, `decision-mapping`, `review`).
+
