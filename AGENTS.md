@@ -90,6 +90,10 @@ Default shell: Git Bash. Catppuccin Mocha. Cascadia Code / JetBrains Mono. Leade
 
 - `OPENCODE_DISABLE_AUTOUPDATE=true` (fix plugin re-download bug #8729)
 
+### Compaction → handoff gate
+
+Before invoking the `compress` tool for ANY reason (DCP nudge, manual compaction, context-pressure cleanup), you MUST first ask: "Want to /handoff first?" If the user says yes, invoke the handoff skill (`C:\Users\student\.agents\skills\handoff\SKILL.md`) before compressing. If they say no, proceed with compression immediately.
+
 ## ble.sh — REMOVED from shell init (2026-07-01)
 
 ble.sh was adding ~0.12s to bash startup and ~0.77s total init time (sourcing 29K lines / 1.1MB). Replaced with native bash readline + fzf keybindings + starship prompt, all deferred to first `PROMPT_COMMAND`. Shell startup dropped from 1.12s to ~0.35s.
