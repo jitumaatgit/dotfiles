@@ -1,9 +1,6 @@
 #!/bin/bash
 set -eo pipefail
 
-# Workaround for opencode bug #24747: run fails when OPENCODE_SERVER_PASSWORD is set
-unset OPENCODE_SERVER_PASSWORD
-
 if [ -z "$1" ]; then
   echo "Usage: $0 <iterations>"
   exit 1

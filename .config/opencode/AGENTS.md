@@ -163,8 +163,10 @@ const table = sqliteTable("session", {
 
 ## OpenCode Server Auth
 
-- Adding a `"server": { "port": <N> }` block to `opencode.json` starts an HTTP server — the TUI terminal connects through it. Without `OPENCODE_SERVER_PASSWORD`, terminal commands fail with "header authorization is missing". The error is misleading: it's not about the `cd` command, it's about the server requiring auth for its own internal TUI client.
-- `OPENCODE_SERVER_PASSWORD` must be set at server startup. Username defaults to `opencode`; override with `OPENCODE_SERVER_USERNAME`.
+- Adding a `"server": { "port": <N> }` block to `opencode.json` starts an HTTP server — the TUI terminal connects through it. `OPENCODE_SERVER_PASSWORD` must be set at server startup (OpenCode Desktop exports it for its sidecar; child shells inherit it). Username defaults to `opencode`; override with `OPENCODE_SERVER_USERNAME`.
+- `opencode run` (incl. the `occ` function in `~/.bash_aliases`) authenticates fine WITH `OPENCODE_SERVER_PASSWORD` set against a running server — the spawned run client sends the inherited password. Do NOT unset it; unsetting causes "Unauthorized: header authorization was missing".
+- The old "Session not found" bug #24747 advice to `unset OPENCODE_SERVER_PASSWORD` is OBSOLETE as of 1.17.18. It predated the server block being added; with a server running, unsetting breaks auth. The `unset` workaround was removed from `occ`, `ralph/afk.sh`, and `ralph/once.sh` on 2026-07-15.
+- `--command` takes a slash-command NAME (e.g. `commit`), NOT shell. `opencode run --command "git status"` errors with "Unexpected server error" because `"git status"` isn't a command — that is a misuse, not an auth issue.
 
 ## OpenCode File Tools (Write/Edit)
 

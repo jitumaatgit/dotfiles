@@ -1,9 +1,6 @@
 #!/bin/bash
 set -eo pipefail
 
-# Workaround for opencode bug #24747: run fails when OPENCODE_SERVER_PASSWORD is set
-unset OPENCODE_SERVER_PASSWORD
-
 issues=$(gh issue list \
   --state open \
   --label ready-for-agent \

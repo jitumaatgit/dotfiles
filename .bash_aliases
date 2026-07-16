@@ -3,18 +3,11 @@
 
 alias oc='opencode'
 occ() {
-  # OPENCODE_SERVER_PASSWORD (exported by OpenCode Desktop for its sidecar) breaks
-  # `opencode run` — the local run path doesn't authenticate, so session creation
-  # fails with "Unauthorized: Header of type `authorization` was missing". Strip it
-  # for this invocation only.
-  local _pw="$OPENCODE_SERVER_PASSWORD"
-  unset OPENCODE_SERVER_PASSWORD
   if [ $# -gt 0 ]; then
     opencode run "$@"
   else
     opencode run --command commit
   fi
-  OPENCODE_SERVER_PASSWORD="$_pw"
 }
 function ocp {
   if [ $# -gt 0 ]; then
