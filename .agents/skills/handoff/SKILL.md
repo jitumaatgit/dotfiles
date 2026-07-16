@@ -2,7 +2,7 @@
 name: handoff
 description: Compact the current conversation into a handoff document so a fresh agent can continue the work. Use when ending a long session, handing off to another agent, saving context for later, or when asked to "handoff", "save state", or "write up what we did".
 argument-hint: "What will the next session be used for?"
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Save a handoff document to the absolute path `C:\Users\student\notes\handoff\` (Git Bash: `/c/Users/student/notes/handoff/`). Use this full path — other repos may invoke this skill, so do not use a relative path or the OS temp directory.
