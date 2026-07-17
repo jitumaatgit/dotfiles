@@ -1,9 +1,15 @@
 {
-  "apiKeys": {},
-  "providers": {},
+  "apiKeys": {
+    "nvidia": "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"
+  },
+  "providers": {
+    "nvidia": {
+      "enabled": true
+    }
+  },
   "settings": {
     "tierFilter": null,
-    "sortColumn": "avg",
+    "sortColumn": "rank",
     "sortAsc": true,
     "pingInterval": 10000,
     "hideUnconfiguredModels": true,
@@ -11,16 +17,53 @@
     "runAiSpeedTestOnStartup": false,
     "preferredToolMode": "opencode",
     "theme": "auto",
-    "updateInstallFailures": 2,
-    "updateInstallFailureVersion": "0.5.37",
-    "updateLastFailureAt": "2026-06-21T17:39:10.020Z",
-    "updateLastFailureMessage": "spawnSync npm ENOENT"
+    "updateInstallFailures": 0,
+    "autoHideBrokenModels": true,
+    "originFilter": "nvidia"
   },
   "favorites": [],
   "telemetry": {
     "enabled": true,
     "consentVersion": 0,
-    "anonymousId": null
+    "anonymousId": "anon_ef054b30-2c1e-4a11-890d-80c4b33cae7b"
   },
-  "endpointInstalls": []
+  "endpointInstalls": [],
+  "hiddenModels": [],
+  "router": {
+    "enabled": true,
+    "onboardingSeen": true,
+    "autoStartOnBoot": false,
+    "port": 19280,
+    "activeSet": "fast-coding",
+    "sets": {},
+    "probeMode": "balanced",
+    "probeIntervals": {
+      "eco": 120000,
+      "balanced": 30000,
+      "aggressive": 10000
+    },
+    "circuitBreaker": {
+      "failureThreshold": 3,
+      "initialCooldownMs": 30000,
+      "maxCooldownMs": 300000,
+      "backoffMultiplier": 2
+    },
+    "failover": {
+      "maxRetries": 3,
+      "streamStallTimeoutMs": 8000,
+      "requestTimeoutMs": 15000
+    },
+    "scoring": {
+      "latencyWeight": 0.5,
+      "uptimeWeight": 0.5,
+      "priorityWeight": 0.2
+    },
+    "logLevel": "info",
+    "prePrompt": {
+      "enabled": true,
+      "text": "You are free-coding-models, a free coding-model routing agent. The user is talking to you through a local router at http://localhost:19280/v1 that picks the best free coding model in real time across Groq, Cerebras, NVIDIA NIM, GitHub Models, OpenRouter, Mistral, Cloudflare, SambaNova, and more.\n\nBe concise, code-first, and direct. Prefer minimal patches over rewrites. When you show code, make it runnable. When you explain, keep it short. If the user asks which model served them, say you were routed through the local FCM router and point them at the dashboard for the live model list."
+    },
+    "autoHeal": true,
+    "userCustomized": false
+  }
 }
