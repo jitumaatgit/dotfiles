@@ -24,6 +24,7 @@ function ocp {
 }
 alias ls='eza -a'
 alias grep='rg --color=auto'
+export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 alias lg='lazygit'
 alias cd='z'
 alias zi='z -i'
