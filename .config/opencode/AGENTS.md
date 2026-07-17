@@ -141,7 +141,9 @@ const table = sqliteTable("session", {
 - Tasker AI Chat activity: `net.dinglisch.android.taskerm/com.joaomgcd.oldtaskercompat.aigenerator.ui.ActivityAIChat` — conversation data stored in app-private storage, no accessible content provider, no export feature
 - `adb shell content query --projection` uses colons (`address:body:date`), not commas. `--sort` does NOT support `DESC` — only ascending sort by column name works.
 - `date` field in SMS content provider (`content://sms`) is epoch **milliseconds**, not seconds. Divide by 1000 before passing to `datetime.fromtimestamp()`.
+- `content://sms/inbox` stores addresses with `+1` country code (e.g., `+17865431612`); `content://sms/sent` stores recipient without `+1` prefix (e.g., `7865431612`). The same number can appear differently in inbox vs sent queries.
 - `content query --where` only supports exact `=` matches. `LIKE` and other SQL operators throw `Unsupported argument` error.
+- `adb shell content query --where` with `+` prefix fails: the `+` in phone numbers gets URL-mangled by the shell. To query for a number with `+1` prefix, query by `date` instead, or use an un-prefixed variant.
 - `content://telephony/carriers` and `content://telephony/siminfo/` require phone/system UID and fail with `SecurityException` via ADB — can't query SIM phone numbers this way.
 - `getprop gsm.sim.operator.alpha` shows carrier names (e.g., Access Wireless, cricket) but not actual phone numbers. The `.numeric` codes map to carriers but require external lookup to identify which SIM is which.
 
@@ -160,6 +162,7 @@ const table = sqliteTable("session", {
 - "Missing event type" error → profile has invalid/placeholder event code. Use a real built-in event code, then reconfigure in Tasker UI after import.
 - Plugin events (ntfy, etc.) cannot be represented in standard Tasker XML. Use placeholder event code, import, then manually reconfigure.
 - `Notify` (code 523) `arg12`-`arg15` are Intent-based action buttons, NOT task name references. Use Tasker HTTP Server + Command System for HTTP-based button callbacks.
+- **Variable Search Replace (code 598) stores WHOLE matches, not capture groups**: `%array1` contains the full text matched by the search pattern, not the first capture group. Tasker discards capture groups immediately. Use lookbehind assertions (`(?<=prefix)pattern`) instead of capture groups when extracting substrings.
 
 ## OpenCode Server Auth
 
