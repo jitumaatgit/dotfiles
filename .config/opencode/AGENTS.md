@@ -171,6 +171,10 @@ const table = sqliteTable("session", {
 - The old "Session not found" bug #24747 advice to `unset OPENCODE_SERVER_PASSWORD` is OBSOLETE as of 1.17.18. It predated the server block being added; with a server running, unsetting breaks auth. The `unset` workaround was removed from `occ`, `ralph/afk.sh`, and `ralph/once.sh` on 2026-07-15.
 - `--command` takes a slash-command NAME (e.g. `commit`), NOT shell. `opencode run --command "git status"` errors with "Unexpected server error" because `"git status"` isn't a command — that is a misuse, not an auth issue.
 
+## OpenCode Provider Auth
+
+- `opencode run` auth bug: `Unauthorized: Header of type 'authorization' was missing` → auth.json not loaded for provider API calls (issue #36181). Error appears **after** command completes, when main model tries to respond. Fix: set `<PROVIDER>_API_KEY` env vars (e.g. `NVIDIA_API_KEY`, `OPENCODE_API_KEY`). See `~/notes/docs/20-resources/opencode-auth-bug.md`.
+
 ## OpenCode File Tools (Write/Edit)
 
 - The `write`/`edit` tools require Windows-style paths (`C:\Users\...`), NOT Git Bash paths (`/c/Users/...`). Git Bash paths report "Wrote file successfully" but the file silently does not land where bash can see it. This contradicts the shell convention (`/c/` preferable in the terminal) — the file tools are the exception.
