@@ -98,6 +98,7 @@ export PLANNOTATOR_DATA_DIR="$HOME/notes/docs/plannotator"
 # Secrets (tracked in ~/notes repo)
 ###############################################
 [ -f ~/notes/opencode-server.env ] && . ~/notes/opencode-server.env # opencode-server-env
+[ -f ~/notes/opencode-api.env ] && . ~/notes/opencode-api.env       # opencode-api-key
 [ -f ~/notes/deepseek.env ] && . ~/notes/deepseek.env               # deepseek-api-key
 
 
