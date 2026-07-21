@@ -11,7 +11,7 @@ tracked in git as possible because of this limitation.
 
 ## Compaction → handoff-first gate
 
-Before calling the `compress` (DCP context-pruning) tool, you MUST first ask the user in chat whether they want to `/handoff` first. Do not compress in the same turn as the offer. If the user accepts, invoke the `handoff` skill via the `skill` tool, then compress. If the user declines, compress. The DCP prompt overrides under `~/.config/opencode/dcp-prompts/overrides/` are authoritative for this rule; this note is a backup.
+
 
 ## Style Guide
 
