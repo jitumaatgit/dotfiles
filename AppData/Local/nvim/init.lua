@@ -2,8 +2,10 @@
 -- Prefer $SHELL (set when launched from Git Bash); fall back to a known
 -- bash.exe so `:!rm`, `:make`, etc. work even when launched from GUI.
 if vim.fn.has("win32") == 1 then
+  local localappdata = vim.fn.expand("$LOCALAPPDATA")
+  local scoop_git = ("%s/scoop/apps/git/current/usr/bin/bash.exe"):format(localappdata)
   local bash = vim.env.SHELL and vim.env.SHELL:match("bash") and vim.env.SHELL
-    or vim.fn.executable("C:/Users/student/scoop/apps/git/current/usr/bin/bash.exe") == 1 and "C:/Users/student/scoop/apps/git/current/usr/bin/bash.exe"
+    or vim.fn.executable(scoop_git) == 1 and scoop_git
     or vim.fn.executable("C:/Program Files/Git/bin/bash.exe") == 1 and "C:/Program Files/Git/bin/bash.exe"
     or nil
   if bash then
@@ -14,8 +16,13 @@ if vim.fn.has("win32") == 1 then
   end
 end
 
--- Configure SQLite library path for sqlite.lua
-vim.g.sqlite_clib_path = vim.fn.expand("$HOME/.local/bin/sqlite3.dll")
+-- Configure SQLite library path for sqlite.lua (cross-platform, username-independent)
+local sqlite_so = vim.fn.has("win32") == 1
+    and vim.fn.expand("$LOCALAPPDATA/nvim/bin/sqlite3.dll")
+  or "/usr/lib/x86_64-linux-gnu/libsqlite3.so"
+if vim.fn.filereadable(sqlite_so) == 1 or (vim.fn.has("win32") ~= 1 and vim.fn.filereadable(sqlite_so) == 1) then
+  vim.g.sqlite_clib_path = sqlite_so
+end
 
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")

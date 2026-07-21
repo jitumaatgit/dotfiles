@@ -3,7 +3,7 @@ return {
   opts = function()
     -- Configure Zen browser path (works across clean installs)
     -- Zen browser installed via Scoop at this location
-    local zen_browser = "C:/Users/student/scoop/shims/zen.exe"
+    local zen_browser = vim.fn.expand("$LOCALAPPDATA/scoop/shims/zen.exe")
 
     -- Verify zen.exe exists
     if vim.loop.fs_stat(zen_browser) then

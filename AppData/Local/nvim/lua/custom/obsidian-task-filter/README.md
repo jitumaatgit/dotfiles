@@ -64,7 +64,7 @@ cp -r lua/obsidian-task-filter ~/.config/nvim/lua/
 Copy-Item -Path "lua\obsidian-task-filter" -Destination "$env:LOCALAPPDATA\nvim\lua\custom" -Recurse
 ```
 
-Or manually copy to: `C:\Users\student\AppData\Local\nvim\lua\custom\obsidian-task-filter`
+Or manually copy to: `%LOCALAPPDATA%\nvim\lua\custom\obsidian-task-filter`
 
 Then add to your init.lua:
 
