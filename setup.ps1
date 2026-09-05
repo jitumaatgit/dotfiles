@@ -45,7 +45,7 @@ $Config = @{
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
     'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','terraform','depsguard','jq','jid','zoxide','bat','yq','rustup',
-    'ntfy','snoretoast')
+    'ntfy','snoretoast', 'rsync')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
   KeynavishUrl = "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/bin/keynavish.exe"
 }
