@@ -44,8 +44,8 @@ $Config = @{
   BaseUrl = 'https://raw.githubusercontent.com/jitumaatgit/dotfiles/main'
   ScoopPackages = @('zen-browser','wezterm', 'gcc', 'nodejs-lts', 'ripgrep', 'fd', 'fzf', 'lazygit',
     'tree-sitter', 'luacheck', 'neovim', 'opencode', 'starship', 'gh', 'eza', 'adb','yazi',
-    'poppler', 'uv', 'mandoc','wget','anki','btop','zstd','python','terraform','depsguard','jq','jid','zoxide','bat','yq','rustup',
-    'ntfy','snoretoast', 'rsync')
+    'poppler', 'uv', 'mandoc','wget','btop','zstd','python','depsguard','jq','jid','zoxide','bat','yq','rustup',
+    'ntfy','snoretoast')
   AhkDownloadUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.18/AutoHotkey_2.0.18.zip"
   KeynavishUrl = "https://raw.githubusercontent.com/jitumaatgit/dotfiles/main/bin/keynavish.exe"
 }
@@ -218,55 +218,55 @@ try
   Write-Host "[WARN] gh not available yet, will auth later: $_" -ForegroundColor Yellow
 }
 
-# Plannotator CLI for visual plan review
-Write-Host "[INFO] Installing plannotator CLI..."
-$plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
-if (-not $plannotatorPath)
-{
-  try
-  {
-    # GitHub API + release downloads require TLS 1.2; PS 5.1 may default lower.
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $installer = "$env:TEMP\plannotator-install.ps1"
-    Invoke-RestMethod https://plannotator.ai/install.ps1 -OutFile $installer
-    # SecurityProtocol is per-process, not inherited. Set it in the child via a
-    # wrapper so the installer's GitHub calls also force TLS 1.2.
-    $wrapper = "$env:TEMP\plannotator-wrap.ps1"
-    $codefile = "$env:TEMP\plannotator-exitcode.txt"
-    @"
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-& '$installer' -NonInteractive -NoExtras
-Set-Content -Path '$codefile' -Value `$LASTEXITCODE -NoNewline
-"@ | Set-Content $wrapper -Encoding utf8
-    # Capture stdout+stderr so an installer failure (exit 1) is diagnosable in
-    # the transcript instead of silently swallowed.
-    $log = "$env:TEMP\plannotator-install.log"
-    $err = "$env:TEMP\plannotator-install.err"
-    Remove-Item $log, $err, $codefile -ErrorAction SilentlyContinue
-    $proc = Start-Process powershell -ArgumentList "-NoProfile -File `"$wrapper`"" -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError $err
-    # Bound the wait so the sem sidecar / git clone / agent-terminal runtime
-    # can't wedge the whole bootstrap forever.
-    if (-not $proc.WaitForExit(300000))
-    {
-      try { Stop-Process -Id $proc.Id -Force } catch {}
-      Write-Host "[WARN] plannotator installer timed out after 300s" -ForegroundColor Yellow
-    }
-    $code = if (Test-Path $codefile) { [int](Get-Content $codefile -Raw) } else { -1 }
-    if ($code -eq 0) { Write-Host "[OK] plannotator CLI installed" }
-    else
-    {
-      Write-Host "[WARN] plannotator installer exited with code $code" -ForegroundColor Yellow
-      if (Test-Path $log) { Write-Host "--- installer output ---"; Write-Host (Get-Content $log -Raw) }
-      if (Test-Path $err) { Write-Host "--- installer errors ---"; Write-Host (Get-Content $err -Raw) }
-    }
-  } catch
-  {
-    Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
-  }
-} else
-{
-  Write-Host "[OK] plannotator CLI already installed"
-}
+# # Plannotator CLI for visual plan review
+# Write-Host "[INFO] Installing plannotator CLI..."
+# $plannotatorPath = (Get-Command plannotator -ErrorAction SilentlyContinue).Source
+# if (-not $plannotatorPath)
+# {
+#   try
+#   {
+#     # GitHub API + release downloads require TLS 1.2; PS 5.1 may default lower.
+#     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+#     $installer = "$env:TEMP\plannotator-install.ps1"
+#     Invoke-RestMethod https://plannotator.ai/install.ps1 -OutFile $installer
+#     # SecurityProtocol is per-process, not inherited. Set it in the child via a
+#     # wrapper so the installer's GitHub calls also force TLS 1.2.
+#     $wrapper = "$env:TEMP\plannotator-wrap.ps1"
+#     $codefile = "$env:TEMP\plannotator-exitcode.txt"
+#     @"
+# [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# & '$installer' -NonInteractive -NoExtras
+# Set-Content -Path '$codefile' -Value `$LASTEXITCODE -NoNewline
+# "@ | Set-Content $wrapper -Encoding utf8
+#     # Capture stdout+stderr so an installer failure (exit 1) is diagnosable in
+#     # the transcript instead of silently swallowed.
+#     $log = "$env:TEMP\plannotator-install.log"
+#     $err = "$env:TEMP\plannotator-install.err"
+#     Remove-Item $log, $err, $codefile -ErrorAction SilentlyContinue
+#     $proc = Start-Process powershell -ArgumentList "-NoProfile -File `"$wrapper`"" -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError $err
+#     # Bound the wait so the sem sidecar / git clone / agent-terminal runtime
+#     # can't wedge the whole bootstrap forever.
+#     if (-not $proc.WaitForExit(300000))
+#     {
+#       try { Stop-Process -Id $proc.Id -Force } catch {}
+#       Write-Host "[WARN] plannotator installer timed out after 300s" -ForegroundColor Yellow
+#     }
+#     $code = if (Test-Path $codefile) { [int](Get-Content $codefile -Raw) } else { -1 }
+#     if ($code -eq 0) { Write-Host "[OK] plannotator CLI installed" }
+#     else
+#     {
+#       Write-Host "[WARN] plannotator installer exited with code $code" -ForegroundColor Yellow
+#       if (Test-Path $log) { Write-Host "--- installer output ---"; Write-Host (Get-Content $log -Raw) }
+#       if (Test-Path $err) { Write-Host "--- installer errors ---"; Write-Host (Get-Content $err -Raw) }
+#     }
+#   } catch
+#   {
+#     Write-Host "[WARN] Failed to install plannotator CLI: $_" -ForegroundColor Yellow
+#   }
+# } else
+# {
+#   Write-Host "[OK] plannotator CLI already installed"
+# }
 
 # Configure Python for node-gyp native modules
 $python3Path = (Get-Command python3 -ErrorAction SilentlyContinue).Source
@@ -303,27 +303,27 @@ if (-not (Test-Path "$notesDir\.git"))
   Write-Host "[OK] Notes repository configured"
 }
 
-# Update notes .opencode to use plannotator plugin
-$notesOpencodePackage = "$env:USERPROFILE\notes\.opencode\package.json"
-if (Test-Path $notesOpencodePackage)
-{
-  Write-Host "[INFO] Updating notes .opencode package.json for plannotator..."
-  $pkgContent = Get-Content $notesOpencodePackage -Raw | ConvertFrom-Json
-  $pkgContent.dependencies = @{ "@plannotator/opencode" = "latest" }
-  $pkgContent | ConvertTo-Json -Depth 4 | Set-Content $notesOpencodePackage
-
-  # Install updated dependencies
-  Push-Location "$env:USERPROFILE\notes\.opencode"
-  try
-  {
-    npm install 2>&1 | Out-Null
-    Write-Host "[OK] Notes .opencode updated with @plannotator/opencode"
-  } catch
-  {
-    Write-Host "[WARN] npm install in notes/.opencode failed: $_" -ForegroundColor Yellow
-  }
-  Pop-Location
-}
+# # Update notes .opencode to use plannotator plugin
+# $notesOpencodePackage = "$env:USERPROFILE\notes\.opencode\package.json"
+# if (Test-Path $notesOpencodePackage)
+# {
+#   Write-Host "[INFO] Updating notes .opencode package.json for plannotator..."
+#   $pkgContent = Get-Content $notesOpencodePackage -Raw | ConvertFrom-Json
+#   $pkgContent.dependencies = @{ "@plannotator/opencode" = "latest" }
+#   $pkgContent | ConvertTo-Json -Depth 4 | Set-Content $notesOpencodePackage
+#
+#   # Install updated dependencies
+#   Push-Location "$env:USERPROFILE\notes\.opencode"
+#   try
+#   {
+#     npm install 2>&1 | Out-Null
+#     Write-Host "[OK] Notes .opencode updated with @plannotator/opencode"
+#   } catch
+#   {
+#     Write-Host "[WARN] npm install in notes/.opencode failed: $_" -ForegroundColor Yellow
+#   }
+#   Pop-Location
+# }
 
 # SQLite for Neovim
 $sqliteDllPath = "$env:LOCALAPPDATA\nvim\bin\sqlite3.dll"
@@ -356,27 +356,27 @@ if (Test-Path $sqliteDllPath)
 }
 
 # nvim-data Backup
-Write-Host "[INFO] Checking nvim-data backup..."
-$nvimData = "$env:LOCALAPPDATA\nvim-data"
-
-if (-not (Test-Path "$env:USERPROFILE\nvim-data-remote\.git") -or -not (New-JunctionCheck $nvimData @('databases','shada','sessions','undo')))
-{
-  Write-Host "[INFO] Running nvim-data backup setup..."
-  if (-not (Test-Path $nvimData))
-  {
-    New-Item -ItemType Directory -Path $nvimData -Force | Out-Null
-  }
-  Invoke-SafeDownload "$($Config.BaseUrl)/setup-nvim-data-backup.ps1" "$env:TEMP\setup-nvim-data-backup.ps1"
-  if (-not (Test-Path "$env:TEMP\setup-nvim-data-backup.ps1"))
-  {
-    throw "[ERROR] Failed to download nvim-data backup script"
-  }
-  Unblock-File "$env:TEMP\setup-nvim-data-backup.ps1" -ErrorAction SilentlyContinue
-  & "$env:TEMP\setup-nvim-data-backup.ps1"
-} else
-{
-  Write-Host "[OK] nvim-data backup configured"
-}
+# Write-Host "[INFO] Checking nvim-data backup..."
+# $nvimData = "$env:LOCALAPPDATA\nvim-data"
+#
+# if (-not (Test-Path "$env:USERPROFILE\nvim-data-remote\.git") -or -not (New-JunctionCheck $nvimData @('databases','shada','sessions','undo')))
+# {
+#   Write-Host "[INFO] Running nvim-data backup setup..."
+#   if (-not (Test-Path $nvimData))
+#   {
+#     New-Item -ItemType Directory -Path $nvimData -Force | Out-Null
+#   }
+#   Invoke-SafeDownload "$($Config.BaseUrl)/setup-nvim-data-backup.ps1" "$env:TEMP\setup-nvim-data-backup.ps1"
+#   if (-not (Test-Path "$env:TEMP\setup-nvim-data-backup.ps1"))
+#   {
+#     throw "[ERROR] Failed to download nvim-data backup script"
+#   }
+#   Unblock-File "$env:TEMP\setup-nvim-data-backup.ps1" -ErrorAction SilentlyContinue
+#   & "$env:TEMP\setup-nvim-data-backup.ps1"
+# } else
+# {
+#   Write-Host "[OK] nvim-data backup configured"
+# }
 
 # AutoHotkey Portable
 $ahkDir = "$Base\autohotkey-portable"
@@ -800,43 +800,43 @@ try
 }
 
 # Ensure opencode config has plannotator plugin
-$opencodeConfigDir = "$env:USERPROFILE\.config\opencode"
-$opencodeConfig = "$opencodeConfigDir\opencode.json"
-if (-not (Test-Path $opencodeConfigDir))
-{
-  New-Item -ItemType Directory -Force -Path $opencodeConfigDir | Out-Null
-}
-if (Test-Path $opencodeConfig)
-{
-  Write-Host "[INFO] Checking opencode config for plannotator..."
-  $config = Get-Content $opencodeConfig -Raw | ConvertFrom-Json
-
-  # Add plannotator plugin if not present
-  if (-not $config.plugin -or $config.plugin -notcontains "@plannotator/opencode@latest")
-  {
-    if (-not $config.plugin)
-    {
-      $config.plugin = @()
-    }
-    $config.plugin += "@plannotator/opencode@latest"
-    $config | ConvertTo-Json -Depth 10 | Set-Content $opencodeConfig
-    Write-Host "[OK] Added @plannotator/opencode to opencode config"
-  } else
-  {
-    Write-Host "[OK] opencode config already has plannotator"
-  }
-} else
-{
-  Write-Host "[INFO] Creating opencode config with plannotator..."
-  $newConfig = @{
-    '$schema' = "https://opencode.ai/config.json"
-    autoupdate = $false
-    plugin = @("@plannotator/opencode@latest")
-    server = @{ port = 3000 }
-  }
-  $newConfig | ConvertTo-Json -Depth 4 | Set-Content $opencodeConfig
-  Write-Host "[OK] Created opencode config with plannotator"
-}
+# $opencodeConfigDir = "$env:USERPROFILE\.config\opencode"
+# $opencodeConfig = "$opencodeConfigDir\opencode.json"
+# if (-not (Test-Path $opencodeConfigDir))
+# {
+#   New-Item -ItemType Directory -Force -Path $opencodeConfigDir | Out-Null
+# }
+# if (Test-Path $opencodeConfig)
+# {
+#   Write-Host "[INFO] Checking opencode config for plannotator..."
+#   $config = Get-Content $opencodeConfig -Raw | ConvertFrom-Json
+#
+#   # Add plannotator plugin if not present
+#   if (-not $config.plugin -or $config.plugin -notcontains "@plannotator/opencode@latest")
+#   {
+#     if (-not $config.plugin)
+#     {
+#       $config.plugin = @()
+#     }
+#     $config.plugin += "@plannotator/opencode@latest"
+#     $config | ConvertTo-Json -Depth 10 | Set-Content $opencodeConfig
+#     Write-Host "[OK] Added @plannotator/opencode to opencode config"
+#   } else
+#   {
+#     Write-Host "[OK] opencode config already has plannotator"
+#   }
+# } else
+# {
+#   Write-Host "[INFO] Creating opencode config with plannotator..."
+#   $newConfig = @{
+#     '$schema' = "https://opencode.ai/config.json"
+#     autoupdate = $false
+#     plugin = @("@plannotator/opencode@latest")
+#     server = @{ port = 3000 }
+#   }
+#   $newConfig | ConvertTo-Json -Depth 4 | Set-Content $opencodeConfig
+#   Write-Host "[OK] Created opencode config with plannotator"
+# }
 Write-Host "===== bootstrap complete =====`n"
 # keynavish download + auto-start
 $keynavishExe = "$env:USERPROFILE\bin\keynavish.exe"
